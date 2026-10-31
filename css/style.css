@@ -375,7 +375,8 @@ body{min-width:0}
 @media (max-width:639px){.y66 b{white-space:nowrap}.y66 div{white-space:nowrap}}
 
 /* จอเตี้ย (เช่น iPad แนวนอน): กราฟ % แสดงครบทุกแถว ให้ทั้งกล่องบ้านใหญ่เลื่อนลงแทน */
-@media (max-height:880px) and (min-width:1024px){
+/* @media (max-height:880px) and (min-width:1024px){ */
+@media (max-height: 1024px) and (min-width: 1024px) {
   .hrk{overflow-y:auto!important;grid-template-rows:auto auto auto auto}
   .hrk .vs{flex:none;min-height:auto}
   .hrk .vl{flex:none;overflow:visible;grid-auto-rows:24px}
