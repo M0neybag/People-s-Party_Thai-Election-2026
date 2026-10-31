@@ -375,9 +375,97 @@ body{min-width:0}
 @media (max-width:639px){.y66 b{white-space:nowrap}.y66 div{white-space:nowrap}}
 
 /* จอเตี้ย (เช่น iPad แนวนอน): กราฟ % แสดงครบทุกแถว ให้ทั้งกล่องบ้านใหญ่เลื่อนลงแทน */
-/* @media (max-height:880px) and (min-width:1024px){ */
-@media (max-height: 1024px) and (min-width: 1024px) {
+/* @media (max-height:880px) and (min-width:1024px){ 
   .hrk{overflow-y:auto!important;grid-template-rows:auto auto auto auto}
   .hrk .vs{flex:none;min-height:auto}
   .hrk .vl{flex:none;overflow:visible;grid-auto-rows:24px}
+} */
+
+/* ==========================================
+   Base Responsive Container Adjustments
+   ========================================== */
+
+/* Main layout grid/flex container */
+.hrk {
+  overflow-y: auto !important;
+  grid-template-rows: auto auto auto auto;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* Map/Chart section */
+.hrk .vs {
+  flex: none;
+  min-height: auto;
+  min-width: 0; /* Allows container to shrink without pushing right panel out */
+}
+
+/* Right-side data panel and tables */
+.hrk .vl {
+  flex: 1 1 auto;
+  overflow: visible;
+  /* Allow rows to expand based on content height instead of fixed 24px */
+  grid-auto-rows: minmax(36px, auto); 
+  min-width: 0;
+  width: 100%;
+}
+
+/* ==========================================
+   Table Row & Text Overlap Fixes
+   ========================================== */
+
+/* Ensure table rows do not force fixed clipping height */
+.hrk .vl tr,
+.hrk .vl .table-row {
+  height: auto !important;
+  min-height: 36px;
+  align-items: center;
+}
+
+/* Fix text overlapping inside data cells */
+.hrk .vl td,
+.hrk .vl th,
+.hrk .vl .table-cell {
+  height: auto;
+  padding: 6px 8px;
+  line-height: 1.4;
+  vertical-align: middle;
+  white-space: normal;      /* Allow text to wrap naturally */
+  word-break: break-word;   /* Prevent long strings from expanding parent width */
+  overflow: visible;
+}
+
+/* Ensure absolute/positioned text layers (percentages, status badges) stay relative */
+.hrk .vl .candidate-name,
+.hrk .vl .party-name,
+.hrk .vl .vote-count {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Progress bars inside cells */
+.hrk .vl .progress-bar-container {
+  min-height: 16px;
+  margin-top: 4px;
+  clear: both;
+}
+
+/* ==========================================
+   Media Query Target: iPad Landscape & Up
+   ========================================== */
+
+/* Removed tight max-height restriction so it applies reliably across iPad models */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .hrk {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 480px); /* Keeps right sidebar bounded */
+    gap: 16px;
+  }
+
+  .hrk .vl {
+    max-height: 100vh;
+    overflow-y: auto;
+  }
 }
