@@ -375,9 +375,67 @@ body{min-width:0}
 @media (max-width:639px){.y66 b{white-space:nowrap}.y66 div{white-space:nowrap}}
 
 /* จอเตี้ย (เช่น iPad แนวนอน): กราฟ % แสดงครบทุกแถว ให้ทั้งกล่องบ้านใหญ่เลื่อนลงแทน */
-/* @media (max-height:880px) and (min-width:1024px){ */
-@media (max-height: 1024px) and (min-width: 1024px) {
+@media (max-height:880px) and (min-width:1024px){
+/* @media (max-height: 1024px) and (min-width: 1024px) { */
   .hrk{overflow-y:auto!important;grid-template-rows:auto auto auto auto}
   .hrk .vs{flex:none;min-height:auto}
   .hrk .vl{flex:none;overflow:visible;grid-auto-rows:24px}
+}
+
+/* fix new both filter */
+
+/* Ensure tables fit container without bursting */
+.ptab {
+  width: 100%;
+  table-layout: fixed; /* Force browser to respect explicit column widths */
+  border-collapse: collapse;
+}
+
+/* Precise column width distribution */
+.ptab th:nth-child(1),
+.ptab td:nth-child(1) { width: 12%; } /* เบอร์ */
+
+.ptab th:nth-child(2),
+.ptab td:nth-child(2) { width: 38%; } /* ชื่อผู้สมัคร / พรรค */
+
+.ptab th:nth-child(3),
+.ptab td:nth-child(3) { width: 28%; } /* คะแนน */
+
+.ptab th:nth-child(4),
+.ptab td:nth-child(4) { width: 22%; } /* % */
+
+/* Prevent numeric overlap */
+.ptab td.nr {
+  white-space: nowrap;
+  font-size: 0.85rem; /* Slight scale down on tablet views */
+}
+
+@media (max-width: 1024px) {
+  /* Stack tables vertically on iPad/Tablets */
+  .two {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px;
+  }
+
+  .two > div {
+    width: 100%;
+  }
+
+  /* Prevent row overlap when notes appear */
+  .ptab tr {
+    height: auto !important;
+  }
+}
+
+.brow td {
+  padding: 4px 0;
+}
+
+.brow .note {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  margin-top: 4px;
+  word-break: break-word; /* Prevents long score notes from overflowing */
 }
