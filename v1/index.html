@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="th">
+<head>
+<base href="/v1/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>พรรคประชาชน 2569</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand">
+      <b>พรรคประชาชน 2569</b>
+      <span>เลือกตั้ง สส. · 400 เขต <a id="oldv" class="oldv" href="/original/" hidden>· เวอร์ชันเดิม ↗</a></span>
+    </div>
+    <div class="row">
+      <div class="seg" id="modes" role="tablist"></div>
+      <select class="dd" id="region" aria-label="เลือกภาค"></select>
+    </div>
+    <label class="y66" id="y66">
+      <input type="checkbox" id="cb66">
+      <span class="box"></span>
+      <div><b>เปรียบเทียบปี 66</b><small id="y66s">แสดงผลการเลือกตั้งปี 2566</small></div>
+    </label>
+    <div class="row" id="filters"></div>
+  </header>
+
+  <main class="cols">
+    <section class="card mapcard">
+      <svg id="map"></svg>
+      <div class="legend" id="legend"></div>
+      <div class="zoom">
+        <button data-z="in" title="ซูมเข้า">+</button>
+        <button data-z="out" title="ซูมออก">−</button>
+        <button data-z="home" title="กลับมุมมองเริ่มต้น">⌂</button>
+      </div>
+    </section>
+
+    <section class="right" id="right">
+      <div class="kpis">
+        <div class="kpi"><span class="l" id="k1l"></span><span class="v" id="k1v"></span><span class="s" id="k1s"></span></div>
+        <div class="kpi"><span class="l" id="k2l"></span><span class="v" id="k2v"></span><span class="s" id="k2s"></span></div>
+      </div>
+      <div class="card rk" id="rk"></div>
+      <aside class="panel" id="panel" aria-hidden="true"></aside>
+    </section>
+  </main>
+</div>
+<div class="ftip" id="ftip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
