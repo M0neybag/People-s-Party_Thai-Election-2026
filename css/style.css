@@ -473,6 +473,16 @@ body{min-width:0}
   header.bar .row {
     flex-wrap: wrap;
   }
+
+  svg.ov text {
+    font-size: 7px !important; /* ย่อขนาดอักษรให้เล็กลง */
+  }
+
+  #h2 .list {
+    max-height: 462px; /* Adjust height limit as needed */
+    overflow-y: auto;  /* Enables vertical scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS devices */
+  }
 }
 
 header.bar .row {
@@ -488,3 +498,16 @@ header.bar .seg {
   flex-wrap: wrap;
   gap: 4px;
 }
+
+/* name */
+td.nm {
+    display: table-cell;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    overflow-x: auto;
+}
+
+
