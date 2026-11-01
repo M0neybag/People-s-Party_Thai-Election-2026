@@ -9,7 +9,7 @@ html,body{height:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",Loma,sans-serif;font-size:13px;overflow:hidden;min-width:1180px}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
 .mono{font-family:"IBM Plex Sans Thai",sans-serif}
-.app{height:100vh;min-height:680px;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px;padding:12px 16px}
+
 
 /* ---- top bar ---- */
 .bar{display:grid;grid-template-columns:auto 1fr auto;gap:6px 16px;align-items:center}
@@ -438,4 +438,53 @@ body{min-width:0}
   line-height: 1.25;
   margin-top: 4px;
   word-break: break-word; /* Prevents long score notes from overflowing */
+}
+
+/* 1 nov edit */
+/* desktop (original css) */
+.app {
+  height: 100vh;
+  min-height: 680px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+/* Mobile*/
+@media (max-width: 768px) {
+  .app {
+    display: flex;
+    flex-direction: column;
+    
+    /* Adjust height and spacing so mobile screens can scroll naturally */
+    height: auto;
+    min-height: 100dvh;
+    padding: 8px;
+    gap: 16px;
+  }
+
+  header.bar .seg button,
+  header.bar .chip {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+  
+  header.bar .row {
+    flex-wrap: wrap;
+  }
+}
+
+header.bar .row {
+  display: flex;
+  flex-wrap: wrap; /* ยอมให้ปุ่มตกลงมาบรรทัดใหม่เมื่อพื้นที่ไม่พอ */
+  gap: 6px;        /* ระยะห่างระหว่างปุ่ม */
+  width: 100%;
+}
+
+/* ปรับให้กลุ่มปุ่ม (seg) สามารถ wrap ได้ด้วย */
+header.bar .seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
