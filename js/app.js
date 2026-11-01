@@ -5,10 +5,10 @@ const MAIN5 = ['ภูมิใจไทย','ประชาชน','เพื�
 const OTHER = '#5E6573', NODATA = '#D3D3D3';
 const REGIONS = ['กรุงเทพมหานคร','ภาคกลาง','ภาคเหนือ','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
 const RO = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันออกเฉียงเหนือ','ภาคเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
-const MODES = [['win','สส.เขต'],['list','สส.บัญชีรายชื่อ'],['both','สส.เขต + บัญชีรายชื่อ'],['tier','ระดับโอกาส'],['house','ข้อมูลบ้านใหญ่']];
+const MODES = [['win','สส.เขต'],['list','สส.บัญชีรายชื่อ'],['both','สส.เขต + บัญชีรายชื่อ'],['tier','วางแผนพรรค'],['house','ข้อมูลบ้านใหญ่']];
 const GB = [['#b3540b','ชนะ มากกว่า 15%'],['#ee8a2c','ชนะ 5–15%'],['#f9c896','ชนะ ไม่เกิน 5%'],['#cfd3ec','แพ้ ไม่เกิน 5%'],['#959cd4','แพ้ 5–15%'],['#5d66b3','แพ้ 15–30%'],['#333b84','แพ้ มากกว่า 30%']];
-const TT = {flip:['พลิกได้','#7b3fc4'],hold:['รักษาฐานเสียง','#f5b06a'],cand:['ดันผู้สมัคร','#1f8f86'],safe:['ฐานเสียง','#b3540b'],far:['ปรับแผนใหม่','#c3c7ce'],none:['ไม่ส่งผู้สมัคร','#e3e5ea']};
-const TK = ['flip','hold','cand','safe','far'];
+const TT = {flip:['พลิกได้','#FFA500'],hold:['รักษาฐานเสียง','#D2691E'],cand:['ดันผู้สมัคร','#EEDD82'],safe:['ฐานเสียง','#8B4513'],far:['ปรับแผนใหม่','#BEBEBE'],none:['ไม่ส่งผู้สมัคร','#e3e5ea']};
+const TK = ['safe','hold','flip','cand','far'];
 const NATB = {c:{b:3.54,n:4.25},l:{b:4.41,n:2.93}};
 let LEGEND_W = 200; const ROWH = 22;
 
@@ -256,7 +256,7 @@ function drawTiles() {
       } else {
         const fill = M === 'tier' ? TT[d.tier][1] : GV() ? gcolv(gapV(d)) : M === 'win' ? col(d.w[1]) : M === 'list' ? col(d.pltop) : gcolv(gapV(d));
         g.append('polygon').attr('points', shrink([BL, BR, TR, TL], cx, cy, f)).attr('fill', fill);
-        num(cx, cy + .03, '#fff', 'middle', 1);
+        num(cx, cy + .03, M=== 'tier' ? '#fff' : '#000', 'middle', 1);
       }
     }
   });
@@ -441,8 +441,8 @@ function renderTier(rk) {
   const xs = d3.scaleLinear([-72, 46], [m.l, W - m.r]), ys = d3.scaleLinear([-60, 45], [SH - m.b, m.t]);
   const Z = [[-72,-30,-60,45,'far'],[-30,-5,0,45,'cand'],[-30,-5,-60,0,'far'],[-5,0,-60,45,'flip'],[0,5,-60,45,'hold'],[5,46,-60,0,'hold'],[5,46,0,45,'safe']];
   let sv = Z.map(([a, b, c, e, t]) => `<rect x="${xs(a)}" y="${ys(e)}" width="${xs(b) - xs(a)}" height="${ys(c) - ys(e)}" fill="${TT[t][1]}" opacity=".13"/>`).join('');
-  [[-50,25,'far'],[-17.5,38,'cand'],[25,38,'safe'],[25,-50,'hold']].forEach(([a, b, k]) => sv += `<text x="${xs(a)}" y="${ys(b)}" text-anchor="middle" font-size="12" font-weight="700" fill="${d3.color(TT[k][1]).darker(k === 'far' || k === 'hold' ? 1.4 : .4)}">${TT[k][0]}</text>`);
-  sv += `<text x="${xs(-2.5)}" y="${m.t - 1}" text-anchor="middle" font-size="11" font-weight="700" fill="#7b3fc4">พลิกได้</text>`;
+  [[-50,25,'far'],[-17.5,38,'cand'],[25,38,'safe'],[25,-50,'hold']].forEach(([a, b, k]) => sv += `<text x="${xs(a)}" y="${ys(b)}" text-anchor="middle" font-size="12" font-weight="700" fill="${d3.color(TT[k][1]).darker({far:1.4, hold:1.4, safe:.4, cand:2.2}[k])}">${TT[k][0]}</text>`);
+  sv += `<text x="${xs(-2.5)}" y="${m.t - 1}" text-anchor="middle" font-size="11" font-weight="700" fill="${d3.color(TT.flip[1]).darker(1.1)}">พลิกได้</text>`;
   [-60,-40,-20,0,20,40].forEach(v => sv += `<text x="${m.l - 6}" y="${ys(v) + 3}" font-size="9.5" text-anchor="end" fill="#5d6370" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   [-30,-5,0,5].forEach(v => sv += `<line x1="${xs(v)}" x2="${xs(v)}" y1="${m.t}" y2="${SH - m.b}" stroke="#16181d" stroke-width="${v ? 1 : 1.6}" ${v ? 'stroke-dasharray="4 3"' : ''} opacity=".7"/><text x="${xs(v)}" y="${SH - m.b + 13}" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   sv += `<line x1="${m.l}" x2="${W - m.r}" y1="${ys(0)}" y2="${ys(0)}" stroke="#16181d" stroke-width="1.6" opacity=".7"/>`;
