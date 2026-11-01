@@ -368,7 +368,7 @@ body{min-width:0}
   .sub button{font-size:11px;padding:2px 7px}
   .two2c{grid-template-columns:1fr}
   .th,.trr{grid-template-columns:minmax(0,1fr) 92px 70px 74px;gap:6px;padding:5px 8px;font-size:11.5px}
-  .cmp,.cmph{grid-template-columns:1fr 20px 1fr}.pc .pn span{display:none}.pc{grid-template-columns:24px 24px 1fr auto;gap:5px}.pc.r{grid-template-columns:auto 1fr 24px 24px}.pc .pv{font-size:15px}
+  .cmp,.cmph{grid-template-columns:1fr 20px 1fr}.pc{grid-template-columns:24px 24px 1fr auto;gap:5px}.pc.r{grid-template-columns:auto 1fr 24px 24px}.pc .pv{font-size:15px}
   .two{grid-template-columns:1fr}
   .ptab .nm span{display:none}
 }
@@ -478,11 +478,40 @@ body{min-width:0}
     font-size: 7px !important; /* ย่อขนาดอักษรให้เล็กลง */
   }
 
-  #h2 .list {
+  #rk .list {
     max-height: 462px; /* Adjust height limit as needed */
     overflow-y: auto;  /* Enables vertical scrolling */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling for iOS devices */
   }
+
+  select.dd {
+    font-size: 11px;
+  }
+
+  .tile text {
+    font-size: 0.35px;
+  }
+
+  .pc .pn span{
+    display: block;
+    max-width: 35px;
+    max-height: 12px;
+    text-align: center;
+    font-size: 10px;
+    margin-left: 0px;
+  }
+
+  .bd {
+    display: inline-block;
+    text-align: center;     /* จัดกึ่งกลางแนวนอน */
+    height: 30px;
+    line-height: 15px;
+  }
+
+  .pc.r .pn, .cc.r .pn {
+    order: 2;
+    text-align: left;
+}
 }
 
 header.bar .row {
@@ -505,7 +534,7 @@ td.nm {
     max-width: 150px;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: initial;
     vertical-align: middle;
     overflow-x: auto;
 }
