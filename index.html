@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>พรรคประชาชน 2569</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +11,34 @@
 </head>
 <body>
 <div class="app">
-  <header class="bar">
+<header class="bar">
+  <!-- แถวบน: ชื่อพรรค + Checkbox เปรียบเทียบ -->
+  <div class="top-row" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="brand">
+      <b>พรรคประชาชน 2569</b>
+      <span>เลือกตั้ง สส. · 400 เขต</span>
+    </div>
+    <label class="y66" id="y66" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <input type="checkbox" id="cb66">
+      <span class="box"></span>
+      <div>
+        <b>เปรียบเทียบปี 66</b>
+        <small id="y66s" style="display: none;">แสดงผลการเลือกตั้งปี 2566</small>
+      </div>
+    </label>
+  </div>
+
+  <!-- แถวกลาง: แท็บโหมด + Dropdown เลือกภาค -->
+  <div class="row">
+    <div class="seg" id="modes" role="tablist"></div>
+    <select class="dd" id="region" aria-label="เลือกภาค"></select>
+  </div>
+  
+  <!-- แถวล่าง: ฟิลเตอร์ตัวเลือก -->
+  <div class="row" id="filters"></div>
+</header>
+
+  <!-- <header class="bar">
     <div class="brand">
       <b>พรรคประชาชน 2569</b>
       <span>เลือกตั้ง สส. · 400 เขต</span>
@@ -20,13 +47,14 @@
       <div class="seg" id="modes" role="tablist"></div>
       <select class="dd" id="region" aria-label="เลือกภาค"></select>
     </div>
-    <label class="y66" id="y66">
-      <input type="checkbox" id="cb66">
-      <span class="box"></span>
-      <div><b>เปรียบเทียบปี 66</b><small id="y66s">แสดงผลการเลือกตั้งปี 2566</small></div>
-    </label>
+      <label class="y66" id="y66">
+        <input type="checkbox" id="cb66">
+        <span class="box"></span>
+        <div><b>เปรียบเทียบปี 66</b><small id="y66s">แสดงผลการเลือกตั้งปี 2566</small></div>
+      </label>
+    
     <div class="row" id="filters"></div>
-  </header>
+  </header> -->
 
   <main class="cols">
     <section class="card mapcard">

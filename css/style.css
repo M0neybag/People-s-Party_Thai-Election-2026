@@ -370,7 +370,6 @@ body{min-width:0}
   .th,.trr{grid-template-columns:minmax(0,1fr) 92px 70px 74px;gap:6px;padding:5px 8px;font-size:11.5px}
   .cmp,.cmph{grid-template-columns:1fr 20px 1fr}.pc{grid-template-columns:24px 24px 1fr auto;gap:5px}.pc.r{grid-template-columns:auto 1fr 24px 24px}.pc .pv{font-size:15px}
   .two{grid-template-columns:1fr}
-  .ptab .nm span{display:none}
 }
 @media (max-width:639px){.y66 b{white-space:nowrap}.y66 div{white-space:nowrap}}
 
@@ -451,6 +450,178 @@ body{min-width:0}
   padding: 12px 16px;
 }
 
+/* iPad / Tablet Landscape (Horizontal) & Desktop */
+@media screen and (min-width: 768px) and (orientation: landscape) {
+  .app {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100dvh; /* Replaces 100vh to handle Safari address bar shifts */
+    min-height: 500px; /* Lowered from 680px to prevent overflow on shorter iPad viewports */
+    padding: 12px 16px;
+    gap: 10px;
+  }
+}
+
+
+/* 1. กำหนดให้ Header เป็น Sticky ติดด้านบนเสมอ */
+header.bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #f8f9fa; /* ปรับสีพื้นหลังตามต้องการ */
+  padding: 12px 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* เพิ่มเงาด้านล่างเล็กน้อย */
+  
+  /* จัดโครงสร้างพื้นฐาน */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 12px;
+}
+
+/* จัดส่วน brand และ checkbox ปีกขวา */
+header.bar > .brand {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ซ่อนคำอธิบายยาวๆ ในมือถือเพื่อประหยัดพื้นที่ (ถ้าต้องการ) */
+header.bar #y66s {
+  display: none;
+}
+
+/* กำหนดให้ส่วนเมนูแนวนอนเลื่อนซ้าย-ขวาได้หากกว้างเกินจอ */
+header.bar .row,
+header.bar #modes,
+header.bar #filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch; /* เลื่อนลื่นบน iOS */
+  padding-bottom: 4px;
+}
+
+/* ซ่อน Scrollbar ของส่วนที่เลื่อนได้เพื่อความสวยงาม */
+header.bar .row::-webkit-scrollbar,
+header.bar #modes::-webkit-scrollbar,
+header.bar #filters::-webkit-scrollbar {
+  display: none;
+}
+
+/* สำหรับ div.row, #modes และ #filters */
+header.bar .row,
+header.bar #modes,
+header.bar #filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch; /* เลื่อนลื่นบน iOS */
+  
+  /* รองรับ Firefox */
+  scrollbar-width: thin; /* ขนาดเล็ก: thin / none / auto */
+  scrollbar-color: #cbd5e1 transparent; /* [สีแถบเลื่อน] [สีรางพื้นหลัง] */
+  
+  padding-bottom: 6px; /* เว้นระยะด้านล่างให้ไม่ติดแถบเลื่อนเกินไป */
+}
+
+/* ==========================================
+   สำหรับ Chrome, Safari, Edge, Opera (WebKit)
+   ========================================== */
+
+/* 1. กำหนดความสูงของ Scrollbar แนวนอน */
+header.bar .row::-webkit-scrollbar,
+header.bar #modes::-webkit-scrollbar,
+header.bar #filters::-webkit-scrollbar {
+  height: 4px; /* ปรับความหนาของแถบเลื่อน */
+}
+
+/* 2. ตัวราง (Track) */
+header.bar .row::-webkit-scrollbar-track,
+header.bar #modes::-webkit-scrollbar-track,
+header.bar #filters::-webkit-scrollbar-track {
+  background: transparent; /* หรือใช้สีอ่อนๆ เช่น #f1f1f1 */
+  border-radius: 10px;
+}
+
+/* 3. ตัวแท่งเลื่อน (Thumb) */
+header.bar .row::-webkit-scrollbar-thumb,
+header.bar #modes::-webkit-scrollbar-thumb,
+header.bar #filters::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* สีแถบเลื่อน */
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+/* 4. เปลี่ยนสีเมื่อ Hover หรือกำลังลาก (Optional) */
+header.bar .row::-webkit-scrollbar-thumb:hover,
+header.bar #modes::-webkit-scrollbar-thumb:hover,
+header.bar #filters::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* เข้มขึ้นเมื่อชี้ */
+}
+
+header.bar .top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* ดัน brand ไปซ้ายสุด และ y66 ไปขวาสุด */
+  width: 100%;
+}
+
+
+header.bar .brand {
+  display: flex;
+  flex-direction: column;
+  text-align: left; 
+  border-right: none;
+}
+
+
+header.bar .y66 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  text-align: right; /* ชิดขวา */
+  margin-left: auto; /* ช่วยการันตีการดันไปขวาสุด */
+}
+
+/* ตกแต่งกล่อง Checkbox ให้สวยงามเข้ากับ UI */
+header.bar .y66 input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* mobile header */
+@media (max-width: 600px) {
+  header.bar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  header.bar .brand b {
+    font-size: 1.1rem;
+  }
+  
+  header.bar .brand span {
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  header.bar .dd {
+    width: 100%;
+    max-width: 150px;
+  }
+
+  header.bar .seg, 
+  header.bar #filters > * {
+    font-size: 0.85rem;
+    /* padding: 6px 10px; */
+    flex-shrink: 0; 
+  }
+}
+
 /* Mobile*/
 @media (max-width: 768px) {
   .app {
@@ -464,18 +635,8 @@ body{min-width:0}
     gap: 16px;
   }
 
-  header.bar .seg button,
-  header.bar .chip {
-    font-size: 11px;
-    padding: 3px 6px;
-  }
-  
-  header.bar .row {
-    flex-wrap: wrap;
-  }
-
   svg.ov text {
-    font-size: 7px !important; /* ย่อขนาดอักษรให้เล็กลง */
+    font-size: 7px !important;
   }
 
   #rk .list {
@@ -492,7 +653,7 @@ body{min-width:0}
     font-size: 0.35px;
   }
 
-  .pc .pn span{
+  .pc .pn span, .cc .pn span{
     display: block;
     max-width: 35px;
     max-height: 12px;
@@ -503,7 +664,7 @@ body{min-width:0}
 
   .bd {
     display: inline-block;
-    text-align: center;     /* จัดกึ่งกลางแนวนอน */
+    text-align: center;   
     height: 30px;
     line-height: 15px;
   }
@@ -511,13 +672,17 @@ body{min-width:0}
   .pc.r .pn, .cc.r .pn {
     order: 2;
     text-align: left;
-}
+  }
+
+  .ptab .nm span {
+    display: inline;
+  }
 }
 
 header.bar .row {
   display: flex;
   flex-wrap: wrap; /* ยอมให้ปุ่มตกลงมาบรรทัดใหม่เมื่อพื้นที่ไม่พอ */
-  gap: 6px;        /* ระยะห่างระหว่างปุ่ม */
+  gap: 6px;        
   width: 100%;
 }
 
@@ -529,7 +694,7 @@ header.bar .seg {
 }
 
 /* name */
-td.nm {
+td.nm, .pn b {
     display: table-cell;
     max-width: 150px;
     white-space: nowrap;
