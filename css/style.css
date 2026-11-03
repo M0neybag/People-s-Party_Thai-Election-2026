@@ -364,7 +364,7 @@ body{min-width:0}
   .kpis{gap:8px}.kpi{padding:8px 10px}.kpi .v{font-size:24px}.kpi .s{font-size:10.5px}
   .right{min-height:0}
   .rk,.rk2,.rk3,.hrk{min-height:560px}
-  .r[data-k]{grid-template-columns:110px 1fr 48px;}.r[data-k] .op{display:none}
+  .r[data-k]{grid-template-columns:110px 1fr 48px;}
   .sub button{font-size:11px;padding:2px 7px}
   .two2c{grid-template-columns:1fr}
   .th,.trr{grid-template-columns:minmax(0,1fr) 92px 70px 74px;gap:6px;padding:5px 8px;font-size:11.5px}
@@ -439,7 +439,7 @@ body{min-width:0}
   word-break: break-word; /* Prevents long score notes from overflowing */
 }
 
-/* 1 nov edit */
+/* custom edit */
 /* desktop (original css) */
 .app {
   height: 100vh;
@@ -558,9 +558,7 @@ header.bar .seg {
   gap: 4px;
 }
 
-/* ==========================================
-   Desktop Layout (สำหรับหน้าจอ 900px ขึ้นไป)
-   ========================================== */
+/* Desktop Layout */
 @media (min-width: 900px) {
   header.bar {
     display: grid !important;
@@ -678,37 +676,79 @@ header.bar .seg {
     display: inline;
   }
 
-  /* Hide only the text tooltip by default */
-.ptab .nm .hz .hzt {
-  display: none !important;
-}
+  .ptab .nm .hz .hzt {
+    display: none !important;
+  }
 
-/* Show the text tooltip on hover */
-.ptab .nm .hz:hover .hzt,
-.ptab .nm span:hover .hz .hzt {
-  display: inline-block !important;
-}
-  
+  .ptab .nm .hz:hover .hzt,
+  .ptab .nm span:hover .hz .hzt {
+    display: inline-block !important;
+  }
+
   .panel {
     z-index: 9999;
   }
+  
+  .tw {
+    color: #000;
+    font-weight: 700;
+  }
 
-  @media (max-width: 640px) {
   .ballot > div {
     min-width: 0;
     overflow: hidden;
     white-space: nowrap;
-    /* Keeps bar colors visible, hides text in tiny bars */
     font-size: 0; 
   }
   
-  /* Optionally show text only if segment flex grow/basis is large */
   .ballot > div[style*="flex:9"],
   .ballot > div[style*="flex: 9"] {
     font-size: 10px;
   }
-}
 
+  .r {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    /* height: 80px; */
+    gap: unset;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    height: auto; 
+    padding-top: 2px; 
+    padding-bottom: 2px; 
+  }
+
+  .hd {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 2px; 
+  }
+
+  .r .v {
+    grid-column: 3;
+    grid-row: 1;
+    text-align: right;
+  }
+
+  .r .op {
+    display: block;
+    grid-column: 3;
+    grid-row: 2;
+    text-align: right;
+    justify-self: end;
+  }
+
+  .muted {
+    display: block;
+  }
+
+  .r>span:first-child {
+    white-space: unset !important;
+    overflow: unset !important;
+  }
 }
 
 /* name */
