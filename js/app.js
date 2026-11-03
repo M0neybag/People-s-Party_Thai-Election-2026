@@ -5,10 +5,10 @@ const MAIN5 = ['ภูมิใจไทย','ประชาชน','เพื�
 const OTHER = '#5E6573', NODATA = '#D3D3D3';
 const REGIONS = ['กรุงเทพมหานคร','ภาคกลาง','ภาคเหนือ','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
 const RO = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันออกเฉียงเหนือ','ภาคเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
-const MODES = [['win','สส.เขต'],['list','สส.บัญชีรายชื่อ'],['both','สส.เขต + บัญชีรายชื่อ'],['tier','ระดับโอกาส'],['house','ข้อมูลบ้านใหญ่']];
-const GB = [['#b3540b','ชนะ มากกว่า 15%'],['#ee8a2c','ชนะ 5–15%'],['#f9c896','ชนะ ไม่เกิน 5%'],['#cfd3ec','แพ้ ไม่เกิน 5%'],['#959cd4','แพ้ 5–15%'],['#5d66b3','แพ้ 15–30%'],['#333b84','แพ้ มากกว่า 30%']];
-const TT = {flip:['พลิกได้','#7b3fc4'],hold:['รักษาฐานเสียง','#f5b06a'],cand:['ดันผู้สมัคร','#1f8f86'],safe:['ฐานเสียง','#b3540b'],far:['ปรับแผนใหม่','#c3c7ce'],none:['ไม่ส่งผู้สมัคร','#e3e5ea']};
-const TK = ['flip','hold','cand','safe','far'];
+const MODES = [['win','สส.เขต'],['list','บัญชีรายชื่อ'],['both','สส.เขต + บัญชีรายชื่อ'],['tier','วางแผนพรรค'],['house','ข้อมูลบ้านใหญ่']];
+const GB = [['#a65923','ชนะ มากกว่า 15%'],['#e18f43','ชนะ 5–15%'],['#feb96b','ชนะ ไม่เกิน 5%'],['#b2d0ce','แพ้ ไม่เกิน 5%'],['#80b9b3','แพ้ 5–15%'],['#5a8a86','แพ้ 15–30%'],['#3e6763','แพ้ มากกว่า 30%']];
+const TT = {flip:['พลิกได้','#FFA500'],hold:['รักษาฐานเสียง','#D2691E'],cand:['ดันผู้สมัคร','#EEDD82'],safe:['ฐานเสียง','#8B4513'],far:['ปรับแผนใหม่','#BEBEBE'],none:['ไม่ส่งผู้สมัคร','#e3e5ea']};
+const TK = ['safe','hold','flip','cand','far'];
 const NATB = {c:{b:3.54,n:4.25},l:{b:4.41,n:2.93}};
 let LEGEND_W = 200; const ROWH = 22;
 
@@ -256,7 +256,7 @@ function drawTiles() {
       } else {
         const fill = M === 'tier' ? TT[d.tier][1] : GV() ? gcolv(gapV(d)) : M === 'win' ? col(d.w[1]) : M === 'list' ? col(d.pltop) : gcolv(gapV(d));
         g.append('polygon').attr('points', shrink([BL, BR, TR, TL], cx, cy, f)).attr('fill', fill);
-        num(cx, cy + .03, '#fff', 'middle', 1);
+        num(cx, cy + .03, M === 'tier' ? ink(fill) : '#fff', 'middle', 1);
       }
     }
   });
@@ -441,8 +441,8 @@ function renderTier(rk) {
   const xs = d3.scaleLinear([-72, 46], [m.l, W - m.r]), ys = d3.scaleLinear([-60, 45], [SH - m.b, m.t]);
   const Z = [[-72,-30,-60,45,'far'],[-30,-5,0,45,'cand'],[-30,-5,-60,0,'far'],[-5,0,-60,45,'flip'],[0,5,-60,45,'hold'],[5,46,-60,0,'hold'],[5,46,0,45,'safe']];
   let sv = Z.map(([a, b, c, e, t]) => `<rect x="${xs(a)}" y="${ys(e)}" width="${xs(b) - xs(a)}" height="${ys(c) - ys(e)}" fill="${TT[t][1]}" opacity=".13"/>`).join('');
-  [[-50,25,'far'],[-17.5,38,'cand'],[25,38,'safe'],[25,-50,'hold']].forEach(([a, b, k]) => sv += `<text x="${xs(a)}" y="${ys(b)}" text-anchor="middle" font-size="12" font-weight="700" fill="${d3.color(TT[k][1]).darker(k === 'far' || k === 'hold' ? 1.4 : .4)}">${TT[k][0]}</text>`);
-  sv += `<text x="${xs(-2.5)}" y="${m.t - 1}" text-anchor="middle" font-size="11" font-weight="700" fill="#7b3fc4">พลิกได้</text>`;
+  [[-50,25,'far'],[-17.5,38,'cand'],[25,38,'safe'],[25,-50,'hold']].forEach(([a, b, k]) => sv += `<text x="${xs(a)}" y="${ys(b)}" text-anchor="middle" font-size="12" font-weight="700" fill="${d3.color(TT[k][1]).darker({far:1.4, hold:1.4, safe:.4, cand:2.2}[k])}">${TT[k][0]}</text>`);
+  sv += `<text x="${xs(-2.5)}" y="${m.t - 1}" text-anchor="middle" font-size="11" font-weight="700" fill="${d3.color(TT.flip[1]).darker(1.1)}">พลิกได้</text>`;
   [-60,-40,-20,0,20,40].forEach(v => sv += `<text x="${m.l - 6}" y="${ys(v) + 3}" font-size="9.5" text-anchor="end" fill="#5d6370" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   [-30,-5,0,5].forEach(v => sv += `<line x1="${xs(v)}" x2="${xs(v)}" y1="${m.t}" y2="${SH - m.b}" stroke="#16181d" stroke-width="${v ? 1 : 1.6}" ${v ? 'stroke-dasharray="4 3"' : ''} opacity=".7"/><text x="${xs(v)}" y="${SH - m.b + 13}" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   sv += `<line x1="${m.l}" x2="${W - m.r}" y1="${ys(0)}" y2="${ys(0)}" stroke="#16181d" stroke-width="1.6" opacity=".7"/>`;
@@ -559,7 +559,7 @@ function panelOne(d) {
 
 
 /* ---------- โหมดข้อมูลบ้านใหญ่ ---------- */
-const HW = '#2e9e5b', HL = '#d9dce2';
+const HW = '#5a8a86', HL = '#d9dce2';
 const RN = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันตก','ภาคตะวันออก','ภาคตะวันออกเฉียงเหนือ','ภาคใต้','ภาคเหนือ'];
 const RS = r => r === 'กรุงเทพมหานคร' ? 'กทม.' : r.replace('ภาค', '');
 function drawHouseTile(t, d) {
@@ -635,3 +635,83 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(arr => { DATA_FILES.forEach((n, i) => DATA[n] = arr[i]); init(); })
     .catch(err => { document.body.insertAdjacentHTML('afterbegin', '<div style="padding:16px;background:#fde8e8;color:#8a1c1c;font:14px sans-serif">โหลดข้อมูลไม่ได้: ' + err.message + ' — ต้องเปิดผ่านเว็บเซิร์ฟเวอร์ (ดู README)</div>'); console.error(err); });
 });
+
+/* ===== animation ตอนเปลี่ยนโหมดและตอนกดตัวกรอง =====
+   ครอบฟังก์ชัน render() กับ renderHeader() ด้านบน เพิ่ม animation โดยไม่แก้โค้ดเดิม
+   ห้ามเปลี่ยน ถ้ายังอยากให้ animation ทำงาน:
+   - ชื่อฟังก์ชัน render, renderHeader
+   - id #modes #filters #rk #legend #rescon #bigf และคลาส .kpis
+   - ช่องแผนที่ต้องเป็น <g class="tile"> ที่มี <polygon> ข้างใน
+   (แก้สี ขนาด ชื่อปุ่ม ได้ตามปกติ) */
+(function () {
+  const A_DUR = 400;                    /* ความยาว animation สี/ความจาง (มิลลิวินาที) */
+  const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
+  const animOK = () => !RM.matches;
+  const replay = (el, cls) => { if (!el || !animOK()) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
+  let A_key = null, A_pill = null;
+
+  /* 1) แถบขาวของปุ่มโหมดเลื่อนจากปุ่มเดิมไปปุ่มใหม่ */
+  function placePill(animate) {
+    const seg = $('#modes'), on = seg.querySelector('button.on'); if (!on) return;
+    const pill = document.createElement('span'); pill.className = 'mode-pill'; seg.prepend(pill); seg.classList.add('has-pill');
+    const to = {x:on.offsetLeft, y:on.offsetTop, w:on.offsetWidth, h:on.offsetHeight}, from = A_pill || to;
+    const set = p => { pill.style.transform = `translate(${p.x}px,${p.y}px)`; pill.style.width = p.w + 'px'; pill.style.height = p.h + 'px'; };
+    pill.style.transition = 'none'; set(animate && animOK() ? from : to); A_pill = to;
+    requestAnimationFrame(() => requestAnimationFrame(() => { pill.style.transition = ''; set(to); }));
+  }
+  new ResizeObserver(() => {
+    const on = document.querySelector('#modes button.on'), p = document.querySelector('#modes .mode-pill'); if (!on || !p) return;
+    A_pill = {x:on.offsetLeft, y:on.offsetTop, w:on.offsetWidth, h:on.offsetHeight};
+    p.style.transition = 'none'; p.style.transform = `translate(${A_pill.x}px,${A_pill.y}px)`; p.style.width = A_pill.w + 'px'; p.style.height = A_pill.h + 'px';
+  }).observe(document.documentElement);
+
+  const _renderHeader = renderHeader;
+  renderHeader = function () {
+    const key = ST.mode + '|' + Y66(), changed = A_key !== null && key !== A_key;
+    _renderHeader();
+    placePill(changed);
+    $('#filters').style.opacity = $('#filters').style.visibility === 'hidden' ? 0 : 1;
+    if (changed) { if (!$('#rescon').hidden) replay($('#rescon'), 'a-in-f'); if ($('#bigf').style.display !== 'none') replay($('#bigf'), 'a-in-f'); }
+  };
+
+  /* 2) สีและความจางค่อยๆ เปลี่ยน: ช่องแผนที่ แท่ง overview แถวรายการ จุด scatter */
+  function snapshot() {
+    const tiles = [...document.querySelectorAll('g.tile')].map(g => { const t = g.querySelector('text');
+      return {go:g.getAttribute('opacity'), ps:[...g.querySelectorAll('polygon')].map(p => [p.getAttribute('fill'), p.getAttribute('opacity')]), to:t ? t.getAttribute('opacity') : null}; });
+    const bars = [...document.querySelectorAll('#rk .ovw svg')].map(sv => [...sv.querySelectorAll('rect[opacity]')].map(r => [r.getAttribute('fill'), r.getAttribute('opacity')]));
+    const dots = {}; document.querySelectorAll('#rk circle.dot[data-k]').forEach(c => dots[c.dataset.k] = c.getAttribute('opacity'));
+    const rows = {}; document.querySelectorAll('#rk .r[data-k], #rk .trr[data-k]').forEach(r => rows[r.dataset.k] = getComputedStyle(r).opacity);
+    return {tiles, bars, dots, rows};
+  }
+  function tweenFrom(S, sameView) {
+    const jobs = [], tw = (el, attr, o) => { const n = el.getAttribute(attr); if (o == null || n == null || o === n) return; el.setAttribute(attr, o); jobs.push([el, attr, n]); };
+    const gs = document.querySelectorAll('g.tile');
+    if (gs.length === S.tiles.length) gs.forEach((g, i) => { const o = S.tiles[i];
+      tw(g, 'opacity', o.go);
+      const ps = g.querySelectorAll('polygon'), same = ps.length === o.ps.length;
+      ps.forEach((p, j) => { const op = same ? o.ps[j] : o.ps[0]; if (!op) return; tw(p, 'fill', op[0]); if (same) tw(p, 'opacity', op[1]); });
+      const t = g.querySelector('text'); if (t && o.to != null) tw(t, 'opacity', o.to); });
+    const rowJobs = [];
+    if (sameView) {
+      document.querySelectorAll('#rk .ovw svg').forEach((sv, k) => { const ob = S.bars[k], rs = sv.querySelectorAll('rect[opacity]'); if (!ob || ob.length !== rs.length) return;
+        rs.forEach((r, i) => { tw(r, 'fill', ob[i][0]); tw(r, 'opacity', ob[i][1]); }); });
+      document.querySelectorAll('#rk circle.dot[data-k]').forEach(c => tw(c, 'opacity', S.dots[c.dataset.k]));
+      document.querySelectorAll('#rk .r[data-k], #rk .trr[data-k]').forEach(r => { const o = S.rows[r.dataset.k], n = r.style.opacity || '1';
+        if (o == null || o === n) return; r.style.transition = 'none'; r.style.opacity = o; rowJobs.push([r, n]); });
+    }
+    requestAnimationFrame(() => {
+      jobs.forEach(([el, attr, n]) => d3.select(el).transition(attr).duration(A_DUR).ease(d3.easeCubicOut).attr(attr, n));
+      rowJobs.forEach(([r, n]) => { r.style.transition = `opacity ${A_DUR}ms ease-out`; r.style.opacity = n; });
+    });
+  }
+
+  /* 3) เปลี่ยนโหมด / ติ๊กปี 66 → กล่องด้านขวา การ์ดสรุป legend ค่อยๆ ปรากฏ */
+  const _render = render;
+  render = function () {
+    const key = ST.mode + '|' + Y66(), changed = A_key !== null && key !== A_key, S = animOK() && A_key !== null ? snapshot() : null;
+    _render();
+    if (S) tweenFrom(S, !changed);
+    if (changed) { replay($('#rk'), 'a-in'); replay($('#legend'), 'a-in-f'); replay(document.querySelector('.kpis'), 'a-in'); }
+    A_key = key;
+  };
+})();
