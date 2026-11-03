@@ -4,7 +4,7 @@ const PPN = 'ประชาชน';
 const MAIN5 = ['ภูมิใจไทย','ประชาชน','เพื่อไทย','กล้าธรรม','ประชาธิปัตย์'];
 const OTHER = '#5E6573', NODATA = '#D3D3D3';
 const REGIONS = ['กรุงเทพมหานคร','ภาคกลาง','ภาคเหนือ','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
-const RO = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันออกเฉียงเหนือ','ภาคเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
+const RO = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันตก','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคใต้','ภาคเหนือ'];
 const MODES = [['win','สส.เขต'],['list','บัญชีรายชื่อ'],['both','สส.เขต + บัญชีรายชื่อ'],['tier','วางแผนพรรค'],['house','ข้อมูลบ้านใหญ่']];
 const GB = [['#a65923','ชนะ มากกว่า 15%'],['#e18f43','ชนะ 5–15%'],['#feb96b','ชนะ ไม่เกิน 5%'],['#b2d0ce','แพ้ ไม่เกิน 5%'],['#80b9b3','แพ้ 5–15%'],['#5a8a86','แพ้ 15–30%'],['#3e6763','แพ้ มากกว่า 30%']];
 const TT = {flip:['พลิกได้','#FFA500'],hold:['รักษาฐานเสียง','#D2691E'],cand:['ดันผู้สมัคร','#EEDD82'],safe:['ฐานเสียง','#8B4513'],far:['ปรับแผนใหม่','#BEBEBE'],none:['ไม่ส่งผู้สมัคร','#e3e5ea']};
@@ -147,7 +147,7 @@ function renderHeader() {
     + `<button class="chip ${ST.fil === 'split' ? 'on' : ''}" data-f="split">เขต-พรรค สวนทาง <span class="n">${sub.filter(d => d.split).length}</span></button>`;
   const dis = !(ST.mode === 'win' || ST.mode === 'list'), y = $('#y66');
   $('#cb66').disabled = dis; y.classList.toggle('dis', dis); y.classList.toggle('on', ST.y66 && !dis);
-  $('#y66s').textContent = dis ? 'ใช้ได้ในโหมด สส.เขต และ บัญชีรายชื่อ' : 'แสดงผลการเลือกตั้งปี 2566';
+  $('#y66s').textContent = dis ? 'ใช้ได้ในโหมด สส.เขต และ บัญชีรายชื่อ' : '';
   const bdis = !bigOK(), b = $('#bigf');
   $('#cbbig').disabled = bdis; b.classList.toggle('dis', bdis); b.classList.toggle('on', ST.big && !bdis);
   $('#bign').textContent = sub.filter(d => d.w[4]).length;
