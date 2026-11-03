@@ -1,10 +1,10 @@
-/* พรรคประชาชน 2569 · Dashboard ผลเลือกตั้ง สส. (D3.js) — ค่าที่ปรับได้อยู่ช่วงบนสุดของไฟล์ */
+/* พรรคประชาชน */
 'use strict';
 const PPN = 'ประชาชน';
 const MAIN5 = ['ภูมิใจไทย','ประชาชน','เพื่อไทย','กล้าธรรม','ประชาธิปัตย์'];
 const OTHER = '#5E6573', NODATA = '#D3D3D3';
 const REGIONS = ['กรุงเทพมหานคร','ภาคกลาง','ภาคเหนือ','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
-const RO = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันออกเฉียงเหนือ','ภาคเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
+const RO = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันตก','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคใต้','ภาคเหนือ'];
 const MODES = [['win','สส.เขต'],['list','บัญชีรายชื่อ'],['both','สส.เขต + บัญชีรายชื่อ'],['tier','วางแผนพรรค'],['house','ข้อมูลบ้านใหญ่']];
 const GB = [['#a65923','ชนะ มากกว่า 15%'],['#e18f43','ชนะ 5–15%'],['#feb96b','ชนะ ไม่เกิน 5%'],['#b2d0ce','แพ้ ไม่เกิน 5%'],['#80b9b3','แพ้ 5–15%'],['#5a8a86','แพ้ 15–30%'],['#3e6763','แพ้ มากกว่า 30%']];
 const TT = {flip:['พลิกได้','#FFA500'],hold:['รักษาฐานเสียง','#D2691E'],cand:['ดันผู้สมัคร','#EEDD82'],safe:['ฐานเสียง','#8B4513'],far:['ปรับแผนใหม่','#BEBEBE'],none:['ไม่ส่งผู้สมัคร','#e3e5ea']};
@@ -121,8 +121,7 @@ function init() {
     const r = e.target.closest('[data-k]'); if (r && byK[r.dataset.k]) select(byK[r.dataset.k]);
   });
   $('#rk').addEventListener('mouseover', e => { const r = e.target.closest('.r[data-k],.trr[data-k]'); setHover(r ? byK[r.dataset.k] : null); });
-  $('#rk').addEventListener('mouseleave', () => setHover(null));
-  $('#panel').addEventListener('click', e => {
+  $('#rk').addEventListener('mouseleave', () => setHover(null));  $('#panel').addEventListener('click', e => {
     if (e.target.closest('[data-close]')) { closePanel(); return; }
     const h = e.target.closest('[data-ps]');
     if (h) { const [t, k] = h.dataset.ps.split(':'), s = ST.ps[t]; if (s.k === k || (s.k !== 'no' && k !== 'no')) s.dir *= -1; else { s.k = k; s.dir = k === 'no' ? 1 : -1; } s.k = k; renderPanel(); return; }
@@ -141,13 +140,13 @@ function renderHeader() {
   $('#modes').innerHTML = MODES.map(([k, t]) => `<button data-m="${k}" class="${k === ST.mode ? 'on' : ''}">${t}</button>`).join('');
   const sub = D.filter(d => okR(d) && okBig(d)), ck = closeKind();
   const cl = ck === 'both' ? `<span class="n">${sub.filter(closeW).length} · ${sub.filter(closeL).length}</span>` : `<span class="n">${sub.filter(ck === 'list' ? closeL : closeW).length}</span>`;
-  const lab = {win:'สส.เขต', list:'บัญชีรายชื่อ', both:'เขต · บัญชีฯ'}[ck];
+  const lab = {win:'สส.เขต', list:'บัญชีรายชื่อ', both:'เขต - บัญชีฯ'}[ck];
   $('#filters').innerHTML = `<button class="chip ${!ST.fil ? 'on' : ''}" data-f="">ทั้งหมด <span class="n">${sub.length}</span></button>`
     + `<button class="chip ${ST.fil === 'close' ? 'on' : ''}" data-f="close">สูสี ±5% <span class="ck">${lab}</span> ${cl}</button>`
     + `<button class="chip ${ST.fil === 'split' ? 'on' : ''}" data-f="split">เขต-พรรค สวนทาง <span class="n">${sub.filter(d => d.split).length}</span></button>`;
   const dis = !(ST.mode === 'win' || ST.mode === 'list'), y = $('#y66');
   $('#cb66').disabled = dis; y.classList.toggle('dis', dis); y.classList.toggle('on', ST.y66 && !dis);
-  $('#y66s').textContent = dis ? 'ใช้ได้ในโหมด สส.เขต และ บัญชีรายชื่อ' : 'แสดงผลการเลือกตั้งปี 2566';
+  $('#y66s').textContent = dis ? '' : '';
   const bdis = !bigOK(), b = $('#bigf');
   $('#cbbig').disabled = bdis; b.classList.toggle('dis', bdis); b.classList.toggle('on', ST.big && !bdis);
   $('#bign').textContent = sub.filter(d => d.w[4]).length;
@@ -186,7 +185,7 @@ function renderLegend() {
   else if (GV()) items = GB.map((g, i) => ({k:String(i), sw:`<span class="sw" style="background:${g[0]}"></span>`, t:g[1], n:D.filter(d => gbin(gapV(d)) === i && okR(d) && okBig(d)).length}));
   else items = [...MAIN5, 'อื่นๆ'].map(p => ({k:p, sw:p === 'อื่นๆ' ? multi : `<span class="sw" style="background:${col(p)}"></span>`, t:p === 'อื่นๆ' ? 'พรรคอื่น' : p, n:D.filter(d => okR(d) && okBig(d) && (M === 'list' ? pk(d.pltop) : pk(d.w[1])) === p).length}));
   const all = {k:'', sw:'<span class="sw allsw"></span>', t:'ทั้งหมด', n:D.filter(d => okR(d) && okBig(d)).length};
-  const title = y ? (M === 'list' ? 'บัญชีรายชื่ออันดับ 1 · 69 เทียบ 66' : 'ผู้ชนะ สส.เขต · 69 เทียบ 66')
+  const title = y ? (M === 'list' ? 'บัญชีรายชื่ออันดับ 1 69 เทียบ 66' : 'ผู้ชนะ สส.เขต 69 เทียบ 66')
     : {tier:'ระดับโอกาส (เกณฑ์ปี 69)', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้บัญชีรายชื่อสูงสุดในเขต', both:'สส.เขต + บัญชีรายชื่อ', gap:'ระยะห่างของพรรคประชาชน · ' + (M === 'list' ? 'บัญชีรายชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
   if (M === 'house') { renderLegendHouse(); return; }
   const gk = (M === 'win' || M === 'list') && !y ? `<div class="gk"><button data-gk="party" class="${ST.cb === 'party' ? 'on' : ''}">สีตามพรรค</button><button data-gk="gap" class="${ST.cb === 'gap' ? 'on' : ''}">สีตามระยะห่าง</button></div>` : '';
@@ -433,16 +432,16 @@ function chartBlock(host, kind, OH, wkey) {
 /* ระดับโอกาส */
 function renderTier(rk) {
   const sub = D.filter(okR);
-  rk.innerHTML = `<div class="hd"><h3>ระดับโอกาสของพรรคประชาชน</h3><span class="desc">จุดละ 1 เขต · ลากกรอบเพื่อเลือกกลุ่มเขต · คลิกนอกกรอบเพื่อล้าง</span></div><div class="scw"><svg class="sc"></svg></div><div class="tl"></div>`;
+  rk.innerHTML = `<div class="hd"><h3 style="margin:0">ระดับโอกาสของพรรคประชาชน</h3><span class="desc">จุดละ 1 เขต · ลากกรอบเพื่อเลือกกลุ่มเขต · คลิกนอกกรอบเพื่อล้าง</span></div><div class="scw"><svg class="sc"></svg></div><div class="tl"></div>`;
   /* กราฟ:ตาราง = ครึ่ง:ครึ่ง (CSS grid) → วัดความสูงช่องกราฟจริงแล้ววาด */
-  const scw = rk.querySelector('.scw'), W = rk.clientWidth - 24, SH = Math.max(200, Math.min(540, scw.clientHeight)), m = {l:46, r:10, t:12, b:30};
+  const scw = rk.querySelector('.scw'), W = rk.clientWidth - 24, SH = Math.max(200, Math.min(540, scw.clientHeight)), m = {l:46, r:10, t:22, b:30};
   /* ช่องกราฟเปลี่ยนขนาด (ฟอนต์โหลดเสร็จ / หมุนจอ / ย่อหน้าต่าง) → วาดใหม่ให้พอดีช่อง ไม่ให้แกนล่างโดนตัด */
   const h0 = scw.clientHeight, ro = new ResizeObserver(() => { if (!scw.isConnected) { ro.disconnect(); return; } if (Math.abs(scw.clientHeight - h0) > 3) { ro.disconnect(); renderTier(rk); } }); ro.observe(scw);
   const xs = d3.scaleLinear([-72, 46], [m.l, W - m.r]), ys = d3.scaleLinear([-60, 45], [SH - m.b, m.t]);
   const Z = [[-72,-30,-60,45,'far'],[-30,-5,0,45,'cand'],[-30,-5,-60,0,'far'],[-5,0,-60,45,'flip'],[0,5,-60,45,'hold'],[5,46,-60,0,'hold'],[5,46,0,45,'safe']];
   let sv = Z.map(([a, b, c, e, t]) => `<rect x="${xs(a)}" y="${ys(e)}" width="${xs(b) - xs(a)}" height="${ys(c) - ys(e)}" fill="${TT[t][1]}" opacity=".13"/>`).join('');
-  [[-50,25,'far'],[-17.5,38,'cand'],[25,38,'safe'],[25,-50,'hold']].forEach(([a, b, k]) => sv += `<text x="${xs(a)}" y="${ys(b)}" text-anchor="middle" font-size="12" font-weight="700" fill="${d3.color(TT[k][1]).darker({far:1.4, hold:1.4, safe:.4, cand:2.2}[k])}">${TT[k][0]}</text>`);
-  sv += `<text x="${xs(-2.5)}" y="${m.t - 1}" text-anchor="middle" font-size="11" font-weight="700" fill="${d3.color(TT.flip[1]).darker(1.1)}">พลิกได้</text>`;
+  [[-50,38,'far'],[-17.5,38,'cand'],[25,38,'safe'],[25,-50,'hold']].forEach(([a, b, k]) => sv += `<text x="${xs(a)}" y="${ys(b)}" text-anchor="middle" font-size="12" font-weight="700" fill="${d3.color(TT[k][1]).darker({far:1.4, hold:1.4, safe:.4, cand:2.2}[k])}">${TT[k][0]}</text>`);
+  sv += `<text x="${xs(-2.5)}" y="${m.t - 3}" text-anchor="middle" font-size="11" font-weight="700" fill="${d3.color(TT.flip[1]).darker(1.1)}">พลิกได้</text>`;
   [-60,-40,-20,0,20,40].forEach(v => sv += `<text x="${m.l - 6}" y="${ys(v) + 3}" font-size="9.5" text-anchor="end" fill="#5d6370" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   [-30,-5,0,5].forEach(v => sv += `<line x1="${xs(v)}" x2="${xs(v)}" y1="${m.t}" y2="${SH - m.b}" stroke="#16181d" stroke-width="${v ? 1 : 1.6}" ${v ? 'stroke-dasharray="4 3"' : ''} opacity=".7"/><text x="${xs(v)}" y="${SH - m.b + 13}" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   sv += `<line x1="${m.l}" x2="${W - m.r}" y1="${ys(0)}" y2="${ys(0)}" stroke="#16181d" stroke-width="1.6" opacity=".7"/>`;
