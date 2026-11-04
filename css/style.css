@@ -102,10 +102,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .tc .vv small{display:block;color:var(--muted);font-size:10.5px}
 .tc.pp{background:var(--as)}
 .tip .f{padding:6px 11px;border-top:1px solid var(--line);color:var(--muted);font-size:11px}
-.house{display:inline-block;width:13px;height:13px;vertical-align:-2px;margin-left:3px}
+.house{display:inline-block;width:13px;height:13px;vertical-align:-2px;margin-bottom:3px}
 .hz{position:relative;display:inline-block}
-.hzt{display:none;position:absolute;left:50%;bottom:120%;transform:translateX(-50%);background:#16181d;color:#fff;font-size:11px;padding:2px 7px;border-radius:5px;white-space:nowrap;font-weight:400;z-index:9}
-.hz:hover .hzt{display:block}
+/* .hzt{display:none;position:absolute;left:50%;bottom:120%;transform:translateX(-50%);background:#16181d;color:#fff;font-size:11px;padding:2px 7px;border-radius:5px;white-space:nowrap;font-weight:400;z-index:9}
+.hz:hover .hzt{display:block} */
 
 /* ---- slide-in panel ---- */
 .panel{position:absolute;top:0;right:0;bottom:0;width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:-14px 0 40px rgba(0,0,0,.14);display:flex;flex-direction:column;z-index:4;
@@ -676,14 +676,14 @@ header.bar .seg {
     display: inline;
   }
 
-  .ptab .nm .hz .hzt {
+  /* .ptab .nm .hz .hzt {
     display: none !important;
   }
 
   .ptab .nm .hz:hover .hzt,
   .ptab .nm span:hover .hz .hzt {
     display: inline-block !important;
-  }
+  } */
 
   .panel {
     z-index: 9999;
@@ -751,6 +751,15 @@ header.bar .seg {
   }
 }
 
+@media only screen 
+  and (min-device-width: 834px) 
+  and (max-device-width: 1366px) 
+  and (-webkit-min-device-pixel-ratio: 2) {
+    .panel {
+      z-index: 9999;
+    }
+}
+
 /* name */
 td.nm, .pn b {
     display: table-cell;
@@ -760,6 +769,42 @@ td.nm, .pn b {
     text-overflow: initial;
     vertical-align: middle;
     overflow-x: auto;
+}
+
+/* Container ภายใน td */
+.hz {
+  position: relative;
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.hz .house {
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+/* Tooltip แบบ fixed ไม่โดน overflow ตัดขอบ */
+.hz .hzt {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  
+  /* ปรับตำแหน่งลอยไว้ด้านบนของไอคอน */
+  transform: translate(-50%, -100%);
+  margin-top: -20px; /* ระยะห่างจากไอคอน */
+  
+  background: #16181d;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* แสดง Tooltip เมื่อ Hover */
+.hz .house:hover + .hzt {
+  display: block;
 }
 
 
