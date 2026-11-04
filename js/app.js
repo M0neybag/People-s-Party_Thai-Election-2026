@@ -202,7 +202,7 @@ function setupMap() {
   svg = d3.select('#map'); gRoot = svg.append('g'); gTiles = gRoot.append('g');
   const gLab = gRoot.append('g').attr('pointer-events', 'none'); gHi = gRoot.append('g').attr('pointer-events', 'none');
   Object.values(L.prov).forEach(o => gLab.append('text').attr('x', o.lx).attr('y', o.ly).attr('text-anchor', 'middle').attr('dominant-baseline', 'central').attr('font-size', .62).attr('font-weight', 700).attr('fill', '#16181d').text(o.name.replace('กรุงเทพมหานคร', 'กรุงเทพฯ')));
-  zoom = d3.zoom().scaleExtent([2, 200]).constrain(constrainMap).on('zoom', e => { gRoot.attr('transform', e.transform); hideTip(); });
+  zoom = d3.zoom().scaleExtent([2, 200]).constrain(constrainMap).clickDistance(6).tapDistance(10).on('zoom', e => { gRoot.attr('transform', e.transform); hideTip(); });
   svg.call(zoom).on('dblclick.zoom', null);
 }
 function viewTransform() {
