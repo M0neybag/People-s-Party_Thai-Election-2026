@@ -102,7 +102,7 @@ function init() {
   $('#region').innerHTML = '<option value="">ทุกภาค</option>' + REGIONS.map(r => `<option>${r}</option>`).join('');
   $('#modes').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === ST.mode) return; ST.mode = b.dataset.m; ST.lg = null; ST.h = {party:null, res:'all'}; ST.brush = null; ST.win = {}; render(); });
   $('#region').addEventListener('change', e => { ST.reg = e.target.value; ST.win = {}; ST.brush = null; render(); fitView(true); });
-  $('#filters').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (!b) return; ST.fil = b.dataset.f || null; ST.win = {}; render(); });
+  $('#filters').addEventListener('click', e => { const r = e.target.closest('[data-res]'); if (r) { ST.h.res = r.dataset.res; render(); return; } const b = e.target.closest('[data-f]'); if (!b) return; ST.fil = b.dataset.f || null; ST.win = {}; render(); });
   $('#cb66').addEventListener('change', e => { ST.y66 = e.target.checked; render(); });
   $('#cbbig').addEventListener('change', e => { ST.big = e.target.checked; render(); });
   $('#legend').addEventListener('click', e => {
@@ -152,9 +152,10 @@ function renderHeader() {
   $('#bign').textContent = sub.filter(d => d.w[4]).length;
   b.title = bdis ? 'ใช้ไม่ได้ในโหมดบัญชีรายชื่อ (ไม่มีตัวผู้สมัคร)' : 'แสดงเฉพาะเขตที่ผู้ชนะ สส.เขต เป็นบ้านใหญ่';
   const H = ST.mode === 'house';
-  $('#filters').style.visibility = H ? 'hidden' : ''; b.style.display = H ? 'none' : ''; $('#rescon').hidden = !H;
+  $('#filters').style.visibility = ''; b.style.display = H ? 'none' : ''; $('#rescon').hidden = true;
   if (H) { const S = D.filter(d => isB(d) && okR(d) && hP(d)), nw = S.filter(hWon).length;
-    $('#rescon').querySelector('.rseg').innerHTML = [['all','ทั้งหมด',S.length],['win','ชนะ',nw],['lose','แพ้',S.length - nw]].map(([k, t, n]) => `<button data-res="${k}" class="${ST.h.res === k ? 'on' : ''}">${t} <span>${n}</span></button>`).join(''); }
+    $('#filters').innerHTML = `<span class="flab"><svg viewBox="0 0 16 16" width="13" height="13"><path d="M8 1.5 1 7.5h2v7h4v-4h2v4h4v-7h2z" fill="#16181d"/></svg>ผลของบ้านใหญ่</span>`
+      + [['all','ทั้งหมด',S.length],['win','ชนะ',nw],['lose','แพ้',S.length - nw]].map(([k, t, n]) => `<button class="chip ${ST.h.res === k ? 'on' : ''}" data-res="${k}">${t} <span class="n">${n}</span></button>`).join(''); }
   const n = D.filter(d => H ? hLit(d) : lit(d)).length;
   $('#empty').hidden = n > 0 || ST.mode === 'both';
 }
