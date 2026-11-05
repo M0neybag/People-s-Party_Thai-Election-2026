@@ -305,7 +305,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 
 /* 31 ต.ค. */
 .r[data-k]{grid-template-columns:128px 1fr 52px 122px}
-.op b{font-weight:700;margin-left:2px}.op .ol{color:#2e7d4f}.op .ow{color:#b33f3c}
+.op b{font-weight:700;margin-left:2px}.op .ol{color:#000; font-weight: 700;}.op .ow{color:#000; font-weight: 700;}
 .ov .vwin{fill:rgba(169,79,5,.28);stroke:#a94f05;stroke-width:1}
 .ov .hvbar{fill:none;stroke:#16181d;stroke-width:1.5}
 .kpi .v small{font-family:"IBM Plex Sans Thai",Loma,sans-serif!important}
@@ -652,10 +652,10 @@ header.bar .seg {
   }
 
   .pc .pn span, .cc .pn span{
-    display: block;
-    max-width: 35px;
+    display: inline;
+    max-width: fit-content;
     max-height: 12px;
-    text-align: center;
+    text-align: start;
     font-size: 10px;
     margin-left: 0px;
   }
@@ -672,18 +672,9 @@ header.bar .seg {
     text-align: left;
   }
 
-  .ptab .nm span {
+  .ptab .nm span:hover {
     display: inline;
   }
-
-  /* .ptab .nm .hz .hzt {
-    display: none !important;
-  }
-
-  .ptab .nm .hz:hover .hzt,
-  .ptab .nm span:hover .hz .hzt {
-    display: inline-block !important;
-  } */
 
   .panel {
     z-index: 9999;
@@ -749,6 +740,30 @@ header.bar .seg {
     white-space: unset !important;
     overflow: unset !important;
   }
+
+  td.nm, .pn b {
+    display: table-cell;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: initial;
+    vertical-align: middle;
+    overflow-x: auto;
+  }
+
+  .pc.r {
+    gap: 5px;
+  }
+
+  div.pv, .pn b {
+    font-size: 12px !important;
+  }
+
+  .pc .pn span, .cc .pn span:hover {
+    display: inline-block;
+  }
+  
+
 }
 
 @media only screen 
@@ -760,8 +775,14 @@ header.bar .seg {
     }
 }
 
+
+.tw {
+    color: #000;
+    font-weight: 700;
+}
+
 /* name */
-td.nm, .pn b {
+/* td.nm, .pn b {
     display: table-cell;
     max-width: 150px;
     white-space: nowrap;
@@ -769,6 +790,24 @@ td.nm, .pn b {
     text-overflow: initial;
     vertical-align: middle;
     overflow-x: auto;
+} */
+ td.nm, .pn b {
+    display: table-cell;
+    white-space: nowrap;
+    overflow-x: auto;
+    vertical-align: middle;
+
+    /* Restores browser default scrollbar behavior and styling */
+    scrollbar-width: auto;
+    -ms-overflow-style: auto;
+}
+
+/* Reset any custom webkit scrollbar styling applied elsewhere */
+td.nm::-webkit-scrollbar, 
+.pn b::-webkit-scrollbar {
+    display: block;
+    width: auto;
+    height: auto;
 }
 
 /* Container ภายใน td */
@@ -788,13 +827,11 @@ td.nm, .pn b {
   display: none;
   position: fixed;
   z-index: 9999;
-  
-  /* ปรับตำแหน่งลอยไว้ด้านบนของไอคอน */
   transform: translate(-50%, -100%);
-  margin-top: -20px; /* ระยะห่างจากไอคอน */
-  
-  background: #16181d;
-  color: #fff;
+  margin-top: -20px; 
+  background: #000;
+  font-weight: 700!important;
+  color: #fff!important;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -806,7 +843,6 @@ td.nm, .pn b {
 .hz .house:hover + .hzt {
   display: block;
 }
-
 
 /* Custom Scrollbar */
 /* ==========================================
