@@ -244,7 +244,7 @@ function drawTiles() {
       g.append('polygon').attr('points', shrink([TR, BR, BL], cx, cy, f)).attr('fill', col(d.pltop)).attr('opacity', ol);
       const a = [cx + (TR[0] - cx) * f, cy + (TR[1] - cy) * f], b = [cx + (BL[0] - cx) * f, cy + (BL[1] - cy) * f];
       g.append('line').attr('x1', a[0]).attr('y1', a[1]).attr('x2', b[0]).attr('y2', b[1]).attr('stroke', '#fff').attr('stroke-width', .07);
-      num(t.x + L.S + .12, t.y + .3, '#fff', 'start', Math.max(ow, .35));
+      num(t.x + .5, t.y + .29, '#fff', 'middle', Math.max(ow, .35)).attr('font-size', String(t.d).length > 1 ? .32 : .4);   
     } else {
       const op = lit(d) ? 1 : DIM;
       g.attr('opacity', op);
@@ -375,7 +375,7 @@ function chartBlock(host, kind, OH, wkey) {
   const on = d => okF(d, half) && okL(d) && okBig(d);
   let s = '';
   ticks.forEach(v => s += `<line x1="${x0}" x2="${ow}" y1="${yy(v)}" y2="${yy(v)}" stroke="#e1e4ea" stroke-dasharray="2 3"/><text x="24" y="${yy(v) + 3}" font-size="9" text-anchor="end" fill="#5d6370" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
-  ORD.forEach((d, i) => { const v = val(d) ?? 0; s += `<rect x="${x0 + i * bw + bw * .075}" width="${Math.max(.7, bw * .85)}" y="${yy(Math.max(0, v))}" height="${Math.max(.8, Math.abs(yy(v) - yy(0)))}" fill="${gcolv(val(d))}" opacity="${on(d) ? 1 : .2}"/>`; });
+  ORD.forEach((d, i) => { const v = val(d) ?? 0; s += `<rect data-ob="${key(d)}" x="${x0 + i * bw + bw * .075}" width="${Math.max(.7, bw * .85)}" y="${yy(Math.max(0, v))}" height="${Math.max(.8, Math.abs(yy(v) - yy(0)))}" fill="${gcolv(val(d))}" opacity="${on(d) ? 1 : .2}"/>`; });
   if (ST.sort === 'reg') { let s0 = 0; RO.forEach(r => { const n = ORD.filter(d => d.reg === r).length; if (!n) return; const xa = x0 + s0 * bw, xb = x0 + (s0 + n) * bw;
     s += `<text x="${(xa + xb) / 2}" y="${OH - 2}" font-size="9.5" text-anchor="middle" fill="#5d6370">${short(r)}</text>`; if (s0) s += `<line x1="${xa}" x2="${xa}" y1="4" y2="${OH - 12}" stroke="#9aa0ab" stroke-dasharray="3 3"/>`; s0 += n; }); }
   const nw = ORD.filter(d => val(d) != null && val(d) > 0).length;
@@ -423,6 +423,22 @@ function chartBlock(host, kind, OH, wkey) {
     const atEnd = listEl.scrollTop + listEl.clientHeight >= listEl.scrollHeight - 1, atTop = listEl.scrollTop <= 0, st = 3;
     if (e.deltaY > 0 && atEnd && i1 < N) { e.preventDefault(); const m = Math.min(st, N - i1); i0 += m; i1 += m; bg.call(br.move, [X(i0), X(i1)]); list(); listEl.scrollTop = listEl.scrollHeight; syncVw(); }
     else if (e.deltaY < 0 && atTop && i0 > 0) { e.preventDefault(); const m = Math.min(st, i0); i0 -= m; i1 -= m; bg.call(br.move, [X(i0), X(i1)]); list(); listEl.scrollTop = 0; syncVw(); }
+  };
+    /* มือถือ / ไอแพด: ปัดนิ้วจนสุดรายการ → กรอบข้างบนเลื่อนต่อ (ปัดประมาณ 1 แถว = เลื่อน 1 เขต) · กรอบสุดกราฟแล้ว → ปล่อยให้หน้าเว็บเลื่อนตามปกติ
+     ฟังที่แถวที่นิ้วแตะ (ไม่ใช่ที่ listEl) เพราะ list() วาดแถวใหม่ระหว่างปัด แถวเดิมหลุดออกจากหน้า แต่นิ้วยังส่งสัญญาณไปที่แถวเดิม */
+  listEl.ontouchstart = e => {
+    const tg = e.target; let tY = e.touches[0].clientY, tAcc = 0;
+    const mv = ev => {
+      const y = ev.touches[0].clientY, dy = tY - y; tY = y;   /* dy > 0 = นิ้วปัดขึ้น = ดูเขตถัดไป */
+      const atEnd = listEl.scrollTop + listEl.clientHeight >= listEl.scrollHeight - 1, atTop = listEl.scrollTop <= 0;
+      if (!((dy > 0 && atEnd && i1 < N) || (dy < 0 && atTop && i0 > 0))) { tAcc = 0; return; }
+      if (ev.cancelable) ev.preventDefault(); tAcc += dy;
+      const m = Math.trunc(tAcc / ROWH); if (!m) return; tAcc -= m * ROWH;
+      const k = m > 0 ? Math.min(m, N - i1) : -Math.min(-m, i0); i0 += k; i1 += k;
+      bg.call(br.move, [X(i0), X(i1)]); list(); listEl.scrollTop = k > 0 ? listEl.scrollHeight : 0; syncVw();
+    };
+    const up = () => { tg.removeEventListener('touchmove', mv); tg.removeEventListener('touchend', up); tg.removeEventListener('touchcancel', up); };
+    tg.addEventListener('touchmove', mv, {passive:false}); tg.addEventListener('touchend', up); tg.addEventListener('touchcancel', up);
   };
   /* ชี้แถว → แท่งในกราฟข้างบนเด่นขึ้น */
   /* ชี้เขต (จากแผนที่ หรือแถวรายการของกราฟไหนก็ได้) → ลูกศรขึ้นใต้แท่งของเขตนั้น; กรอบส้มไม่ขยับ */
@@ -586,9 +602,9 @@ function renderHouse(rk) {
   const B = D.filter(isB), SEL = B.filter(d => okR(d) && hP(d)), nW = SEL.filter(hWon).length, nA = SEL.length, pw = nA ? nW / nA * 100 : 0;
   const chips = [ST.reg ? `<button class="fc" data-hx="reg">ภาค: ${RS(ST.reg)} ✕</button>` : '', ST.h.party ? `<button class="fc" data-hx="party">พรรค: ${ST.h.party} ✕</button>` : ''].join('');
   let h = `<div class="hhd"><h3>ข้อมูลบ้านใหญ่</h3><div class="fcs">${chips}</div></div>
-  <div class="sum"><div class="st3">เขตที่มีตระกูลบ้านใหญ่${ST.h.party ? 'ของ' + ST.h.party : ''}ลงสมัคร สส.แบ่งเขต${ST.reg ? ' · ' + RS(ST.reg) : ''} รวม <b>${nA}</b> เขต</div>
+  <div class="sum"><div class="st3">เขตที่มีตระกูลบ้านใหญ่${ST.h.party ? 'ของ' + ST.h.party : ''}ลงสมัคร สส.เขต${ST.reg ? '  ' + RS(ST.reg) : ''} รวม <b>${nA}</b> เขต</div>
   <div class="sbar">${nA ? `${nW ? `<div style="width:${pw}%;background:${HC}">${pw >= 8 ? `<b style="color:${HT}">${pw.toFixed(1)}%</b>` : ''}</div>` : ''}${nA - nW ? `<div style="width:${100 - pw}%;background:${HL}">${100 - pw >= 8 ? `<b style="color:#5d6370">${(100 - pw).toFixed(1)}%</b>` : ''}</div>` : ''}` : `<div style="width:100%;background:#f1f2f5;justify-content:center"><b style="color:#9aa0ab">ไม่มีบ้านใหญ่ของพรรคนี้ลงในภาคนี้</b></div>`}</div>
-  <div class="slab"><span><i style="background:${HC}"></i>ได้รับเลือกตั้ง <b>${nW}</b> เขต</span><span>ไม่ได้รับเลือกตั้ง <b>${nA - nW}</b> เขต <i style="background:${HL}"></i></span></div></div>`;
+  <div class="slab"><span><i style="background:${HC}"></i>ชนะ <b>${nW}</b> เขต</span><span>แพ้ <b>${nA - nW}</b> เขต <i style="background:${HL}"></i></span></div></div>`;
   const R = RN.map(r => { const v = B.filter(d => d.reg === r && hP(d)); return {r, w:v.filter(hWon).length, l:v.filter(d => !hWon(d)).length}; });
   /* รายชื่อพรรคคงที่ (ลำดับตามจำนวนทั้งประเทศ) → ขนาดกล่องไม่เปลี่ยนเมื่อกรอง */
   const ORDER = d3.rollups(B.flatMap(d => bfP(d)), v => v.length, p => p).sort((a, b) => b[1] - a[1]).map(x => x[0]);
@@ -598,7 +614,7 @@ function renderHouse(rk) {
   const mk1 = CW => { const mx = d3.max(R, x => x.w + x.l) || 1, bwd = (CW - 10) / R.length, y = v => v / mx * (CH - 52), fs = bwd < 34 ? 9.5 : 10.5;
     let c1 = `<svg width="${CW}" height="${CH}" class="hsv">`;
     R.forEach((x, i) => { const X = 5 + i * bwd + bwd * .14, w = bwd * .72, sel = ST.reg === x.r, dim = ST.reg && !sel, base = CH - 28;
-      c1 += `<g data-hr="${x.r}" opacity="${dim ? .35 : 1}" style="cursor:pointer"><rect x="${X - 4}" y="0" width="${w + 8}" height="${CH}" fill="transparent"/><rect x="${X}" y="${base - y(x.w)}" width="${w}" height="${y(x.w)}" fill="${HC}"/><rect x="${X}" y="${base - y(x.w) - y(x.l)}" width="${w}" height="${y(x.l)}" fill="${HL}"/>`;
+      c1 += `<g data-hr="${x.r}" style="cursor:pointer"><rect x="${X - 4}" y="0" width="${w + 8}" height="${CH}" fill="transparent"/><rect x="${X}" y="${base - y(x.w)}" width="${w}" height="${y(x.w)}" fill="${HC}"/><rect x="${X}" y="${base - y(x.w) - y(x.l)}" width="${w}" height="${y(x.l)}" fill="${HL}"/>`;
       if (x.w > 2) c1 += `<text x="${X + w / 2}" y="${base - y(x.w) / 2 + 4}" text-anchor="middle" font-size="10.5" fill="${HT}" font-weight="700">${x.w}</text>`;
       if (x.l > 2) c1 += `<text x="${X + w / 2}" y="${base - y(x.w) - y(x.l) / 2 + 4}" text-anchor="middle" font-size="10.5" fill="#3d424c" font-weight="700">${x.l}</text>`;
       c1 += `<text x="${X + w / 2}" y="${base - y(x.w) - y(x.l) - 4}" text-anchor="middle" font-size="11" font-weight="700">${x.w + x.l}</text>`;
@@ -616,7 +632,7 @@ function renderHouse(rk) {
       c2 += `<text x="${LX + tw + 6}" y="${Y + 14.5}" font-size="10.5" class="num"><tspan fill="${sel ? d3.color(HC).darker(.6) : HW}" font-weight="700">${v.w}</tspan><tspan fill="#5d6370"> / ${t}</tspan></text>`;
       if (sel) c2 += `<rect x="1" y="${Y}" width="${PW - 2}" height="${rh - 1}" fill="none" stroke="#e8740f" stroke-width="2" rx="4"/>`; c2 += '</g>'; });
     return c2 + '</svg>'; };
-  h += `<div class="two2c"><div class="cc2"><div class="ct">แยกตามภาค</div><div class="hsvw" id="hc1"></div></div><div class="cc2"><div class="ct">แยกตามพรรคของบ้านใหญ่</div><div class="hsvw" id="hc2"></div><div class="lgd"><span><i style="background:${HW}"></i>ได้รับเลือกตั้ง</span><span><i style="background:${HL}"></i>ไม่ได้รับเลือกตั้ง</span></div></div></div>`;
+  h += `<div class="two2c"><div class="cc2"><div class="ct">แยกตามภาค</div><div class="hsvw" id="hc1"></div></div><div class="cc2"><div class="ct">แยกตามพรรคของบ้านใหญ่</div><div class="hsvw" id="hc2"></div><div class="lgd"><span><i style="background:${HW}"></i>ชนะ</span><span><i style="background:${HL}"></i>แพ้</span></div></div></div>`;
   const cnt = {}; B.filter(okR).forEach(d => bfP(d).forEach(p => { if (p !== PPN) cnt[p] = (cnt[p] || 0) + 1; }));
   /* รายชื่อพรรคคงที่ทั้งประเทศ → ความสูงกล่องไม่หดเมื่อกรองภาค จึงไม่เด้งขึ้นบน */
   const cntAll = {}; B.forEach(d => bfP(d).forEach(p => { if (p !== PPN) cntAll[p] = (cntAll[p] || 0) + 1; }));
@@ -624,7 +640,7 @@ function renderHouse(rk) {
   const rows = X.map(x => { const SS = B.filter(d => okR(d) && d.has && bfP(d).includes(x)), N = SS.length, pp = SS.filter(d => beatBF(d, x)).length, p = N ? pp / N * 100 : 0, few = N < 15;
     if (!N) return `<div class="vr"><span class="vn">${x}</span><span class="vp" style="color:#c3c7ce">–</span><span class="vb" style="background:#f1f2f5"></span><span class="vc">0/0</span></div>`;
     return `<div class="vr ${ST.h.party === x ? 'sel' : ''}"><span class="vn">${x}</span><span class="vp" style="color:${pp ? '#a94f05' : '#9aa0ab'}">${p.toFixed(0)}%</span><span class="vb"><i style="width:${p}%;background:${col(PPN)}"></i><i style="width:${100 - p}%;background:${ST.h.party === x ? col(x) : HL}"></i></span><span class="vc">${pp}/${N}</span></div>`; }).join('');
-  h += `<div class="vs"><div class="ct">% ที่พรรคประชนมีคะแนนนำเมื่อเจอบ้านใหญ่ของแต่ละพรรค</div><div class="vl">${rows || '<span class="muted">ไม่มีข้อมูล</span>'}</div></div>`;
+  h += `<div class="vs"><div class="ct">% ที่พรรคประชาชนมีคะแนนนำเมื่อเจอบ้านใหญ่ของแต่ละพรรค</div><div class="vl">${rows || '<span class="muted">ไม่มีข้อมูล</span>'}</div></div>`;
   rk.innerHTML = h;
   const w1 = document.getElementById('hc1'), w2 = document.getElementById('hc2');
   w1.innerHTML = mk1(Math.max(160, w1.clientWidth)); w2.innerHTML = mk2(Math.max(180, w2.clientWidth));
@@ -647,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
    - ช่องแผนที่ต้องเป็น <g class="tile"> ที่มี <polygon> ข้างใน
    (แก้สี ขนาด ชื่อปุ่ม ได้ตามปกติ) */
 (function () {
-  const A_DUR = 400;                    /* ความยาว animation สี/ความจาง (มิลลิวินาที) */
+  const A_DUR = 800;                    /* ความยาว animation สี/ความจาง (มิลลิวินาที) */
   const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
   const animOK = () => !RM.matches;
   const replay = (el, cls) => { if (!el || !animOK()) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
@@ -716,5 +732,156 @@ document.addEventListener('DOMContentLoaded', () => {
     if (S) tweenFrom(S, !changed);
     if (changed) { replay($('#rk'), 'a-in'); replay($('#legend'), 'a-in-f'); replay(document.querySelector('.kpis'), 'a-in'); }
     A_key = key;
+  };
+})();
+
+/* ===== animation กราฟวิ่ง (บ้านใหญ่ · รายละเอียดเขต · overview · scatter) =====*/
+(function () {
+  const G_DUR = 650;                       /* ความยาว animation แท่งกราฟ (มิลลิวินาที) */
+  const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
+  const EZ = 'cubic-bezier(.2,.7,.3,1)', GEO = ['x', 'y', 'width', 'height', 'cx', 'cy', 'r'];
+  const attrs = el => { const a = {}; GEO.forEach(n => { if (el.hasAttribute(n)) a[n] = el.getAttribute(n); }); a.fill = el.getAttribute('fill'); a.op = el.getAttribute('opacity'); a.t = el.children.length ? null : el.textContent; return a; };
+  const isInt = v => v != null && /^\d+$/.test(v);
+  /* svg: ตั้งค่าเดิม แล้ว transition ไปค่าใหม่ */
+  function svgTween(el, from, delay, dur) {
+    const now = attrs(el), t = d3.select(el), tr = t.transition('g').delay(delay || 0).duration(dur || G_DUR).ease(d3.easeCubicOut);
+    Object.keys(from).forEach(n => { if (n === 't' || n === 'op' || from[n] == null || now[n] == null || from[n] === now[n]) return; t.attr(n, from[n]); tr.attr(n, now[n]); });
+    if (isInt(from.t) && isInt(now.t) && from.t !== now.t) { const f = d3.interpolateRound(+from.t, +now.t); el.textContent = from.t; tr.tween('text', () => k => el.textContent = f(k)); }
+  }
+  const fadeIn = (el, delay, dur) => { const o = el.getAttribute('opacity') || 1; el.setAttribute('opacity', 0); d3.select(el).transition('g').delay(delay).duration(dur || G_DUR * .5).attr('opacity', o); };
+  /* html: ตั้ง style เดิม → บังคับวาด → transition ไป style ใหม่ */
+  function cssTween(el, from, delay, dur) {
+    const now = {}; Object.keys(from).forEach(k => now[k] = el.style[k]);
+    el.style.transition = 'none'; Object.entries(from).forEach(([k, v]) => el.style[k] = v); void el.offsetWidth;
+    el.style.transition = Object.keys(from).map(k => `${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())} ${dur || G_DUR}ms ${EZ} ${delay || 0}ms`).join(',');
+    Object.entries(now).forEach(([k, v]) => el.style[k] = v);
+  }
+
+  /* ---------- 1) กราฟหน้าบ้านใหญ่ ---------- */
+  /* ตั้งชื่อให้ทุกชิ้นในกราฟตาม "หน้าที่" (แท่งชนะ/แท่งแพ้/ตัวเลข/ชื่อภาค) → ตัวเลขที่หายไปไม่ทำให้ชิ้นอื่นสลับที่กัน */
+  function role(el, H) {
+    if (el.tagName === 'rect') {
+      if (el.getAttribute('stroke')) return 'sel';
+      const f = el.getAttribute('fill'); if (f === 'transparent') return 'hit';
+      if (el.parentNode.tagName === 'clipPath') return 'clip';
+      return el.parentNode.hasAttribute('clip-path') ? (f === HL ? 'all' : 'won') : (f === HL ? 'lose' : 'won');
+    }
+    const y = +el.getAttribute('y'), fs = el.getAttribute('font-size');
+    if (y === H - 15 || y === H - 3) return 'name' + y;
+    if (el.getAttribute('text-anchor') === 'end') return fs === '10' ? 'in' : 'lab';
+    if (el.querySelector('tspan')) return 'cnt';
+    return fs === '11' ? 'tot' : el.getAttribute('fill') === '#3d424c' ? 'nl' : 'nw';
+  }
+  function houseItems() {
+    const out = {};
+    document.querySelectorAll('#hc1 svg, #hc2 svg').forEach(sv => { const H = +sv.getAttribute('height'), c = sv.parentNode.id;
+      sv.querySelectorAll('g[data-hr], g[data-hp]').forEach(g => { const k = g.dataset.hr || g.dataset.hp;
+        g.querySelectorAll('rect, text').forEach(el => { const r = role(el, H); out[r === 'sel' ? c + ':sel' : c + ':' + k + ':' + r] = el; }); }); });
+    return out;
+  }
+  function houseHTML() {
+    const o = {};
+    document.querySelectorAll('#rk .sbar > div').forEach(d => o['s' + (d.style.background.includes('217') || d.style.background === HL ? 'L' : 'W')] = d);
+    document.querySelectorAll('#rk .vr').forEach(r => { const n = r.querySelector('.vn'); r.querySelectorAll('.vb i').forEach((d, i) => o['v' + n.textContent + i] = d); });
+    return o;
+  }
+  function houseSnap() {
+    if (!document.querySelector('#hc1')) return null;
+    const g = {}, h = {}; Object.entries(houseItems()).forEach(([k, el]) => g[k] = attrs(el));
+    Object.entries(houseHTML()).forEach(([k, d]) => h[k] = {width:d.style.width, background:d.style.background});
+    return {g, h};
+  }
+  function housePlay(S) {
+    Object.entries(houseItems()).forEach(([k, el]) => {
+      const o = S && S.g[k], now = attrs(el);
+      if (o) return svgTween(el, o);
+      if (el.tagName === 'text') return fadeIn(el, S ? G_DUR * .3 : G_DUR * .45);
+      if (k.endsWith(':sel')) return fadeIn(el, 0);
+      if (k.endsWith(':hit') || !now.width) return;
+      if (k.startsWith('hc1')) svgTween(el, {y:+now.y + +now.height, height:0}); else svgTween(el, {width:0});
+    });
+    Object.entries(houseHTML()).forEach(([k, d]) => { const o = S && S.h[k]; cssTween(d, o ? o : {width:k === 'sL' ? d.style.width : '0%'}); });
+  }
+
+  /* ---------- 2) overview (แท่งเล็กด้านบน) + รายการ detail + scatter ระดับโอกาส ---------- */
+  const C_DUR = 900;                       /* ความยาว animation กราฟ overview / detail / scatter / กล่องรายละเอียดเขต */
+  const MOVE_DUR = 1600;                   /* ความยาวตอนแท่ง overview เลื่อนไปตำแหน่งใหม่ (กด แยกภาค / ตามระยะห่าง) */
+  const hid = el => el.closest('.half') ? el.closest('.half').id : '';
+  function chartSnap() {
+    const ob = {}, rows = {}, dots = {};
+    document.querySelectorAll('#rk rect[data-ob]').forEach(r => ob[hid(r) + r.dataset.ob] = attrs(r));
+    document.querySelectorAll('#rk .r[data-k] .tr i').forEach(i => { const r = i.closest('.r'); rows[hid(r) + r.dataset.k] = {left:i.style.left, width:i.style.width}; });
+    document.querySelectorAll('#rk circle.dot[data-k]').forEach(c => dots[c.dataset.k] = attrs(c));
+    return {ob, rows, dots};
+  }
+  let C_morph = false;   /* true = แท่ง overview กำลังย้ายที่ → ไม่ต้องให้ทั้งกล่องจางเข้า */
+  function chartPlay(S) {
+    C_morph = false;
+    document.querySelectorAll('#rk svg.ov').forEach(sv => {
+      const z = [...sv.querySelectorAll('line')].find(l => l.getAttribute('opacity') === '.55'), y0 = z ? +z.getAttribute('y1') : 0, rs = sv.querySelectorAll('rect[data-ob]'), n = rs.length || 1;
+      let moved = 0;
+      const same = rs.length === Object.keys(S.ob).filter(k => k.startsWith(hid(sv))).length && [...rs].every(r => S.ob[hid(r) + r.dataset.ob]);
+      const swap = same && [...rs].some(r => { const o = S.ob[hid(r) + r.dataset.ob]; return o.x !== r.getAttribute('x') && (o.y !== r.getAttribute('y') || o.height !== r.getAttribute('height')); });
+      rs.forEach((r, i) => { const o = same ? S.ob[hid(r) + r.dataset.ob] : null, now = attrs(r), t = d3.select(r);
+        if (!o) return svgTween(r, {y:y0, height:0}, i / n * 400, C_DUR);          
+        const dx = o.x !== now.x, dh = o.y !== now.y || o.height !== now.height;
+        if (!dx && !swap) return svgTween(r, {y:o.y, height:o.height}, 0, C_DUR);
+        moved++; t.attr('x', o.x).attr('y', o.y).attr('height', o.height);
+        if (swap) 
+          t.attr('fill', o.fill).transition('g').duration(C_DUR * .35).ease(d3.easeCubicIn).attr('y', y0).attr('height', 0)
+           .transition().duration(0).attr('x', now.x).attr('fill', now.fill)
+           .transition().delay(i / n * 400).duration(C_DUR * .8).ease(d3.easeCubicOut).attr('y', now.y).attr('height', now.height);
+        else    
+          t.transition('g').delay(i / n * 700).duration(MOVE_DUR).ease(d3.easeCubicInOut).attr('x', now.x);
+      });
+      if (moved) { C_morph = true;   
+        sv.querySelectorAll(':scope > text:not([font-size="9"]), :scope > line[stroke-dasharray="3 3"]').forEach(el => fadeIn(el, MOVE_DUR + 500, C_DUR * .5)); }
+    });
+    document.querySelectorAll('#rk .r[data-k] .tr i').forEach((i, j) => { const r = i.closest('.r'), o = S.rows[hid(r) + r.dataset.k];
+      cssTween(i, o || {left:'50%', width:'0%'}, o ? 0 : 150 + (j % 30) * 25, C_DUR); });
+    const cs = document.querySelectorAll('#rk circle.dot[data-k]');
+    if (cs.length) { const xs = [...cs].map(c => +c.getAttribute('cx')), lo = d3.min(xs), sp = (d3.max(xs) - lo) || 1;
+      cs.forEach(c => { const o = S.dots[c.dataset.k]; if (o) svgTween(c, {cx:o.cx, cy:o.cy}, 0, C_DUR); else svgTween(c, {r:0}, (+c.getAttribute('cx') - lo) / sp * 500, C_DUR); }); }
+  }
+  const _renderRight = renderRight;
+  renderRight = function () {
+    const C = RM.matches || ST.mode === 'house' ? null : chartSnap();
+    _renderRight();
+    if (C) chartPlay(C);
+  };
+
+  const _render = render;
+  render = function () {
+    const H = RM.matches ? null : houseSnap();
+    _render();
+    if (RM.matches) return;
+    if (ST.mode === 'house' && !Y66() && document.querySelector('#hc1')) housePlay(H);
+    if (C_morph) { $('#rk').classList.remove('a-in'); C_morph = false; }
+  };
+
+  /* ---------- 3) กล่องรายละเอียดเขต ---------- */
+  function panelSnap() {
+    const p = $('#panel'), b = {}, bl = {}, c = {};
+    if (!p.classList.contains('open')) return {k:null, b, bl, c};
+    p.querySelectorAll('.bfly .ell').forEach(n => { const l = n.nextElementSibling, r = l.nextElementSibling;
+      b[n.textContent] = [l.querySelector('i').style.width, l.querySelector('.lv').style.right, r.querySelector('i').style.width, r.querySelector('.rv').style.left]; });
+    p.querySelectorAll('.ballot [data-bk]').forEach(d => bl[d.dataset.bk] = d.style.flex);
+    p.querySelectorAll('.ptab .brow i').forEach(i => c[i.closest('table').className + i.closest('tr').previousElementSibling.querySelector('.nm b').textContent] = 1);
+    return {k:p.dataset.k, b, bl, c};
+  }
+  const _renderPanel = renderPanel;
+  renderPanel = function () {
+    const S = RM.matches ? null : panelSnap();
+    _renderPanel();
+    if (!S) return; const p = $('#panel'), same = S.k === p.dataset.k;
+    /* แท่งคะแนนผู้สมัคร: งอกจากซ้ายทีละแถว (ถ้ากดเรียง/ดูเพิ่มเติมในเขตเดิม → วิ่งเฉพาะแถวที่เพิ่งโผล่) */
+    let n = 0; p.querySelectorAll('.ptab .brow i').forEach(i => { const k = i.closest('table').className + i.closest('tr').previousElementSibling.querySelector('.nm b').textContent;
+      if (same && S.c[k]) return; cssTween(i, {width:'0%'}, (n++ % 12) * 60, C_DUR); });
+    if (same) return;
+    /* สส.เขต เทียบ บัญชีรายชื่อ: เปลี่ยนเขต → แท่งของพรรคเดิมวิ่งจากค่าเขตก่อน · เปิดใหม่ → งอกจากเส้นกลาง */
+    p.querySelectorAll('.bfly .ell').forEach((nm, j) => { const l = nm.nextElementSibling, r = l.nextElementSibling, o = S.b[nm.textContent] || ['0%', '2%', '0%', '2%'], d = S.k ? 0 : 150 + j * 60;
+      cssTween(l.querySelector('i'), {width:o[0]}, d, C_DUR); cssTween(l.querySelector('.lv'), {right:o[1]}, d, C_DUR); cssTween(r.querySelector('i'), {width:o[2]}, d, C_DUR); cssTween(r.querySelector('.rv'), {left:o[3]}, d, C_DUR); });
+    /* บัตรดี/บัตรเสีย: สัดส่วนค่อยๆ ปรับ */
+    p.querySelectorAll('.ballot [data-bk]').forEach(d => cssTween(d, {flex:S.bl[d.dataset.bk] || '1 1 0%'}, S.k ? 0 : 250, C_DUR));
   };
 })();
