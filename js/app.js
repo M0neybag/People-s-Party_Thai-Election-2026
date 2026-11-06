@@ -188,7 +188,8 @@ function renderLegend() {
   const all = {k:'', sw:'<span class="sw allsw"></span>', t:'ทั้งหมด', n:D.filter(d => okR(d) && okBig(d)).length};
   const title = y ? (M === 'list' ? 'บัญชีรายชื่ออันดับ 1 69 เทียบ 66' : 'ผู้ชนะ สส.เขต 69 เทียบ 66')
     : {tier:'ระดับโอกาส (เกณฑ์ปี 69)', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้บัญชีรายชื่อสูงสุดในเขต', both:'สส.เขต + บัญชีรายชื่อ', gap:'ระยะห่างของพรรคประชาชน · ' + (M === 'list' ? 'บัญชีรายชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
-  if (M === 'house') { renderLegendHouse(); return; }
+  $('#legend').style.display = M === 'house' ? 'none' : '';   /* โหมดบ้านใหญ่ไม่แสดง legend (ซ้ำกับกราฟแยกตามพรรคด้านขวา) */
+  if (M === 'house') return;
   const gk = (M === 'win' || M === 'list') && !y ? `<div class="gk"><button data-gk="party" class="${ST.cb === 'party' ? 'on' : ''}">สีตามพรรค</button><button data-gk="gap" class="${ST.cb === 'gap' ? 'on' : ''}">สีตามระยะห่าง</button></div>` : '';
   const glyph = M === 'both' ? tileGlyph('both') : y ? tileGlyph('66') + '<div class="lnote">มุมเทา = ไม่มีเขตนี้ในปี 66</div>' : '';
   $('#legend').innerHTML = `<div class="t">${title}</div>${gk}${glyph}` + [all, ...items].map(it => {
@@ -578,13 +579,16 @@ function renderLegendHouse() {
     + `<button class="lg ${!sp ? 'on' : ''}" data-hp=""><span class="sw allsw"></span><span>ทั้งหมด</span><span class="n">${D.filter(isB).length}</span></button>`
     + cnt.map(([p, n]) => `<button class="lg ${sp === p ? 'on' : ''} ${sp && sp !== p ? 'dim' : ''}" data-hp="${p}"><span class="sw" style="background:${col(p)}"></span><span style="${p === PPN ? 'font-weight:700' : ''}">${p}</span><span class="n">${n}</span></button>`).join('');
 }
+/* พรรคประชาชนได้คะแนนมากกว่าผู้สมัครบ้านใหญ่ของพรรค x ในเขต d หรือไม่ (เทียบตัวต่อตัว ไม่สนว่าใครชนะเขต) */
+const beatBF = (d, x) => { const pp = d.cand.find(c => c[1] === PPN); if (!pp) return false; return d.cand.filter(c => c[1] === x && c[4]).every(c => pp[2] > c[2]); };
 function renderHouse(rk) {
+  const HC = ST.h.party ? col(ST.h.party) : HW, HT = ink(HC);   /* เลือกพรรค → แถบ/แท่งใช้สีพรรคนั้น */
   const B = D.filter(isB), SEL = B.filter(d => okR(d) && hP(d)), nW = SEL.filter(hWon).length, nA = SEL.length, pw = nA ? nW / nA * 100 : 0;
   const chips = [ST.reg ? `<button class="fc" data-hx="reg">ภาค: ${RS(ST.reg)} ✕</button>` : '', ST.h.party ? `<button class="fc" data-hx="party">พรรค: ${ST.h.party} ✕</button>` : ''].join('');
   let h = `<div class="hhd"><h3>ข้อมูลบ้านใหญ่</h3><div class="fcs">${chips}</div></div>
   <div class="sum"><div class="st3">เขตที่มีตระกูลบ้านใหญ่${ST.h.party ? 'ของ' + ST.h.party : ''}ลงสมัคร สส.แบ่งเขต${ST.reg ? ' · ' + RS(ST.reg) : ''} รวม <b>${nA}</b> เขต</div>
-  <div class="sbar">${nA ? `<div style="width:${pw}%;background:${HW}">${pw >= 8 ? `<b>${pw.toFixed(1)}%</b>` : ''}</div><div style="width:${100 - pw}%;background:${HL}">${100 - pw >= 8 ? `<b style="color:#5d6370">${(100 - pw).toFixed(1)}%</b>` : ''}</div>` : `<div style="width:100%;background:#f1f2f5;justify-content:center"><b style="color:#9aa0ab">ไม่มีบ้านใหญ่ของพรรคนี้ลงในภาคนี้</b></div>`}</div>
-  <div class="slab"><span><i style="background:${HW}"></i>ได้รับเลือกตั้ง <b>${nW}</b> เขต</span><span>ไม่ได้รับเลือกตั้ง <b>${nA - nW}</b> เขต <i style="background:${HL}"></i></span></div></div>`;
+  <div class="sbar">${nA ? `${nW ? `<div style="width:${pw}%;background:${HC}">${pw >= 8 ? `<b style="color:${HT}">${pw.toFixed(1)}%</b>` : ''}</div>` : ''}${nA - nW ? `<div style="width:${100 - pw}%;background:${HL}">${100 - pw >= 8 ? `<b style="color:#5d6370">${(100 - pw).toFixed(1)}%</b>` : ''}</div>` : ''}` : `<div style="width:100%;background:#f1f2f5;justify-content:center"><b style="color:#9aa0ab">ไม่มีบ้านใหญ่ของพรรคนี้ลงในภาคนี้</b></div>`}</div>
+  <div class="slab"><span><i style="background:${HC}"></i>ได้รับเลือกตั้ง <b>${nW}</b> เขต</span><span>ไม่ได้รับเลือกตั้ง <b>${nA - nW}</b> เขต <i style="background:${HL}"></i></span></div></div>`;
   const R = RN.map(r => { const v = B.filter(d => d.reg === r && hP(d)); return {r, w:v.filter(hWon).length, l:v.filter(d => !hWon(d)).length}; });
   /* รายชื่อพรรคคงที่ (ลำดับตามจำนวนทั้งประเทศ) → ขนาดกล่องไม่เปลี่ยนเมื่อกรอง */
   const ORDER = d3.rollups(B.flatMap(d => bfP(d)), v => v.length, p => p).sort((a, b) => b[1] - a[1]).map(x => x[0]);
@@ -594,8 +598,8 @@ function renderHouse(rk) {
   const mk1 = CW => { const mx = d3.max(R, x => x.w + x.l) || 1, bwd = (CW - 10) / R.length, y = v => v / mx * (CH - 52), fs = bwd < 34 ? 9.5 : 10.5;
     let c1 = `<svg width="${CW}" height="${CH}" class="hsv">`;
     R.forEach((x, i) => { const X = 5 + i * bwd + bwd * .14, w = bwd * .72, sel = ST.reg === x.r, dim = ST.reg && !sel, base = CH - 28;
-      c1 += `<g data-hr="${x.r}" opacity="${dim ? .35 : 1}" style="cursor:pointer"><rect x="${X - 4}" y="0" width="${w + 8}" height="${CH}" fill="transparent"/><rect x="${X}" y="${base - y(x.w)}" width="${w}" height="${y(x.w)}" fill="${HW}"/><rect x="${X}" y="${base - y(x.w) - y(x.l)}" width="${w}" height="${y(x.l)}" fill="${HL}"/>`;
-      if (x.w > 2) c1 += `<text x="${X + w / 2}" y="${base - y(x.w) / 2 + 4}" text-anchor="middle" font-size="10.5" fill="#fff" font-weight="700">${x.w}</text>`;
+      c1 += `<g data-hr="${x.r}" opacity="${dim ? .35 : 1}" style="cursor:pointer"><rect x="${X - 4}" y="0" width="${w + 8}" height="${CH}" fill="transparent"/><rect x="${X}" y="${base - y(x.w)}" width="${w}" height="${y(x.w)}" fill="${HC}"/><rect x="${X}" y="${base - y(x.w) - y(x.l)}" width="${w}" height="${y(x.l)}" fill="${HL}"/>`;
+      if (x.w > 2) c1 += `<text x="${X + w / 2}" y="${base - y(x.w) / 2 + 4}" text-anchor="middle" font-size="10.5" fill="${HT}" font-weight="700">${x.w}</text>`;
       if (x.l > 2) c1 += `<text x="${X + w / 2}" y="${base - y(x.w) - y(x.l) / 2 + 4}" text-anchor="middle" font-size="10.5" fill="#3d424c" font-weight="700">${x.l}</text>`;
       c1 += `<text x="${X + w / 2}" y="${base - y(x.w) - y(x.l) - 4}" text-anchor="middle" font-size="11" font-weight="700">${x.w + x.l}</text>`;
       if (sel) c1 += `<rect x="${X - 3}" y="${base - y(x.w) - y(x.l) - 18}" width="${w + 6}" height="${y(x.w) + y(x.l) + 18}" fill="none" stroke="#e8740f" stroke-width="2" rx="3"/>`;
@@ -607,9 +611,9 @@ function renderHouse(rk) {
     let c2 = `<svg width="${PW}" height="${PH}" class="hsv">`;
     PP.forEach(([p, v], i) => { const Y = 3 + i * rh, sel = ST.h.party === p, t = v.w + v.l, tw = Math.max(px(t), 4), gw = v.w ? Math.max(px(v.w), 3) : 0, cid = 'hpc' + i;
       c2 += `<g data-hp="${p}" style="cursor:pointer"><rect x="0" y="${Y}" width="${PW}" height="${rh - 1}" fill="transparent"/><text x="${LX - 6}" y="${Y + 14}" text-anchor="end" font-size="${LX < 100 ? 10.5 : 11.5}" font-weight="${sel || p === PPN ? 700 : 400}" fill="${sel ? '#a94f05' : '#16181d'}">${p}</text>`;
-      c2 += `<clipPath id="${cid}"><rect x="${LX}" y="${Y + 4}" width="${tw}" height="${bh}" rx="3"/></clipPath><g clip-path="url(#${cid})"><rect x="${LX}" y="${Y + 4}" width="${tw}" height="${bh}" fill="${HL}"/><rect x="${LX}" y="${Y + 4}" width="${gw}" height="${bh}" fill="${HW}"/></g>`;
-      if (gw >= 26) c2 += `<text x="${LX + gw - 5}" y="${Y + 14.5}" text-anchor="end" font-size="10" fill="#fff" font-weight="700">${v.w}</text>`;
-      c2 += `<text x="${LX + tw + 6}" y="${Y + 14.5}" font-size="10.5" class="num"><tspan fill="${HW}" font-weight="700">${v.w}</tspan><tspan fill="#5d6370"> / ${t}</tspan></text>`;
+      c2 += `<clipPath id="${cid}"><rect x="${LX}" y="${Y + 4}" width="${tw}" height="${bh}" rx="3"/></clipPath><g clip-path="url(#${cid})"><rect x="${LX}" y="${Y + 4}" width="${tw}" height="${bh}" fill="${HL}"/><rect x="${LX}" y="${Y + 4}" width="${gw}" height="${bh}" fill="${sel ? HC : HW}"/></g>`;
+      if (gw >= 26) c2 += `<text x="${LX + gw - 5}" y="${Y + 14.5}" text-anchor="end" font-size="10" fill="${sel ? HT : '#fff'}" font-weight="700">${v.w}</text>`;
+      c2 += `<text x="${LX + tw + 6}" y="${Y + 14.5}" font-size="10.5" class="num"><tspan fill="${sel ? d3.color(HC).darker(.6) : HW}" font-weight="700">${v.w}</tspan><tspan fill="#5d6370"> / ${t}</tspan></text>`;
       if (sel) c2 += `<rect x="1" y="${Y}" width="${PW - 2}" height="${rh - 1}" fill="none" stroke="#e8740f" stroke-width="2" rx="4"/>`; c2 += '</g>'; });
     return c2 + '</svg>'; };
   h += `<div class="two2c"><div class="cc2"><div class="ct">แยกตามภาค</div><div class="hsvw" id="hc1"></div></div><div class="cc2"><div class="ct">แยกตามพรรคของบ้านใหญ่</div><div class="hsvw" id="hc2"></div><div class="lgd"><span><i style="background:${HW}"></i>ได้รับเลือกตั้ง</span><span><i style="background:${HL}"></i>ไม่ได้รับเลือกตั้ง</span></div></div></div>`;
@@ -617,12 +621,11 @@ function renderHouse(rk) {
   /* รายชื่อพรรคคงที่ทั้งประเทศ → ความสูงกล่องไม่หดเมื่อกรองภาค จึงไม่เด้งขึ้นบน */
   const cntAll = {}; B.forEach(d => bfP(d).forEach(p => { if (p !== PPN) cntAll[p] = (cntAll[p] || 0) + 1; }));
   const X = Object.keys(cntAll).sort((a, b) => (cnt[b] || 0) - (cnt[a] || 0) || cntAll[b] - cntAll[a]);
-  const rows = X.map(x => { const SS = B.filter(d => okR(d) && bfP(d).includes(x)), N = SS.length, pp = SS.filter(d => d.w[1] === PPN).length, p = N ? pp / N * 100 : 0, few = N < 15;
+  const rows = X.map(x => { const SS = B.filter(d => okR(d) && d.has && bfP(d).includes(x)), N = SS.length, pp = SS.filter(d => beatBF(d, x)).length, p = N ? pp / N * 100 : 0, few = N < 15;
     if (!N) return `<div class="vr"><span class="vn">${x}</span><span class="vp" style="color:#c3c7ce">–</span><span class="vb" style="background:#f1f2f5"></span><span class="vc">0/0</span></div>`;
-    return `<div class="vr ${ST.h.party === x ? 'sel' : ''}"><span class="vn">${x}</span><span class="vp" style="color:${pp ? '#a94f05' : '#9aa0ab'}">${p.toFixed(0)}%</span><span class="vb"><i style="width:${p}%;background:${col(PPN)}"></i><i style="width:${100 - p}%;background:${col(x)}"></i></span><span class="vc">${pp}/${N}</span></div>`; }).join('');
-  h += `<div class="vs"><div class="ct">เมื่อเจอบ้านใหญ่ของแต่ละพรรค พรรคประชาชนชนะเขตได้กี่ %</div><div class="vl">${rows || '<span class="muted">ไม่มีข้อมูล</span>'}</div></div>`;
+    return `<div class="vr ${ST.h.party === x ? 'sel' : ''}"><span class="vn">${x}</span><span class="vp" style="color:${pp ? '#a94f05' : '#9aa0ab'}">${p.toFixed(0)}%</span><span class="vb"><i style="width:${p}%;background:${col(PPN)}"></i><i style="width:${100 - p}%;background:${ST.h.party === x ? col(x) : HL}"></i></span><span class="vc">${pp}/${N}</span></div>`; }).join('');
+  h += `<div class="vs"><div class="ct">% ที่พรรคประชนมีคะแนนนำเมื่อเจอบ้านใหญ่ของแต่ละพรรค</div><div class="vl">${rows || '<span class="muted">ไม่มีข้อมูล</span>'}</div></div>`;
   rk.innerHTML = h;
-  /* วัดความกว้างจริงของกล่องหลังวาง แล้วค่อยวาดกราฟ → ไม่ล้นกรอบทุกขนาดจอ */
   const w1 = document.getElementById('hc1'), w2 = document.getElementById('hc2');
   w1.innerHTML = mk1(Math.max(160, w1.clientWidth)); w2.innerHTML = mk2(Math.max(180, w2.clientWidth));
 }
