@@ -107,7 +107,7 @@ function init() {
   D = DATA.districts; L = DATA.layout; N6 = DATA.national; LOGOS = DATA.logos; LOGOS66 = DATA.logos66; PARTY = DATA.parties;
   prep();
   $('#region').innerHTML = '<option value="">ทุกภาค</option>' + REGIONS.map(r => `<option>${r}</option>`).join('');
-  $('#modes').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === ST.mode) return; ST.mode = b.dataset.m; ST.lg = null; ST.h = {party:null, res:'all'}; ST.brush = null; ST.win = {}; render(); });
+  $('#modes').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === ST.mode) return; closePanel(); ST.mode = b.dataset.m;   /* เปลี่ยนโหมด → ปิดกล่องรายละเอียดเขต */ ST.lg = null; ST.h = {party:null, res:'all'}; ST.brush = null; ST.win = {}; render(); });
   $('#region').addEventListener('change', e => { ST.reg = e.target.value; ST.win = {}; ST.brush = null; render(); fitView(true); });
   $('#filters').addEventListener('click', e => { const r = e.target.closest('[data-res]'); if (r) { ST.h.res = r.dataset.res; render(); return; } const b = e.target.closest('[data-f]'); if (!b) return; ST.fil = b.dataset.f || null; ST.win = {}; render(); });
   $('#cb66').addEventListener('change', e => { ST.y66 = e.target.checked; render(); });
@@ -197,7 +197,7 @@ function renderLegend() {
       : D.filter(d => base(d) && (M === 'list' ? pk(d.pltop) : pk(d.w[1])) === p).length}));
   const all = {k:'', sw:'<span class="sw allsw"></span>', t:'ทั้งหมด', n:D.filter(d => base(d)).length};
   const title = y ? (M === 'list' ? 'บัญชีรายชื่ออันดับ 1 69 เทียบ 66' : 'ผู้ชนะ สส.เขต 69 เทียบ 66')
-    : {tier:'ระดับโอกาส (เกณฑ์ปี 69)', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้บัญชีรายชื่อสูงสุดในเขต', both:'สส.เขต + บัญชีรายชื่อ', gap:'ระยะห่างของพรรคประชาชน: ' + (M === 'list' ? 'บัญชีรายชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
+    : {tier:'ระดับโอกาส', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้บัญชีรายชื่อสูงสุดในเขต', both:'สส.เขต + บัญชีรายชื่อ', gap:'ระยะห่างของพรรคประชาชน: ' + (M === 'list' ? 'บัญชีรายชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
   $('#legend').style.display = M === 'house' ? 'none' : '';   /* โหมดบ้านใหญ่ไม่แสดง legend (ซ้ำกับกราฟแยกตามพรรคด้านขวา) */
   if (M === 'house') return;
   const gk = (M === 'win' || M === 'list') && !y ? `<div class="gk"><button data-gk="party" class="${ST.cb === 'party' ? 'on' : ''}">สีตามพรรค</button><button data-gk="gap" class="${ST.cb === 'gap' ? 'on' : ''}">สีตามระยะห่าง</button></div>` : '';
@@ -367,7 +367,7 @@ function renderRight() {
   if (ST.mode === 'house') { const keep = rk.classList.contains('hrk'), st = rk.scrollTop, wy = window.scrollY; rk.className = 'card hrk'; renderHouse(rk); if (keep) { rk.scrollTop = st; window.scrollTo(0, wy); } return; }  /* คลิกกรองแล้วไม่เด้งกลับขึ้นบน */
   const kind = ST.mode === 'list' ? 'list' : 'win';
   rk.className = 'card rk';
-  rk.innerHTML = `<div class="hd"><h3>${kind === 'list' ? 'บัญชีรายชื่อ: พรรคประชาชนห่างพรรคที่ชนะ / อันดับ 2' : 'พรรคประชาชนห่างผู้ชนะ / อันดับ 2 เท่าไร'}</h3>${sortBtns()}</div>${chartShell()}`;
+  rk.innerHTML = `<div class="hd"><h3>${kind === 'list' ? 'พรรคประชาชนชนะห่างอันดับ 2 / แพ้ห่างอันดับ 1 เท่าไร' : 'พรรคประชาชนห่างผู้ชนะ / อันดับ 2 เท่าไร'}</h3>${sortBtns()}</div>${chartShell()}`;
   chartBlock(rk, kind, 112, kind);
 }
 
@@ -395,7 +395,7 @@ function chartBlock(host, kind, OH, wkey) {
   if (ST.sort !== 'reg') s += `<text x="30" y="9" font-size="10" fill="#5d6370">← ชนะ ${nw} เขต</text><text x="${ow - 2}" y="${OH - 2}" font-size="10" text-anchor="end" fill="#5d6370">แพ้ ${N - nw} เขต →</text>`;
   if (false && N && nw && nw < N) s += `<line x1="${x0 + nw * bw}" x2="${x0 + nw * bw}" y1="4" y2="${OH - 12}" stroke="#16181d" stroke-dasharray="3 2" opacity=".5"/>`;
   ovw.innerHTML = `<svg class="ov" width="${ow}" height="${OH}">${s}</svg>`;
-  host.querySelector('.lab').textContent = 'คู่แข่งที่ใกล้ที่สุด';
+  host.querySelector('.lab').textContent = 'พรรคที่ชนะ/แพ้';
   const opp = d => kind === 'list' ? (d.lrank === 1 ? d.pl[1][0] : d.pl[0][0]) : (d.ppr === 1 ? d.cand[1][1] : d.cand[0][1]);
   if (!N) { host.querySelector('.cnt').textContent = 'ไม่มีเขตที่ตรงเงื่อนไข'; listEl.innerHTML = ''; return; }
   let [i0, i1] = ST.win[wkey] || (() => {
@@ -462,9 +462,9 @@ function chartBlock(host, kind, OH, wkey) {
 /* ระดับโอกาส */
 function renderTier(rk) {
   const sub = D.filter(okR);
-  rk.innerHTML = `<div class="hd"><h3 style="margin:0">ระดับโอกาสของพรรคประชาชน</h3><span class="desc">จุดละ 1 เขต ลากกรอบเพื่อเลือกกลุ่มเขต คลิกนอกกรอบเพื่อล้าง</span>${tierBtns()}</div><div class="scw"><svg class="sc"></svg></div><div class="tl"></div>`;
+  rk.innerHTML = `<div class="hd"><h3 style="margin:0">ระดับโอกาสของพรรคประชาชน<span class="ast" tabindex="0" data-tip="วิเคราะห์ผลการเลือกตั้งปี 2569 รายเขต เพื่อจัดกลุ่มพื้นที่และกำหนดแนวทางลงพื้นที่หาเสียงครั้งหน้า">*</span></h3><span class="desc">จุดละ 1 เขต ลากกรอบเพื่อเลือกกลุ่มเขต คลิกนอกกรอบเพื่อล้าง</span>${tierBtns()}</div><div class="scw"><svg class="sc"></svg></div><div class="tl"></div>`;
   /* กราฟ:ตาราง = ครึ่ง:ครึ่ง (CSS grid) → วัดความสูงช่องกราฟจริงแล้ววาด */
-  const scw = rk.querySelector('.scw'), W = rk.clientWidth - 24, SH = Math.max(200, Math.min(540, scw.clientHeight)), m = {l:46, r:10, t:22, b:30};
+  const scw = rk.querySelector('.scw'), W = rk.clientWidth - 24, SH = Math.max(200, Math.min(760, scw.clientHeight)), m = {l:46, r:10, t:14, b:30};   /* กราฟสูงได้ถึง 760px ใช้พื้นที่ว่างให้เต็ม (ขอบบนเหลือแค่พอใส่คำว่า พลิกได้) */
   /* ช่องกราฟเปลี่ยนขนาด (ฟอนต์โหลดเสร็จ / หมุนจอ / ย่อหน้าต่าง) → วาดใหม่ให้พอดีช่อง ไม่ให้แกนล่างโดนตัด */
   const h0 = scw.clientHeight, ro = new ResizeObserver(() => { if (!scw.isConnected) { ro.disconnect(); return; } if (Math.abs(scw.clientHeight - h0) > 3) { ro.disconnect(); renderTier(rk); } }); ro.observe(scw);
   const xs = d3.scaleLinear([-72, 46], [m.l, W - m.r]), ys = d3.scaleLinear([-60, 45], [SH - m.b, m.t]);
@@ -514,7 +514,6 @@ function render66(rk) {
   rk.innerHTML = `<div class="hd"><h3>${L_ ? 'ที่นั่ง สส.บัญชีรายชื่อ' : 'ที่นั่ง สส.เขต'}${ST.reg ? ' ' + (L_ ? 'ทั้งประเทศ' : ST.reg) : ''} 10 อันดับแรก</h3></div>
     <div class="cmph"><span>ปี 66</span><span>»</span><span>ปี 69</span></div><div class="cmpw"><div class="cmp">${rows}</div></div>`;
 }
-
 
 /* ---------- panel ---------- */
 function select(d) { ST.sel = key(d); ST.pexp = {c:false, l:false}; ST.ps = {c:{k:'v',dir:-1}, l:{k:'v',dir:-1}}; hideTip(); renderPanel(); refreshSel(); }
@@ -830,10 +829,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(R + ' circle.dot[data-k]').forEach(c => dots[c.dataset.k] = attrs(c));
     return {ob, rows, dots};
   }
-  let C_morph = false;   /* true = แท่ง overview กำลังย้ายที่ → ไม่ต้องให้ทั้งกล่องจางเข้า */
+  let C_morph = false;   
   function chartPlay(S, R = '#rk', f = 1) {   /* f = ตัวคูณความช้า (popup ใช้ 1.5) */
     const C_DUR = C_DUR0 * f, MOVE_DUR = MOVE_DUR0 * f, SWAP_DUR = SWAP_DUR0.map(v => v * f);
-    C_morph = false;
+    C_morph = false; let anySwap = false;   
     document.querySelectorAll(R + ' svg.ov').forEach(sv => {
       const z = [...sv.querySelectorAll('line')].find(l => l.getAttribute('opacity') === '.55'), y0 = z ? +z.getAttribute('y1') : 0, rs = sv.querySelectorAll('rect[data-ob]'), n = rs.length || 1;
       let moved = 0;
@@ -841,6 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const same = rs.length === Object.keys(S.ob).filter(k => k.startsWith(hid(sv))).length && [...rs].every(r => S.ob[hid(r) + r.dataset.ob]);
       /* มีแท่งที่ทั้งย้ายที่และเปลี่ยนความสูง = สลับ สส.เขต ↔ บัญชีรายชื่อ → ทุกแท่งต้องยุบแล้วงอกใหม่พร้อมกัน (รวมแท่งที่บังเอิญอยู่ลำดับเดิม) */
       const swap = same && [...rs].some(r => { const o = S.ob[hid(r) + r.dataset.ob]; return o.x !== r.getAttribute('x') && (o.y !== r.getAttribute('y') || o.height !== r.getAttribute('height')); });
+      if (swap) anySwap = true;
       rs.forEach((r, i) => { const o = same ? S.ob[hid(r) + r.dataset.ob] : null, now = attrs(r), t = d3.select(r);
         if (!o) return svgTween(r, {y:y0, height:0}, i / n * 400, C_DUR);          /* แท่งใหม่ → งอกจากเส้น 0% ไล่ซ้ายไปขวา */
         const dx = o.x !== now.x, dh = o.y !== now.y || o.height !== now.height;
@@ -858,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (moved) { C_morph = true;   /* ชื่อภาค / เส้นแบ่ง / ข้อความ ชนะ-แพ้ ค่อยๆ โผล่หลังแท่งเข้าที่ */
         sv.querySelectorAll(':scope > text:not([font-size="9"]), :scope > line[stroke-dasharray="3 3"]').forEach(el => fadeIn(el, swap ? SWAP_DUR[0] + SWAP_DUR[1] + SWAP_DUR[2] : MOVE_DUR + 500, C_DUR * .5)); }
     });
-    document.querySelectorAll(R + ' .r[data-k] .tr i').forEach((i, j) => { const r = i.closest('.r'), o = S.rows[hid(r) + r.dataset.k];
+        document.querySelectorAll(R + ' .r[data-k] .tr i').forEach((i, j) => { const r = i.closest('.r'), o = anySwap ? null : S.rows[hid(r) + r.dataset.k];   /* สลับโหมด → ทุกแถววิ่งจาก 0 */
       cssTween(i, o || {left:'50%', width:'0%'}, o ? 0 : 150 + (j % 30) * 25, C_DUR); });
     const cs = document.querySelectorAll(R + ' circle.dot[data-k]');
     if (cs.length) { const xs = [...cs].map(c => +c.getAttribute('cx')), lo = d3.min(xs), sp = (d3.max(xs) - lo) || 1;
@@ -901,14 +901,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   /* กล่องรายละเอียดเขต โหมดเทียบปี 66: การ์ดปี 69 เริ่มที่แถวของพรรคนั้นในปี 66 แล้ววิ่งไปแถวปี 69, คะแนนและ % นับจากค่าปี 66 */
   function panel66Play(p) {
-    const L = {}, EZ2 = 'cubic-bezier(.2,.7,.3,1)';
-    p.querySelectorAll('.cmp .cc.l[data-p]').forEach((c, i) => { L[c.dataset.p] = c; c.animate([{transform:'translateX(-12px)', opacity:0}, {transform:'none', opacity:1}], {duration:420, delay:i * 45, easing:EZ2, fill:'backwards'}); });
+    const L = {}, R66 = {}, EZ2 = 'cubic-bezier(.2,.7,.3,1)';
+    p.querySelectorAll('.cmp .cc.l[data-p]').forEach((c, i) => { L[c.dataset.p] = c; R66[c.dataset.p] = i; c.animate([{transform:'translateX(-12px)', opacity:0}, {transform:'none', opacity:1}], {duration:420, delay:Math.min(i, 14) * 45, easing:EZ2, fill:'backwards'}); });
     const D0 = 120;   /* ปี 66 กับปี 69 เล่นไปพร้อมกัน (ปี 69 เริ่มจากซ่อนสนิท ไม่มีเงาจางรอ) */
-    p.querySelectorAll('.cmp .cc.r[data-p]').forEach((c, i) => { const o = L[c.dataset.p], dl = D0 + i * 45, pv = c.querySelector('.pv'), sm = pv.querySelector('small');
-      if (o) { const dy = o.getBoundingClientRect().top - c.getBoundingClientRect().top, opv = o.querySelector('.pv');
-        c.animate([{transform:`translate(-14px,${dy}px)`, opacity:0}, {transform:`translate(-14px,${dy}px)`, opacity:1, offset:.18}, {transform:'none', opacity:1}], {duration:C_DUR * 1.15, delay:dl, easing:EZ2, fill:'backwards'});
-        numRun(pv.firstChild, txt(opv.firstChild), dl, C_DUR); if (sm) numRun(sm, opv.querySelector('small') && opv.querySelector('small').textContent, dl, C_DUR); }
-      else { c.animate([{transform:'translateX(14px)', opacity:0}, {transform:'none', opacity:1}], {duration:500, delay:dl + 250, easing:EZ2, fill:'backwards'}); numRun(pv.firstChild, 0, dl + 250, C_DUR); if (sm) numRun(sm, 0, dl + 250, C_DUR); }
+    p.querySelectorAll('.cmp .cc.r[data-p]').forEach((c, i) => { const o = L[c.dataset.p], dl = D0 + Math.min(i, 14) * 45, pv = c.querySelector('.pv'), sm = pv.querySelector('small'), j = R66[c.dataset.p];
+      /* วิ่งเฉพาะพรรคที่อยู่ 10 อันดับแรกทั้งสองปี และอันดับเปลี่ยนไม่เกิน 5 แถว, นอกนั้นค่อยๆ จางเข้าที่ตำแหน่งใหม่ */
+      const run = o && i < 10 && j < 10 && Math.abs(i - j) <= 5, opv = o && o.querySelector('.pv');
+      if (run) { const dy = o.getBoundingClientRect().top - c.getBoundingClientRect().top;
+        c.animate([{transform:`translate(-14px,${dy}px)`, opacity:0}, {transform:`translate(-14px,${dy}px)`, opacity:1, offset:.18}, {transform:'none', opacity:1}], {duration:C_DUR * 1.15, delay:dl, easing:EZ2, fill:'backwards'}); }
+      else c.animate([{transform:'translateX(14px)', opacity:0}, {transform:'none', opacity:1}], {duration:500, delay:dl + 250, easing:EZ2, fill:'backwards'});
+      const d2 = run ? dl : dl + 250;
+      numRun(pv.firstChild, opv ? txt(opv.firstChild) : 0, d2, C_DUR); if (sm) numRun(sm, opv && opv.querySelector('small') ? opv.querySelector('small').textContent : 0, d2, C_DUR);
     });
     p.querySelectorAll('.cmp .bd').forEach((b, i) => b.animate([{transform:'scale(.4)', opacity:0}, {transform:'scale(1.15)', opacity:1, offset:.7}, {transform:'none', opacity:1}], {duration:380, delay:D0 + C_DUR + 300 + i * 25, easing:'ease-out', fill:'backwards'}));
   }
@@ -1099,10 +1102,12 @@ document.addEventListener('DOMContentLoaded', () => {
   box.innerHTML = `<div class="ovm-bg" data-tc></div><div class="ovm-box" role="dialog" aria-modal="true" aria-labelledby="tvm-t">
     <div class="ovm-hd"><div><h3 id="tvm-t">ทดลองปรับเกณฑ์ระดับโอกาส</h3><div class="ovm-f" id="tvm-f"></div></div>
       <div class="ovm-ctl"><button class="tbtn" data-treset>↺ กลับเกณฑ์ทีม</button><button class="tbtn pri" data-tapply>ใช้เกณฑ์นี้กับหน้าหลัก</button><button class="ovm-x" data-tc aria-label="ปิด">✕</button></div></div>
-    <div class="tvm-body"><div class="tvm-l"><div class="tvm-sc"><svg></svg></div><div class="tl tvm-tl"></div></div><div class="tvm-st" id="tvm-st"></div></div></div>`;
+    <div class="tvm-body"><div class="tvm-l"><div class="tvm-sc"><svg></svg></div><div class="tl tvm-tl"></div></div><div class="tvm-st" id="tvm-st"></div></div></div><style id="tvm-css"></style>`;
   document.body.appendChild(box);
   const Q = s => box.querySelector(s);
   let T = {...TIER_T}, sub = [], X, Y, W, H, m = {l:50, r:14, t:50, b:34};
+  const PIN_C = ['#16181d', '#7c3aed', '#db2777'];   /* สีหมุด เขตที่ 1–3 (เหมือน popup กราฟ overview) */
+  let pins = [], hov = null;
   const fmtP = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + '%';
   const snap = v => Math.round(v * 2) / 2;
   const need = d => d.cand[0][2] - d.cand[d.ppr - 1][2] + 1;   /* คะแนนที่ต้องหาเพิ่มเพื่อแซงผู้ชนะ */
@@ -1122,7 +1127,10 @@ document.addEventListener('DOMContentLoaded', () => {
     sv.append('g').attr('class', 'zl');
     sv.append('g').attr('class', 'dots').selectAll('circle').data(sub).join('circle').attr('class', 'dot').attr('r', 3.6).attr('stroke', '#fff').attr('stroke-width', .7)
       .attr('cx', d => X(Math.max(-72, Math.min(46, d.gap)))).attr('cy', d => Y(Math.max(-60, Math.min(45, d.lgap))))
-      .on('mouseenter', (e, d) => { showTip(e, tipHTML(d)); }).on('mousemove', moveTip).on('mouseleave', hideTip);
+      .on('click', (e, d) => { e.stopPropagation(); pinT(key(d)); })   /* คลิกจุด = ปักหมุด เหมือนคลิกแถว */
+      .on('click', (e, d) => { const k = key(d); pins = pins.includes(k) ? pins.filter(x => x !== k) : [...pins, k].slice(-3); hl(); })   /* คลิกจุด = ปักหมุด เหมือนคลิกแถว */
+      .on('mouseenter', (e, d) => { showTip(e, tipHTML(d)); hov = key(d); hl(); rowOf(hov); }).on('mousemove', moveTip).on('mouseleave', () => { hideTip(); hov = null; hl(); rowOf(null); });
+    sv.append('g').attr('class', 'hl').attr('pointer-events', 'none');
     /* เส้นเกณฑ์ที่ลากได้: [ชื่อ, แกน, คำอธิบาย] */
     const G = sv.append('g').attr('class', 'thr');
     [['far', 'x', 'ปรับแผนใหม่'], ['lo', 'x', 'พลิกได้'], ['hi', 'x', 'ฐานเสียง'], ['ly', 'y', 'บัญชีรายชื่อ']].forEach(([k, a, t]) => {
@@ -1151,12 +1159,12 @@ document.addEventListener('DOMContentLoaded', () => {
     sv.selectAll('.dots circle').each(function (d) { const t = tierOf(d, T), c = TT[t][1]; if (this.__t === t) return; this.__t = t;
       first ? d3.select(this).attr('fill', c) : d3.select(this).interrupt().transition().duration(220).attr('fill', c); });
     sv.selectAll('.thr > g').each(function (o) { const g = d3.select(this), v = T[o.k];
-      if (o.a === 'x') { const x = X(v); g.select('.hit').attr('x', x - 12).attr('y', m.t).attr('width', 24).attr('height', H - m.b - m.t); g.select('.ln').attr('x1', x).attr('x2', x).attr('y1', m.t).attr('y2', H - m.b);
+      if (o.a === 'x') { const x = X(v); g.select('.hit').attr('x', x - 7).attr('y', m.t).attr('width', 14).attr('height', H - m.b - m.t); g.select('.ln').attr('x1', x).attr('x2', x).attr('y1', m.t).attr('y2', H - m.b);
         g.select('.tag').attr('transform', `translate(${x},${o.k === 'lo' ? m.t - 22 : m.t - 44})`); }   /* ป้ายพลิกได้อยู่แถวล่าง, ป้ายปรับแผนใหม่และฐานเสียงอยู่แถวบน → ป้ายไม่ทับกัน */
-      else { const y = Y(v); g.select('.hit').attr('x', m.l).attr('y', y - 12).attr('width', W - m.r - m.l).attr('height', 24); g.select('.ln').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y);
+      else { const y = Y(v); g.select('.hit').attr('x', m.l).attr('y', y - 7).attr('width', W - m.r - m.l).attr('height', 14); g.select('.ln').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y);
         g.select('.tag').attr('transform', `translate(${W - m.r - 62},${y - 21})`); }
       const txt = o.t + ' ' + fmtP(v); g.select('.tag text').text(txt); const tw = txt.length * 6.1 + 12; g.select('.tag rect').attr('x', -tw / 2).attr('width', tw); });
-    stats(); if (full) table();
+    stats(); if (full) table(); hl();
     Q('[data-treset]').disabled = Object.keys(TIER_T0).every(k => T[k] === TIER_T0[k]);
     Q('[data-tapply]').disabled = Object.keys(T).every(k => T[k] === TIER_T[k]);
   }
@@ -1174,14 +1182,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const rows = sub.map(d => [d, tierOf(d, T)]).sort((a, b) => TK.indexOf(a[1]) - TK.indexOf(b[1]) || Math.abs(a[0].gap) - Math.abs(b[0].gap));
     const num = v => `<span class="tv"><span class="tw">${v > 0 ? 'ชนะ' : 'แพ้'}</span><span class="tn">${Math.abs(v).toFixed(1)}%</span></span>`;
     Q('.tvm-tl').innerHTML = `<div class="th"><span>จังหวัด เขต</span><span>ระดับโอกาส</span><span style="text-align:right">สส.เขต</span><span style="text-align:right">บัญชีรายชื่อ</span></div>`
-      + rows.map(([d, t]) => `<div class="trr" data-tk="${key(d)}"><span>${d.pv} <span class="muted">เขต ${d.d}</span></span><span><span class="tp" style="background:${TT[t][1]};color:${ink(TT[t][1])}">${TT[t][0]}</span>${t !== d.tier ? ' <span class="chg">เปลี่ยน</span>' : ''}</span>${num(d.gap)}${num(d.lgap)}</div>`).join('');
+      + rows.map(([d, t]) => `<div class="trr" data-tk="${key(d)}"><span>${d.pv} <span class="muted">เขต ${d.d}</span><button class="tdet" data-tdet="${key(d)}" title="ดูรายละเอียดเขต" aria-label="ดูรายละเอียดเขต">↗</button></span><span><span class="tp" style="background:${TT[t][1]};color:${ink(TT[t][1])}">${TT[t][0]}</span>${t !== d.tier ? ' <span class="chg">เปลี่ยน</span>' : ''}</span>${num(d.gap)}${num(d.lgap)}</div>`).join('');
+  }
+  /* เขตที่ชี้ / ปักหมุด: จุดใหญ่ขึ้น + วงแหวน + ป้ายชื่อ + เส้นประไปแกน, จุดอื่นจางลง */
+  function hl() {
+    const sv = d3.select(Q('.tvm-sc svg')), g = sv.select('.hl'); if (g.empty()) return;
+    const ks = [...pins]; if (hov && !ks.includes(hov)) ks.push(hov);
+    sv.selectAll('.dots circle').attr('opacity', d => !ks.length || ks.includes(key(d)) ? 1 : .35);
+    g.html(''); ks.forEach(k => { const d = byK[k], x = X(Math.max(-72, Math.min(46, d.gap))), y = Y(Math.max(-60, Math.min(45, d.lgap))), c = pins.includes(k) ? PIN_C[pins.indexOf(k)] : '#5d6370';   /* ชี้เฉยๆ = สีเทาเข้ม, ปักหมุด = สีหมุด */
+      g.append('line').attr('x1', x).attr('x2', x).attr('y1', y).attr('y2', H - m.b).attr('stroke', c).attr('stroke-dasharray', '3 3').attr('opacity', .6);
+      g.append('line').attr('x1', m.l).attr('x2', x).attr('y1', y).attr('y2', y).attr('stroke', c).attr('stroke-dasharray', '3 3').attr('opacity', .6);
+      g.append('circle').attr('cx', x).attr('cy', y).attr('r', 6.5).attr('fill', TT[tierOf(d, T)][1]).attr('stroke', '#fff').attr('stroke-width', 1.5);
+      g.append('circle').attr('cx', x).attr('cy', y).attr('r', 9.5).attr('fill', 'none').attr('stroke', c).attr('stroke-width', 2);
+      const lb = `${d.pv} เขต ${d.d}`, right = x < (m.l + W) / 2;
+      g.append('text').attr('x', x + (right ? 13 : -13)).attr('y', y - 9).attr('text-anchor', right ? 'start' : 'end').attr('font-size', 12).attr('font-weight', 700).attr('fill', c)
+        .attr('stroke', '#fff').attr('stroke-width', 3.5).attr('paint-order', 'stroke').text(lb); });
+    Q('#tvm-css').textContent = pins.map((k, i) => `#tvm .trr[data-tk="${k}"]{box-shadow:inset 4px 0 0 ${PIN_C[i]};background:${PIN_C[i]}12}`).join('');
+  }
+  /* ปักหมุด / เลิกปักหมุด (สูงสุด 3 เขต เกินแล้วหมุดเก่าสุดหลุด) */
+  function pinT(k) { pins = pins.includes(k) ? pins.filter(x => x !== k) : [...pins, k].slice(-3); hl(); }
+  /* ชี้จุดบน scatter → แถวในตารางมีแถบสี (ตารางไม่เลื่อนตาม) */
+  function rowOf(k) {
+    Q('.tvm-tl').querySelectorAll('.trr.hov').forEach(r => r.classList.remove('hov')); if (!k) return;
+    const r = Q(`.tvm-tl .trr[data-tk="${k}"]`); if (!r) return; r.classList.add('hov');
   }
   function note() {
     const f = []; if (ST.reg) f.push(ST.reg); if (ST.fil === 'close') f.push('สูสี ±5%'); else if (ST.fil === 'split') f.push('เขต-พรรค สวนทาง'); if (ST.big) f.push('บ้านใหญ่ชนะ');
     return 'ลากเส้นสีส้มเพื่อปรับเกณฑ์ ' + (f.length ? 'กรองตามหน้าหลัก: <b>' + f.join(', ') + '</b>' : 'แสดงทุกเขตที่พรรคประชาชนส่งผู้สมัคร');
   }
   function open() {
-    T = {...TIER_T}; sub = D.filter(d => d.has && okR(d) && okF(d) && okBig(d));
+    T = {...TIER_T}; sub = D.filter(d => d.has && okR(d) && okF(d) && okBig(d)); pins = pins.filter(k => sub.includes(byK[k])); hov = null;
     box.hidden = false; document.body.style.overflow = 'hidden'; void box.offsetWidth; box.classList.add('open');
     Q('#tvm-f').innerHTML = note(); draw();
     const cs = Q('.tvm-sc').querySelectorAll('circle'), xs = [...cs].map(c => +c.getAttribute('cx')), lo = d3.min(xs), sp = (d3.max(xs) - lo) || 1;
@@ -1190,11 +1220,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function close() { box.classList.remove('open'); document.body.style.overflow = ''; hideTip(); setTimeout(() => { if (!box.classList.contains('open')) box.hidden = true; }, 360); }
   function apply(v) { TIER_T = {...v}; D.forEach(d => d.tier = tierOf(d)); render(); }   /* หน้าหลัก: แผนที่ legend ตาราง ใช้เกณฑ์ใหม่ */
 
+  box.addEventListener('mouseover', e => { if (!e.target.closest('.tvm-tl')) return; const r = e.target.closest('.trr[data-tk]'), k = r ? r.dataset.tk : null; if (k !== hov) { hov = k; hl(); } });   /* ชี้แถวในตาราง → จุดบน scatter เด่น */
+  box.addEventListener('mouseout', e => { if (e.target.closest('.tvm-tl') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.tvm-tl'))) { hov = null; hl(); } });
+  box.addEventListener('mouseleave', () => { if (hov) { hov = null; hl(); } });
   box.addEventListener('click', e => {
     if (e.target.closest('[data-tc]')) return close();
     if (e.target.closest('[data-treset]')) { T = {...TIER_T0}; update(true); return; }
     if (e.target.closest('[data-tapply]')) { apply(T); close(); return; }   /* ใช้กับหน้าหลักแล้วปิด popup ให้เห็นผลบนแผนที่ทันที */
-    const r = e.target.closest('[data-tk]'); if (r) { close(); select(byK[r.dataset.tk]); }
+    const dt = e.target.closest('[data-tdet]'); if (dt) { close(); select(byK[dt.dataset.tdet]); return; }   /* ↗ = ปิด popup แล้วเปิดกล่องรายละเอียดเขต */
+    const r = e.target.closest('[data-tk]'); if (r) pinT(r.dataset.tk);   /* คลิกแถว = ปักหมุด (สูงสุด 3 เขต) */
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && box.classList.contains('open')) { e.stopImmediatePropagation(); close(); } }, true);
   let rt; addEventListener('resize', () => { if (!box.classList.contains('open')) return; clearTimeout(rt); rt = setTimeout(draw, 150); });
@@ -1203,5 +1237,46 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#rk').addEventListener('click', e => {
     if (e.target.closest('[data-xt]')) { e.stopPropagation(); open(); }
     else if (e.target.closest('[data-trst]')) { e.stopPropagation(); apply(TIER_T0); }
+  }, true);
+})();
+
+/* ===== การ์ดสรุป: เลือกภาคจาก dropdown → ตัวเลขวิ่งจากค่าเดิมไปค่าใหม่ ===== */
+(function () {
+  const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
+  const K_DUR = 900, NUM = /\d[\d,]*(?:\.\d+)?/g;
+  /* ข้อความในการ์ด: ตัวเลขหลัก, "/ 400 เขต", บรรทัดล่าง (เช่น "อันดับ 2 รองจาก... (173)") */
+  const parts = () => ['#k1v', '#k2v'].flatMap(s => { const e = $(s); return e ? [e.firstChild, e.querySelector('small')] : []; }).concat([$('#k1s'), $('#k2s')]).filter(Boolean);
+  const get = n => n.nodeType === 3 ? n.nodeValue : n.textContent, put = (n, v) => { if (n.nodeType === 3) n.nodeValue = v; else n.textContent = v; };
+  function run(n, from) {
+    const to = get(n); if (from == null) return;
+    const a = from.match(NUM) || [], B = [...to.matchAll(NUM)]; if (!B.length) return;
+    /* ข้อความแบบเดียวกันและตัวเลขเปลี่ยน → วิ่งจากค่าเดิม, ตัวเลขเท่าเดิม หรือข้อความเปลี่ยนรูปแบบ → วิ่งจาก 0, เลขอันดับไม่วิ่ง */
+    const sameSk = from.replace(NUM, '#') === to.replace(NUM, '#') && a.length === B.length;
+    const nums = B.map((m, i) => { const s = m[0], dec = (s.split('.')[1] || '').length, v1 = +s.replace(/,/g, ''), rank = /อันดับ\s*$/.test(to.slice(Math.max(0, m.index - 8), m.index));
+      const v0 = rank ? v1 : sameSk && from !== to ? +a[i].replace(/,/g, '') : 0; return {dec, v0, v1, com:s.includes(',')}; });
+    if (nums.every(o => o.v0 === o.v1)) return;
+    const show = k => { let i = 0; return to.replace(NUM, () => { const o = nums[i++], v = o.v0 + (o.v1 - o.v0) * k; return o.dec ? v.toFixed(o.dec) : o.com ? fmt(Math.round(v)) : String(Math.round(v)); }); };
+    put(n, show(0)); const t = d3.timer(e => { const k = Math.min(1, e / K_DUR); put(n, show(d3.easeCubicOut(k))); if (k >= 1) { put(n, to); t.stop(); } });
+  }
+  let reg0 = null;
+  const _render = render;
+  render = function () {
+    const chg = reg0 !== null && ST.reg !== reg0, old = chg ? parts().map(get) : null;
+    _render();
+    if (chg && !RM.matches) { const now = parts(); if (now.length === old.length) now.forEach((n, i) => run(n, old[i])); }
+    reg0 = ST.reg;
+  };
+})();
+/* ===== ดอกจันอธิบาย (*): จอสัมผัสแตะเพื่อเปิด/ปิด แตะที่อื่นเพื่อปิด, กล่องคำอธิบายไม่ล้นขอบจอ ===== */
+(function () {
+  const place = a => {   /* กล่องกว้างไม่เกินจอ และเลื่อนซ้ายถ้าจะล้นขอบขวา */
+    const r = a.getBoundingClientRect(), w = Math.min(280, innerWidth - 44), over = r.left + w + 20 - (innerWidth - 12);   /* +20 = ขอบในกล่องซ้ายขวา */
+    a.style.setProperty('--tw', w + 'px'); a.style.setProperty('--tx', (over > 0 ? -over : 0) + 'px');
+  };
+  document.addEventListener('pointerover', e => { const a = e.target.closest && e.target.closest('.ast'); if (a) place(a); });
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('.ast');
+    document.querySelectorAll('.ast.on').forEach(x => { if (x !== a) { x.classList.remove('on'); x.blur(); } });
+    if (a) { e.stopPropagation(); place(a); if (!a.classList.toggle('on')) a.blur(); }   /* แตะซ้ำ = ปิด */
   }, true);
 })();
