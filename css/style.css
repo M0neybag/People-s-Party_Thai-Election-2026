@@ -926,6 +926,30 @@ header.bar #filters::-webkit-scrollbar-thumb:hover {
 
 }
 
+.hd {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: unset;
+}
+
+.hd h3 {
+  order: 1;
+}
+
+.hd .sub {
+  order: 2;
+}
+
+.hd .desc {
+  order: 3;
+  width: 100%;
+}
+
+.cmpw {
+  overflow-x: hidden;
+}
+
 /* ===== animation ตอนเปลี่ยนโหมดและตอนกดตัวกรอง ===== */
 /* 1) แถบขาวของปุ่มโหมดที่เลือก เลื่อนจากปุ่มเดิมไปปุ่มใหม่
       ถ้าจะแก้หน้าตาปุ่มที่เลือก (สีพื้น เงา มุมโค้ง) ให้แก้ที่ .seg .mode-pill */
