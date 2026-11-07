@@ -1057,5 +1057,6 @@ div.hd.a-in h3 {
 .tvm-tl .tdet:hover{border-color:var(--ink);color:var(--ink);background:#fff}
 /* ดอกจันท้ายหัวข้อ: ชี้เมาส์ (หรือแตะบนมือถือ) แล้วขึ้นคำอธิบาย */
 .ast{position:relative;display:inline-block;margin-left:2px;color:var(--accent);cursor:help;font-weight:700;outline:none}
-.ast::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 6px);width:280px;background:rgba(217,101,10,.95);color:#fff;font-size:12px;font-weight:400;line-height:1.5;padding:7px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(169,79,5,.28);opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .15s,transform .15s,visibility .15s;z-index:20;pointer-events:none;white-space:normal}
-.ast:hover::after,.ast:focus::after{opacity:1;visibility:visible;transform:none}
+.ast::after{content:attr(data-tip);position:absolute;left:var(--tx,0px);top:calc(100% + 6px);width:var(--tw,280px);background:rgba(217,101,10,.95);color:#fff;font-size:12px;font-weight:400;line-height:1.5;padding:7px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(169,79,5,.28);opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .15s,transform .15s,visibility .15s;z-index:20;pointer-events:none;white-space:normal}
+.ast.on::after,.ast:focus-visible::after{opacity:1;visibility:visible;transform:none}   
+@media (hover:hover){.ast:hover::after{opacity:1;visibility:visible;transform:none}}   

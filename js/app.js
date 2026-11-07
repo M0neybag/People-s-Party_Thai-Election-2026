@@ -197,7 +197,7 @@ function renderLegend() {
       : D.filter(d => base(d) && (M === 'list' ? pk(d.pltop) : pk(d.w[1])) === p).length}));
   const all = {k:'', sw:'<span class="sw allsw"></span>', t:'ทั้งหมด', n:D.filter(d => base(d)).length};
   const title = y ? (M === 'list' ? 'บัญชีรายชื่ออันดับ 1 69 เทียบ 66' : 'ผู้ชนะ สส.เขต 69 เทียบ 66')
-    : {tier:'ระดับโอกาส (เกณฑ์ปี 69)', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้บัญชีรายชื่อสูงสุดในเขต', both:'สส.เขต + บัญชีรายชื่อ', gap:'ระยะห่างของพรรคประชาชน: ' + (M === 'list' ? 'บัญชีรายชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
+    : {tier:'ระดับโอกาส', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้บัญชีรายชื่อสูงสุดในเขต', both:'สส.เขต + บัญชีรายชื่อ', gap:'ระยะห่างของพรรคประชาชน: ' + (M === 'list' ? 'บัญชีรายชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
   $('#legend').style.display = M === 'house' ? 'none' : '';   /* โหมดบ้านใหญ่ไม่แสดง legend (ซ้ำกับกราฟแยกตามพรรคด้านขวา) */
   if (M === 'house') return;
   const gk = (M === 'win' || M === 'list') && !y ? `<div class="gk"><button data-gk="party" class="${ST.cb === 'party' ? 'on' : ''}">สีตามพรรค</button><button data-gk="gap" class="${ST.cb === 'gap' ? 'on' : ''}">สีตามระยะห่าง</button></div>` : '';
@@ -367,7 +367,7 @@ function renderRight() {
   if (ST.mode === 'house') { const keep = rk.classList.contains('hrk'), st = rk.scrollTop, wy = window.scrollY; rk.className = 'card hrk'; renderHouse(rk); if (keep) { rk.scrollTop = st; window.scrollTo(0, wy); } return; }  /* คลิกกรองแล้วไม่เด้งกลับขึ้นบน */
   const kind = ST.mode === 'list' ? 'list' : 'win';
   rk.className = 'card rk';
-  rk.innerHTML = `<div class="hd"><h3>${kind === 'list' ? 'บัญชีรายชื่อ: พรรคประชาชนห่างพรรคที่ชนะ / อันดับ 2' : 'พรรคประชาชนห่างผู้ชนะ / อันดับ 2 เท่าไร'}</h3>${sortBtns()}</div>${chartShell()}`;
+  rk.innerHTML = `<div class="hd"><h3>${kind === 'list' ? 'พรรคประชาชนชนะห่างอันดับ 2 / แพ้ห่างอันดับ 1 เท่าไร' : 'พรรคประชาชนห่างผู้ชนะ / อันดับ 2 เท่าไร'}</h3>${sortBtns()}</div>${chartShell()}`;
   chartBlock(rk, kind, 112, kind);
 }
 
@@ -395,7 +395,7 @@ function chartBlock(host, kind, OH, wkey) {
   if (ST.sort !== 'reg') s += `<text x="30" y="9" font-size="10" fill="#5d6370">← ชนะ ${nw} เขต</text><text x="${ow - 2}" y="${OH - 2}" font-size="10" text-anchor="end" fill="#5d6370">แพ้ ${N - nw} เขต →</text>`;
   if (false && N && nw && nw < N) s += `<line x1="${x0 + nw * bw}" x2="${x0 + nw * bw}" y1="4" y2="${OH - 12}" stroke="#16181d" stroke-dasharray="3 2" opacity=".5"/>`;
   ovw.innerHTML = `<svg class="ov" width="${ow}" height="${OH}">${s}</svg>`;
-  host.querySelector('.lab').textContent = 'คู่แข่งที่ใกล้ที่สุด';
+  host.querySelector('.lab').textContent = 'พรรคที่ชนะ/แพ้';
   const opp = d => kind === 'list' ? (d.lrank === 1 ? d.pl[1][0] : d.pl[0][0]) : (d.ppr === 1 ? d.cand[1][1] : d.cand[0][1]);
   if (!N) { host.querySelector('.cnt').textContent = 'ไม่มีเขตที่ตรงเงื่อนไข'; listEl.innerHTML = ''; return; }
   let [i0, i1] = ST.win[wkey] || (() => {
@@ -1265,4 +1265,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chg && !RM.matches) { const now = parts(); if (now.length === old.length) now.forEach((n, i) => run(n, old[i])); }
     reg0 = ST.reg;
   };
+})();
+/* ===== ดอกจันอธิบาย (*): จอสัมผัสแตะเพื่อเปิด/ปิด แตะที่อื่นเพื่อปิด, กล่องคำอธิบายไม่ล้นขอบจอ ===== */
+(function () {
+  const place = a => {   /* กล่องกว้างไม่เกินจอ และเลื่อนซ้ายถ้าจะล้นขอบขวา */
+    const r = a.getBoundingClientRect(), w = Math.min(280, innerWidth - 44), over = r.left + w + 20 - (innerWidth - 12);   /* +20 = ขอบในกล่องซ้ายขวา */
+    a.style.setProperty('--tw', w + 'px'); a.style.setProperty('--tx', (over > 0 ? -over : 0) + 'px');
+  };
+  document.addEventListener('pointerover', e => { const a = e.target.closest && e.target.closest('.ast'); if (a) place(a); });
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('.ast');
+    document.querySelectorAll('.ast.on').forEach(x => { if (x !== a) { x.classList.remove('on'); x.blur(); } });
+    if (a) { e.stopPropagation(); place(a); if (!a.classList.toggle('on')) a.blur(); }   /* แตะซ้ำ = ปิด */
+  }, true);
 })();
