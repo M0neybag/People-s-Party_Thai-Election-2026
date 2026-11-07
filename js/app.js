@@ -829,10 +829,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(R + ' circle.dot[data-k]').forEach(c => dots[c.dataset.k] = attrs(c));
     return {ob, rows, dots};
   }
-  let C_morph = false;   /* true = แท่ง overview กำลังย้ายที่ → ไม่ต้องให้ทั้งกล่องจางเข้า */
+  let C_morph = false;   
   function chartPlay(S, R = '#rk', f = 1) {   /* f = ตัวคูณความช้า (popup ใช้ 1.5) */
     const C_DUR = C_DUR0 * f, MOVE_DUR = MOVE_DUR0 * f, SWAP_DUR = SWAP_DUR0.map(v => v * f);
-    C_morph = false;
+    C_morph = false; let anySwap = false;   
     document.querySelectorAll(R + ' svg.ov').forEach(sv => {
       const z = [...sv.querySelectorAll('line')].find(l => l.getAttribute('opacity') === '.55'), y0 = z ? +z.getAttribute('y1') : 0, rs = sv.querySelectorAll('rect[data-ob]'), n = rs.length || 1;
       let moved = 0;
@@ -840,6 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const same = rs.length === Object.keys(S.ob).filter(k => k.startsWith(hid(sv))).length && [...rs].every(r => S.ob[hid(r) + r.dataset.ob]);
       /* มีแท่งที่ทั้งย้ายที่และเปลี่ยนความสูง = สลับ สส.เขต ↔ บัญชีรายชื่อ → ทุกแท่งต้องยุบแล้วงอกใหม่พร้อมกัน (รวมแท่งที่บังเอิญอยู่ลำดับเดิม) */
       const swap = same && [...rs].some(r => { const o = S.ob[hid(r) + r.dataset.ob]; return o.x !== r.getAttribute('x') && (o.y !== r.getAttribute('y') || o.height !== r.getAttribute('height')); });
+      if (swap) anySwap = true;
       rs.forEach((r, i) => { const o = same ? S.ob[hid(r) + r.dataset.ob] : null, now = attrs(r), t = d3.select(r);
         if (!o) return svgTween(r, {y:y0, height:0}, i / n * 400, C_DUR);          /* แท่งใหม่ → งอกจากเส้น 0% ไล่ซ้ายไปขวา */
         const dx = o.x !== now.x, dh = o.y !== now.y || o.height !== now.height;
@@ -857,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (moved) { C_morph = true;   /* ชื่อภาค / เส้นแบ่ง / ข้อความ ชนะ-แพ้ ค่อยๆ โผล่หลังแท่งเข้าที่ */
         sv.querySelectorAll(':scope > text:not([font-size="9"]), :scope > line[stroke-dasharray="3 3"]').forEach(el => fadeIn(el, swap ? SWAP_DUR[0] + SWAP_DUR[1] + SWAP_DUR[2] : MOVE_DUR + 500, C_DUR * .5)); }
     });
-    document.querySelectorAll(R + ' .r[data-k] .tr i').forEach((i, j) => { const r = i.closest('.r'), o = S.rows[hid(r) + r.dataset.k];
+        document.querySelectorAll(R + ' .r[data-k] .tr i').forEach((i, j) => { const r = i.closest('.r'), o = anySwap ? null : S.rows[hid(r) + r.dataset.k];   /* สลับโหมด → ทุกแถววิ่งจาก 0 */
       cssTween(i, o || {left:'50%', width:'0%'}, o ? 0 : 150 + (j % 30) * 25, C_DUR); });
     const cs = document.querySelectorAll(R + ' circle.dot[data-k]');
     if (cs.length) { const xs = [...cs].map(c => +c.getAttribute('cx')), lo = d3.min(xs), sp = (d3.max(xs) - lo) || 1;
