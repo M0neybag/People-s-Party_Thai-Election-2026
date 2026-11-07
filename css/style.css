@@ -313,7 +313,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .y66.on .box::after,.bigf.on .box::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
 body,svg text{font-variant-numeric:tabular-nums}
 /* ระดับโอกาส: กราฟครึ่งบน ตารางครึ่งล่าง */
-.rk3.tier{display:grid;grid-template-rows:auto minmax(0,1fr) minmax(0,1fr);gap:8px}
+.rk3.tier{display:grid;grid-template-rows:auto minmax(0,1.45fr) minmax(0,1fr);gap:6px}   /* กราฟสูงกว่าตาราง */
 .rk3.tier .scw{min-height:0;overflow:hidden}.rk3.tier .scw svg{display:block}
 .rk3.tier .tl{min-height:0}
 
@@ -1052,3 +1052,11 @@ div.hd.a-in h3 {
   .tvm-tl{height:320px;flex:none}
   .tvm-st{overflow:visible;margin-top:12px}
 }
+.tvm-tl .trr.hov{background:#f1f2f5;box-shadow:inset 4px 0 0 #5d6370}
+.tvm-tl .tdet{margin-left:6px;width:20px;height:20px;border:1px solid var(--line);border-radius:5px;font-size:11px;color:var(--muted);vertical-align:1px}
+.tvm-tl .tdet:hover{border-color:var(--ink);color:var(--ink);background:#fff}
+/* ดอกจันท้ายหัวข้อ: ชี้เมาส์ (หรือแตะบนมือถือ) แล้วขึ้นคำอธิบาย */
+.ast{position:relative;display:inline-block;margin-left:2px;color:var(--accent);cursor:help;font-weight:700;outline:none}
+.ast::after{content:attr(data-tip);position:absolute;left:var(--tx,0px);top:calc(100% + 6px);width:var(--tw,280px);background:rgba(217,101,10,.95);color:#fff;font-size:12px;font-weight:400;line-height:1.5;padding:7px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(169,79,5,.28);opacity:0;visibility:hidden;transform:translateY(-3px);transition:opacity .15s,transform .15s,visibility .15s;z-index:20;pointer-events:none;white-space:normal}
+.ast.on::after,.ast:focus-visible::after{opacity:1;visibility:visible;transform:none}   
+@media (hover:hover){.ast:hover::after{opacity:1;visibility:visible;transform:none}}   
