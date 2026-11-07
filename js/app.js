@@ -107,7 +107,7 @@ function init() {
   D = DATA.districts; L = DATA.layout; N6 = DATA.national; LOGOS = DATA.logos; LOGOS66 = DATA.logos66; PARTY = DATA.parties;
   prep();
   $('#region').innerHTML = '<option value="">ทุกภาค</option>' + REGIONS.map(r => `<option>${r}</option>`).join('');
-  $('#modes').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === ST.mode) return; ST.mode = b.dataset.m; ST.lg = null; ST.h = {party:null, res:'all'}; ST.brush = null; ST.win = {}; render(); });
+  $('#modes').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (!b || b.dataset.m === ST.mode) return; closePanel(); ST.mode = b.dataset.m;   /* เปลี่ยนโหมด → ปิดกล่องรายละเอียดเขต */ ST.lg = null; ST.h = {party:null, res:'all'}; ST.brush = null; ST.win = {}; render(); });
   $('#region').addEventListener('change', e => { ST.reg = e.target.value; ST.win = {}; ST.brush = null; render(); fitView(true); });
   $('#filters').addEventListener('click', e => { const r = e.target.closest('[data-res]'); if (r) { ST.h.res = r.dataset.res; render(); return; } const b = e.target.closest('[data-f]'); if (!b) return; ST.fil = b.dataset.f || null; ST.win = {}; render(); });
   $('#cb66').addEventListener('change', e => { ST.y66 = e.target.checked; render(); });
@@ -901,14 +901,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   /* กล่องรายละเอียดเขต โหมดเทียบปี 66: การ์ดปี 69 เริ่มที่แถวของพรรคนั้นในปี 66 แล้ววิ่งไปแถวปี 69, คะแนนและ % นับจากค่าปี 66 */
   function panel66Play(p) {
-    const L = {}, EZ2 = 'cubic-bezier(.2,.7,.3,1)';
-    p.querySelectorAll('.cmp .cc.l[data-p]').forEach((c, i) => { L[c.dataset.p] = c; c.animate([{transform:'translateX(-12px)', opacity:0}, {transform:'none', opacity:1}], {duration:420, delay:i * 45, easing:EZ2, fill:'backwards'}); });
+    const L = {}, R66 = {}, EZ2 = 'cubic-bezier(.2,.7,.3,1)';
+    p.querySelectorAll('.cmp .cc.l[data-p]').forEach((c, i) => { L[c.dataset.p] = c; R66[c.dataset.p] = i; c.animate([{transform:'translateX(-12px)', opacity:0}, {transform:'none', opacity:1}], {duration:420, delay:Math.min(i, 14) * 45, easing:EZ2, fill:'backwards'}); });
     const D0 = 120;   /* ปี 66 กับปี 69 เล่นไปพร้อมกัน (ปี 69 เริ่มจากซ่อนสนิท ไม่มีเงาจางรอ) */
-    p.querySelectorAll('.cmp .cc.r[data-p]').forEach((c, i) => { const o = L[c.dataset.p], dl = D0 + i * 45, pv = c.querySelector('.pv'), sm = pv.querySelector('small');
-      if (o) { const dy = o.getBoundingClientRect().top - c.getBoundingClientRect().top, opv = o.querySelector('.pv');
-        c.animate([{transform:`translate(-14px,${dy}px)`, opacity:0}, {transform:`translate(-14px,${dy}px)`, opacity:1, offset:.18}, {transform:'none', opacity:1}], {duration:C_DUR * 1.15, delay:dl, easing:EZ2, fill:'backwards'});
-        numRun(pv.firstChild, txt(opv.firstChild), dl, C_DUR); if (sm) numRun(sm, opv.querySelector('small') && opv.querySelector('small').textContent, dl, C_DUR); }
-      else { c.animate([{transform:'translateX(14px)', opacity:0}, {transform:'none', opacity:1}], {duration:500, delay:dl + 250, easing:EZ2, fill:'backwards'}); numRun(pv.firstChild, 0, dl + 250, C_DUR); if (sm) numRun(sm, 0, dl + 250, C_DUR); }
+    p.querySelectorAll('.cmp .cc.r[data-p]').forEach((c, i) => { const o = L[c.dataset.p], dl = D0 + Math.min(i, 14) * 45, pv = c.querySelector('.pv'), sm = pv.querySelector('small'), j = R66[c.dataset.p];
+      /* วิ่งเฉพาะพรรคที่อยู่ 10 อันดับแรกทั้งสองปี และอันดับเปลี่ยนไม่เกิน 5 แถว, นอกนั้นค่อยๆ จางเข้าที่ตำแหน่งใหม่ */
+      const run = o && i < 10 && j < 10 && Math.abs(i - j) <= 5, opv = o && o.querySelector('.pv');
+      if (run) { const dy = o.getBoundingClientRect().top - c.getBoundingClientRect().top;
+        c.animate([{transform:`translate(-14px,${dy}px)`, opacity:0}, {transform:`translate(-14px,${dy}px)`, opacity:1, offset:.18}, {transform:'none', opacity:1}], {duration:C_DUR * 1.15, delay:dl, easing:EZ2, fill:'backwards'}); }
+      else c.animate([{transform:'translateX(14px)', opacity:0}, {transform:'none', opacity:1}], {duration:500, delay:dl + 250, easing:EZ2, fill:'backwards'});
+      const d2 = run ? dl : dl + 250;
+      numRun(pv.firstChild, opv ? txt(opv.firstChild) : 0, d2, C_DUR); if (sm) numRun(sm, opv && opv.querySelector('small') ? opv.querySelector('small').textContent : 0, d2, C_DUR);
     });
     p.querySelectorAll('.cmp .bd').forEach((b, i) => b.animate([{transform:'scale(.4)', opacity:0}, {transform:'scale(1.15)', opacity:1, offset:.7}, {transform:'none', opacity:1}], {duration:380, delay:D0 + C_DUR + 300 + i * 25, easing:'ease-out', fill:'backwards'}));
   }
@@ -1204,4 +1207,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.closest('[data-xt]')) { e.stopPropagation(); open(); }
     else if (e.target.closest('[data-trst]')) { e.stopPropagation(); apply(TIER_T0); }
   }, true);
+})();
+/* ===== การ์ดสรุป: เลือกภาคจาก dropdown → ตัวเลขวิ่งจากค่าเดิมไปค่าใหม่ ===== */
+(function () {
+  const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
+  const K_DUR = 900, NUM = /\d[\d,]*(?:\.\d+)?/g;
+  /* ข้อความในการ์ด: ตัวเลขหลัก, "/ 400 เขต", บรรทัดล่าง (เช่น "อันดับ 2 รองจาก... (173)") */
+  const parts = () => ['#k1v', '#k2v'].flatMap(s => { const e = $(s); return e ? [e.firstChild, e.querySelector('small')] : []; }).concat([$('#k1s'), $('#k2s')]).filter(Boolean);
+  const get = n => n.nodeType === 3 ? n.nodeValue : n.textContent, put = (n, v) => { if (n.nodeType === 3) n.nodeValue = v; else n.textContent = v; };
+  function run(n, from) {
+    const to = get(n); if (from == null || from === to) return;
+    const a = (from.match(NUM) || []), b = (to.match(NUM) || []);
+    if (from.replace(NUM, '#') !== to.replace(NUM, '#') || a.length !== b.length) return;   /* ข้อความคนละแบบ → เปลี่ยนทันที */
+    const nums = b.map((s, i) => { const dec = (s.split('.')[1] || '').length, v0 = +a[i].replace(/,/g, ''), v1 = +s.replace(/,/g, ''); return {dec, v0, v1, com:s.includes(',') || a[i].includes(',')}; });
+    const show = k => { let i = 0; return to.replace(NUM, () => { const o = nums[i++], v = o.v0 + (o.v1 - o.v0) * k; return o.dec ? v.toFixed(o.dec) : o.com ? fmt(Math.round(v)) : String(Math.round(v)); }); };
+    put(n, show(0)); const t = d3.timer(e => { const k = Math.min(1, e / K_DUR); put(n, show(d3.easeCubicOut(k))); if (k >= 1) { put(n, to); t.stop(); } });
+  }
+  let reg0 = null;
+  const _render = render;
+  render = function () {
+    const chg = reg0 !== null && ST.reg !== reg0, old = chg ? parts().map(get) : null;
+    _render();
+    if (chg && !RM.matches) { const now = parts(); if (now.length === old.length) now.forEach((n, i) => run(n, old[i])); }
+    reg0 = ST.reg;
+  };
 })();
