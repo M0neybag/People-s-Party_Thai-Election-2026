@@ -392,7 +392,7 @@ body{min-width:0}
 
 /* Precise column width distribution */
 .ptab th:nth-child(1),
-.ptab td:nth-child(1) { width: 12% !important; } /* เบอร์ */
+.ptab td:nth-child(1) { width: 15% !important; } /* เบอร์ */
 
 .ptab th:nth-child(2),
 .ptab td:nth-child(2) { width: 38%; } /* ชื่อผู้สมัคร / พรรค */
@@ -949,6 +949,12 @@ header.bar #filters::-webkit-scrollbar-thumb:hover {
 .cmpw {
   overflow-x: hidden;
 }
+
+div.hd.a-in h3 {
+  margin-bottom: 0 !important;
+}
+
+
 
 /* ===== animation ตอนเปลี่ยนโหมดและตอนกดตัวกรอง ===== */
 /* 1) แถบขาวของปุ่มโหมดที่เลือก เลื่อนจากปุ่มเดิมไปปุ่มใหม่

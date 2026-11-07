@@ -511,10 +511,10 @@ function render66(rk) {
     return `<div class="pc ${y === 69 ? 'r' : 'l'} sm" data-p="${p}"><div class="rkb" style="background:${col(p)}">${i + 1}</div><div class="lg2">${y === 66 ? LGO66(p, 28) : LGO(p, 28)}</div><div class="pn"><b>${y === 66 ? nm66(p) : p}</b><span>${sub(y, p)} ${bd}</span></div><div class="pv">${v}</div></div>`;
   };
   let rows = ''; for (let i = 0; i < 10; i++) rows += (r66[i] ? card(i, r66[i][0], r66[i][1], 66) : '<div class="pc empty"></div>') + '<div class="arr">»</div>' + (r69[i] ? card(i, r69[i][0], r69[i][1], 69) : '<div class="pc empty"></div>');
-  rk.innerHTML = `<div class="hd"><h3>${L_ ? 'ที่นั่ง สส.บัญชีรายชื่อ' : 'ที่นั่ง สส.เขต'}${ST.reg ? ' ' + (L_ ? 'ทั้งประเทศ' : ST.reg) : ''} 10 อันดับแรก</h3><span class="desc">${L_ ? 'ที่นั่งคำนวณจากคะแนน' : 'จำนวนเขตที่ชนะ'}</span></div>
-    <div class="cmph"><span>ปี 66</span><span>»</span><span>ปี 69</span></div><div class="cmpw"><div class="cmp">${rows}</div></div>
-    <div class="desc">▲▼ = อันดับเปลี่ยนจากปี 66   ใหม่ = ไม่ติด 10 อันดับในปี 66</div>`;
+  rk.innerHTML = `<div class="hd"><h3>${L_ ? 'ที่นั่ง สส.บัญชีรายชื่อ' : 'ที่นั่ง สส.เขต'}${ST.reg ? ' ' + (L_ ? 'ทั้งประเทศ' : ST.reg) : ''} 10 อันดับแรก</h3></div>
+    <div class="cmph"><span>ปี 66</span><span>»</span><span>ปี 69</span></div><div class="cmpw"><div class="cmp">${rows}</div></div>`;
 }
+
 
 /* ---------- panel ---------- */
 function select(d) { ST.sel = key(d); ST.pexp = {c:false, l:false}; ST.ps = {c:{k:'v',dir:-1}, l:{k:'v',dir:-1}}; hideTip(); renderPanel(); refreshSel(); }
