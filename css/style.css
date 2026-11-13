@@ -128,7 +128,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .lt{display:grid;grid-template-columns:22px 1fr auto;gap:1px 8px;align-items:center;padding:3px 6px;border-radius:6px;font-size:12px}
 .lt.pp{background:var(--as);box-shadow:inset 0 0 0 1px var(--accent);font-weight:700}
 .lt .bb{grid-column:2/4;height:4px;border-radius:0 3px 3px 0}
-.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ell{white-space:nowrap;text-overflow:ellipsis}
 .bfly{display:grid;grid-template-columns:84px 1fr 1fr;gap:3px 0;align-items:center;font-size:12px}
 .bfly .l,.bfly .rr{height:13px;position:relative}
 .bfly .l i{position:absolute;right:0;top:1px;bottom:1px;border-radius:3px 0 0 3px}
@@ -1659,3 +1659,86 @@ body.dsk .dsub{color:#9b9488!important}
 body.dsk #dside .dflt{margin-top:14px}
 body.dsk #dside .dsub.dsubo{margin:12px 4px 10px!important;padding:0!important;height:0;border-top:1px solid #4a4742}
 body.dsk #filters .flab{display:none!important}
+
+
+body.dsk #region {
+  /* Reset native OS styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* Layout & Sizing */
+  width: 100%;
+  padding: 9px 34px 9px 12px; /* Extra right padding for custom arrow */
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+
+  /* Colors & Depth */
+  background-color: #46423b;
+  color: #f4f1ea;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+
+  /* Custom Chevron Icon */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e8e3d9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 15px;
+
+  transition: all 0.18s ease;
+}
+
+/* Hover state */
+body.dsk #region:hover {
+  background-color: #524d45;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Focus / Active state matching your primary orange */
+body.dsk #region:focus {
+  outline: none;
+  border-color: #f58220;
+  box-shadow: 0 0 0 2px rgba(245, 130, 32, 0.25);
+}
+
+/* Style the dropdown options list */
+body.dsk #region option {
+  background-color: #36332e;
+  color: #f4f1ea;
+  padding: 8px;
+}
+
+.dhelp i {
+  background: rgb(243, 146, 0);
+}
+
+/* Target the button container */
+body.dsk #modes button {
+  display: flex;
+  align-items: center;      /* Vertically centers the icon and text */
+  justify-content: flex-start; /* Keeps them aligned to the left (use 'center' if you want both centered horizontally) */
+  gap: 8px;                 /* Clean spacing between icon and text */
+  line-height: 1;           /* Removes extra vertical spacing from the Thai font */
+  height: 36px;             /* Matches your .mode-pill height */
+}
+
+/* Your existing ::before rule */
+body.dsk #modes button::before {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: var(--ic) center / contain no-repeat;
+  mask: var(--ic) center / contain no-repeat;
+}
+
+body.dsk #modes button::before {
+  /* ...existing styles... */
+  transform: translateY(-1px); /* Adjust between -2px and 2px until visually centered */
+}
+
