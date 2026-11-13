@@ -1007,7 +1007,7 @@ div.hd.a-in h3 {
 .pin button:hover{border-color:var(--ink)}
 .ovm-empty{font-size:12.5px;color:var(--muted)}
 .ovm-ch{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;position:relative}
-.ovm-lane{position:relative;height:50px;flex:none;margin-bottom:-6px}
+.ovm-lane{position:relative;height:0;flex:none;margin:0 0 -4px}
 .ovm-lane .pl{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:700;color:#fff;background:var(--pc);padding:0 6px;line-height:15px;border-radius:4px;white-space:nowrap;z-index:1}
 .ovm-lane .pll{position:absolute;bottom:0;width:0;border-left:1px dashed var(--pc)}
 @media (max-width:700px){
@@ -1659,7 +1659,40 @@ body.dsk .dsub{color:#9b9488!important}
 body.dsk #dside .dflt{margin-top:14px}
 body.dsk #dside .dsub.dsubo{margin:12px 4px 10px!important;padding:0!important;height:0;border-top:1px solid #4a4742}
 body.dsk #filters .flab{display:none!important}
+/* โลโก้: คำว่า พรรคประชาชน ใหญ่กว่าบรรทัด เลือกตั้ง สส. 2569 (จอคอมและมือถือ) */
+.dlt small{font-size:15px!important;font-weight:800!important;letter-spacing:.2px!important;line-height:1.2}
+.dlt span{font-size:11px!important}
+body.dsk.sidec .dlt small{display:none}
+body.mob header.bar .brand b .mk{font-size:13.5px!important;font-weight:800!important;letter-spacing:.2px!important;line-height:1.25!important}
+/* แถบส้มของปุ่มโหมดที่เลือก: เรืองแสงน้อยลง (จอคอมและมือถือ) */
+body.dsk #modes .mode-pill{box-shadow:0 2px 6px rgba(243,146,0,.2)!important}
+body.mob #mtabs .mpill{box-shadow:0 2px 6px rgba(243,146,0,.2)!important}
+/* โหมด สส.เขต + บัญชีรายชื่อ: กดแยกภาคแล้วหัวกล่องไม่ยืดเพิ่มช่องว่าง */
+.rk2 .hd h3{margin:4px 0 0!important}
+/* กรอบส้มบนกราฟภาพรวม: ขอบซ้ายขวาบางลง (เดิมเป็นแท่งหนา 8px) จับลากยังง่ายเท่าเดิม */
+.ov .brush .handle{fill:transparent!important;fill-opacity:1!important}
+.ov .brush .selection{stroke:#e8740f!important;stroke-width:2px!important;stroke-opacity:1!important}
+/* จอคอมขนาดเล็ก (โน้ตบุ๊ก เช่น 1920×1080 ที่ Windows ขยาย 125%): กระชับส่วนที่ใหญ่เกิน ให้แผนที่และกราฟได้พื้นที่มากขึ้น
+   ตัวหนังสือในกราฟและรายชื่อยังขนาดเดิม */
+@media (max-width:1700px),(max-height:820px){
+  body.dsk .app{gap:10px!important;padding:12px 16px!important}
+  body.dsk #dtop h1{font-size:19px!important}
+  body.dsk #dtop small{font-size:12px}
+  body.dsk #dtop .dr{gap:8px}
+  body.dsk .dhelp{padding:7px 13px;font-size:12.5px}
+  body.dsk .dsrch{width:310px}
+  body.dsk .dsrch input{padding-top:8px;padding-bottom:8px;font-size:13px}
+  body.dsk .kpis{gap:10px!important;padding-top:8px}
+  body.dsk .kpi{padding:8px 14px 9px!important;border-radius:14px!important}
+  body.dsk .kpi .l{font-size:11.5px!important}
+  body.dsk .kpi .v{font-size:27px!important;line-height:1.05!important;margin:1px 0}
+  body.dsk .kpi .v small{font-size:13px!important}
+  body.dsk .kpi .s{font-size:11px!important}
+  body.dsk .kpi::after{width:84px;height:84px;right:-26px;top:-26px}
+  body.dsk #rk{padding-top:10px}
+}
 
+/* ===== ส่วนที่ทีมแก้ (ช่องเลือกภาค, สีปุ่มวิธีใช้, ไอคอนปุ่มโหมด) ===== */
 
 body.dsk #region {
   /* Reset native OS styling */
@@ -1742,3 +1775,104 @@ body.dsk #modes button::before {
   transform: translateY(-1px); /* Adjust between -2px and 2px until visually centered */
 }
 
+/* แถบส้มของปุ่มโหมดที่เลือก: สีส้มเข้มขึ้นเล็กน้อย ไม่เรืองแสง (จอคอมและมือถือ) */
+body.dsk #modes .mode-pill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60,30,0,.25)!important}
+body.mob #mtabs .mpill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60,30,0,.25)!important}
+/* หัวตารางรายชื่อ: มุมบนเป็นมุมฉาก เส้นประจากกรอบส้มบนกราฟจึงต่อเข้ามุมกรอบพอดี */
+.lhd.lensed{border-radius:0!important}
+.rk .lhd.lensed{margin-bottom:-6px!important}
+.bv-b .lhd.lensed{margin-bottom:-3px!important}
+/* แถบส้มของแท็บ วิธีใช้ / คำศัพท์ ในหน้าวิธีใช้: ไม่เรืองแสง ใช้สีและเงาเดียวกับแถบส้มของปุ่มโหมด */
+.tut-tpill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60,30,0,.25)!important}
+/* กราฟภาพรวม: ไม่แสดงป้ายช่วงลำดับ (เช่น 1–17) บนกรอบส้ม บรรทัดใต้หัวข้อบอกช่วงที่ดูอยู่แล้ว */
+.ov .brtag{display:none!important}
+/* ช่องค้นหา: แสดงผลทั้งหมด เลื่อนดูด้วยลูกกลิ้งเมาส์ */
+.dres{max-height:min(420px,60vh);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#d8cfc0 transparent}
+.dres .dcnt{position:sticky;top:-6px;z-index:1;background:#fff;margin:-6px -6px 2px;padding:9px 16px 6px;font-size:11.5px;font-weight:700;color:#9b9488;border-bottom:1px solid #f0ebe2}
+/* ปุ่ม ช่วงก่อนหน้า / ช่วงถัดไป: เล็กลง ให้รายชื่อเขตได้ที่มากขึ้น */
+.ovnav{padding:5px 2px 0!important}
+.rk>.ovnav button,.ovnav button{padding:4px 11px;font-size:11.5px}
+/* กรอบส้มของรายชื่อ: ใช้เส้นขอบจริงแทนเงาด้านใน แถวที่เลื่อนอยู่จึงไม่ทับเส้นส้ม */
+.list.lensed{box-shadow:none!important;border:1.5px solid #e8740f!important;border-top:0!important}
+.lhd.lensed{box-shadow:none!important;border:1.5px solid #e8740f!important;border-bottom:1px solid var(--line)!important}
+/* ปุ่มล้างข้อความในช่องค้นหา: วงกลมสีครีม กากบาทสีเทาอุ่น ชี้แล้วเป็นสีส้ม */
+.dsrch input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;width:20px;height:20px;margin-right:-4px;border-radius:50%;cursor:pointer;
+  background:#f1ece3 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.5 3.5l5 5M8.5 3.5l-5 5' stroke='%237d766b' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") center/11px no-repeat;transition:background-color .15s}
+.dsrch input::-webkit-search-cancel-button:hover{background-color:#fde6c8;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.5 3.5l5 5M8.5 3.5l-5 5' stroke='%23e8740f' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")}
+
+/* ===== มือถือ: ให้เห็นข้อมูลมากขึ้นและเป็นระเบียบ ===== */
+@media (max-width:640px){
+  /* รายชื่อเขต: แถวเดียว (ชื่อเขต | แท่งระยะห่าง | ตัวเลข | พรรค) */
+  body.mob .list .r[data-k]{grid-template-columns:minmax(0,1fr) 52px 48px 96px!important;grid-template-rows:auto!important;column-gap:8px!important;row-gap:0!important;height:36px!important;padding:0 10px!important}
+  body.mob .list .r[data-k]>span:first-child{grid-column:1!important;grid-row:1!important;font-size:12.5px}
+  body.mob .list .r[data-k] .tr{grid-column:2!important;grid-row:1!important;height:8px}
+  body.mob .list .r[data-k] .v{grid-column:3!important;grid-row:1!important;font-size:12px}
+  body.mob .list .r[data-k] .op{grid-column:4!important;grid-row:1!important;font-size:11px;min-width:0;overflow:hidden;justify-content:flex-end}
+  body.mob .list .r[data-k] .op b{margin-left:3px}
+  body.mob .lhd{grid-template-columns:minmax(0,1fr) 52px 48px 96px!important;column-gap:8px!important;padding:5px 10px 4px!important}
+  body.mob .lhd span:nth-child(2){grid-column:2/4!important;text-align:right!important}
+  body.mob .lhd .lab{display:block!important;grid-column:4!important;text-align:right!important}
+  /* โหมด สส.เขต + บัญชีรายชื่อ: เลื่อนทั้งกล่องได้ รายชื่อแต่ละชุดสูงอย่างน้อย 5 แถว */
+  body.mob #rk.rk2{display:block!important;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  body.mob #rk.rk2 .half{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+  body.mob #rk.rk2 .half .list{flex:none!important;height:184px!important;max-height:none!important;overflow-y:auto}
+  /* ตารางระดับโอกาส: ชื่อเขตบรรทัดเดียว คอลัมน์ตัวเลขไม่ชนกัน */
+  body.mob .th,body.mob .trr{grid-template-columns:minmax(0,1fr) 84px 62px 66px!important;gap:6px!important;padding:6px 10px!important}
+  body.mob .trr>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+  body.mob .trr>span:first-child .muted{display:inline!important}
+  body.mob .trr .tp{font-size:10.5px;padding:1px 7px;white-space:nowrap;justify-self:start}
+  body.mob .trr .tv{display:flex!important;justify-content:flex-end;align-items:baseline;gap:3px;font-size:12px;white-space:nowrap}
+  body.mob .th>span{white-space:nowrap}
+  body.mob .th>span:nth-child(3),body.mob .th>span:nth-child(4){text-align:right}
+  /* เทียบปี 66: การ์ดพรรคจัดใหม่ (อันดับ | โลโก้ | ชื่อ / คะแนน / ป้ายเปลี่ยนอันดับ) ป้ายไม่ลอยหรือหลุดกรอบ */
+  body.mob .cmp .pc,body.mob .cmp .cc{grid-template-columns:24px 26px minmax(0,1fr)!important;grid-template-areas:"rk lg nm" "rk lg pv";column-gap:6px!important;row-gap:0;padding:5px 8px 5px 0!important;min-height:50px;align-items:center}
+  body.mob .cmp .pc.r,body.mob .cmp .cc.r{grid-template-columns:minmax(0,1fr) 26px 24px!important;grid-template-areas:"nm lg rk" "pv lg rk";padding:5px 0 5px 8px!important}
+  body.mob .cmp .rkb{grid-area:rk;font-size:14px!important;margin-top:-6px!important;margin-bottom:-6px!important}
+  body.mob .cmp .lg2{grid-area:lg}
+  body.mob .cmp .pn{grid-area:nm;padding:0!important;display:block!important;min-width:0}
+  body.mob .cmp .pn b{display:block;font-size:12.5px!important}
+  body.mob .cmp .pn span{display:flex!important;align-items:center;gap:4px;max-height:none!important;font-size:10.5px!important;white-space:nowrap;overflow:hidden}
+  body.mob .cmp .r .pn span{justify-content:flex-end}
+  body.mob .cmp .r .pn b{text-align:right}
+  body.mob .cmp .pv{grid-area:pv;display:flex;align-items:baseline;gap:4px;font-size:13px!important;line-height:1.3;white-space:nowrap}
+  body.mob .cmp .r .pv{justify-content:flex-end}
+  body.mob .cmp .pv small{display:inline!important;margin:0!important;font-size:10.5px}
+  body.mob .cmp .bd{display:inline-block!important;height:auto!important;line-height:15px!important;margin:0!important;flex:none}
+  body.mob .cmp .arr{display:none}
+  body.mob .cmp,body.mob .cmph{grid-template-columns:1fr 1fr!important;column-gap:8px}
+}
+/* หัวหน้าจอคอม: บรรทัดเล็กใต้ชื่อหน้าไม่ชนสระล่างของชื่อหน้า (เช่น ญ ในคำว่า บ้านใหญ่) */
+#dtop h1{line-height:1.35!important;margin:0!important}
+#dtop small{display:block;line-height:1.3;margin-top:1px}
+@media (max-width:640px){ body.mob .rk3.tier{grid-template-rows:auto 250px minmax(0,1fr)!important} body.mob .rk3.tier .scw{height:250px} }
+/* มือถือ: หน้า 10 อันดับแรก เทียบปี 66 (การ์ด .pc) จัดให้พอดีทุกความกว้างจอ
+   บรรทัดบน = ชื่อพรรค + จำนวนที่นั่ง, บรรทัดล่าง = คะแนน และป้ายเปลี่ยนอันดับ (ขึ้นบรรทัดใหม่ได้ถ้าจอแคบ) */
+@media (max-width:640px){
+  body.mob .cmph:not(.two2),body.mob .cmp:not(.two2){grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr)!important;column-gap:0!important}
+  body.mob .cmph:not(.two2){font-size:13px}
+  body.mob .cmp:not(.two2) .arr{display:grid!important;font-size:11px}
+  body.mob .cmp .pc{grid-template-columns:22px 24px minmax(0,1fr) auto!important;grid-template-areas:"rk lg nm pv" "rk lg sb sb"!important;column-gap:5px!important;row-gap:1px;padding:5px 7px 5px 0!important;min-height:46px}
+  body.mob .cmp .pc.r{grid-template-columns:auto minmax(0,1fr) 24px 22px!important;grid-template-areas:"pv nm lg rk" "sb sb lg rk"!important;padding:5px 0 5px 7px!important}
+  body.mob .cmp .pc .pn{display:contents!important}
+  body.mob .cmp .pc .pn>b{grid-area:nm;font-size:12px!important;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.mob .cmp .pc .pn>span{grid-area:sb;display:flex!important;flex-wrap:wrap;align-items:center;gap:2px 4px;font-size:10px!important;line-height:1.35;white-space:nowrap;overflow:visible;min-width:0}
+  body.mob .cmp .pc.r .pn>b,body.mob .cmp .pc.r .pn>span{text-align:right;justify-content:flex-end}
+  body.mob .cmp .pc .pv{grid-area:pv;font-size:15px!important;font-weight:700;line-height:1}
+  body.mob .cmp .pc .lg2 svg,body.mob .cmp .pc .lg2 img{width:24px!important;height:24px!important}
+  body.mob .cmp .pc .rkb{font-size:13px!important}
+}
+/* จอโทรศัพท์แคบ (ไม่เกิน 420px): ซ่อนโลโก้พรรคในการ์ด 10 อันดับ ให้ชื่อพรรคและคะแนนอ่านได้ครบ */
+@media (max-width:420px){
+  body.mob .cmp .pc .lg2{display:none!important}
+  body.mob .cmp .pc{grid-template-columns:20px minmax(0,1fr) auto!important;grid-template-areas:"rk nm pv" "rk sb sb"!important;column-gap:6px!important}
+  body.mob .cmp .pc.r{grid-template-columns:auto minmax(0,1fr) 20px!important;grid-template-areas:"pv nm rk" "sb sb rk"!important}
+  body.mob .cmp:not(.two2),body.mob .cmph:not(.two2){grid-template-columns:minmax(0,1fr) 10px minmax(0,1fr)!important}
+}
+@media (max-width:420px){
+  body.mob .cmp .cc .lg2{display:none!important}
+  body.mob .cmp .cc{grid-template-columns:20px minmax(0,1fr)!important;grid-template-areas:"rk nm" "rk pv"!important}
+  body.mob .cmp .cc.r{grid-template-columns:minmax(0,1fr) 20px!important;grid-template-areas:"nm rk" "pv rk"!important}
+  body.mob .cmp .cc .pn span{flex-wrap:wrap;overflow:visible!important}
+}
+/* หน้า 10 อันดับแรก เทียบปี 66: ป้ายเปลี่ยนอันดับ (▲ ▼ ใหม่) อยู่หน้าชื่อพรรค ไม่ตกไปอยู่บรรทัดใหม่ใต้คะแนน (ทุกขนาดจอ) */
+.pc .pn>b .bd{margin:0 5px 0 0!important;vertical-align:1px}
