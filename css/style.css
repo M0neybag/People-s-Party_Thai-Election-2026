@@ -1577,3 +1577,85 @@ body.dsk .mapcard{min-height:0!important}
   body.mob .legend{z-index:6!important;bottom:calc(22px + env(safe-area-inset-bottom,0px))!important}
   body.mob .legend .lg{font-size:13px}
 }
+/* ===== รอบแก้: คำอธิบายสีมือถือไม่พับ, ปุ่มพับคำอธิบายสี, หัวการ์ดเทียบปี 66 เว้นที่เท่ากัน, คำศัพท์ระดับโอกาส ===== */
+body.mob .legend .lgc{display:none}
+.lgc svg{transform:rotate(180deg)}.legend.col .lgc svg{transform:none}   /* กางอยู่: ลูกศรชี้ลง = พับลง, พับอยู่: ลูกศรชี้ขึ้น = กางขึ้น */
+#rk.rk3 .hd h3{margin:12px 0 0!important}
+.tut-tm li{margin:6px 0;line-height:1.55}
+.tut-tm li .crit{display:block;font-size:11.5px;color:#9b9488}
+/* ===== หน้าต่างวิธีใช้: อนิเมชั่น ===== */
+.tut-tabs{position:relative}
+.tut-tabs button{position:relative;z-index:1;background:none!important;transition:color .25s}
+.tut-tabs button.on{color:#fff}
+.tut-tpill{position:absolute;left:3px;top:3px;bottom:3px;border-radius:8px;background:#f39200;box-shadow:0 4px 12px rgba(243,146,0,.35);transition:transform .35s cubic-bezier(.3,.7,.3,1),width .35s cubic-bezier(.3,.7,.3,1)}
+.tut-nav{position:relative}
+.tut-ind{position:absolute;border-radius:9px;background:rgba(243,146,0,.18);pointer-events:none;transition:top .32s cubic-bezier(.3,.7,.3,1),height .32s}
+.tut-ind[hidden]{display:none}
+.tut-list button{position:relative;z-index:1}
+#tut:not(.m) .tut-list button.on{background:none!important}
+.tut-list i{transition:background .25s,border-color .25s,color .25s}
+.tut-list button span{transition:color .2s}
+#tut.m .tut-tpill{border-radius:8px}
+@media (prefers-reduced-motion:reduce){.tut-tpill,.tut-ind{transition:none}}
+/* ===== หน้าต่างวิธีใช้: ลดงานของเครื่องให้อนิเมชั่นลื่น ===== */
+.tut-bg{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(30,26,20,.62)!important}   /* เลิกเบลอพื้นหลัง (ต้องเบลอทั้งหน้าใหม่ทุกเฟรม) ใช้พื้นดำโปร่งแทน */
+.tut-box{contain:layout paint;will-change:transform}   /* สิ่งที่ขยับในหน้าต่างไม่ทำให้หน้าเว็บด้านหลังต้องจัดใหม่ */
+.tut-body{contain:layout paint}
+.tut-tpill,.tut-ind{will-change:transform}
+.tut-ind{transition:transform .32s cubic-bezier(.3,.7,.3,1),height .32s!important;top:0!important}
+
+/* ===== โหมด สส.เขต + บัญชีรายชื่อ: หัวข้อกระชับ ===== */
+.half .hrow{display:flex;align-items:center;gap:8px;min-height:22px}
+.half .hrow h4{margin:0;white-space:nowrap;flex:none}
+.rk2 .half{min-width:0}
+.bv-b .hrow .desc.info{margin:0!important;flex:1;min-width:0;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bv-b .hrow .ovnav{padding:0;flex:none;gap:4px}
+.bv-b .hrow .ovnav button{padding:3px 9px;font-size:11px}
+.bv-b .half{gap:3px}
+.rk2 .hd{flex-wrap:nowrap!important;gap:8px}
+.rk2 .hd h3{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(13px,1vw,17px)!important}
+.rk2 .hd .sub{flex:none}
+.rk2 .hd .sub button{padding-left:10px;padding-right:10px}
+/* ชี้เขต → แถวเดียวกันในอีกกราฟสว่างขึ้น / กดแล้วแถวกะพริบ */
+.list .r.hov{background:#2b29270f;box-shadow:inset 3px 0 0 #2b2927}
+.list .r.flash{animation:rflash 1.2s ease}
+@keyframes rflash{0%,40%{background:#ffe2bf}100%{background:transparent}}
+/* ตารางระดับโอกาส: คอลัมน์ชื่อจังหวัดไม่ถูกเบียด (iPad แนวนอน / จอแคบ) */
+body:not(.mob) .th,body:not(.mob) .trr{grid-template-columns:minmax(0,1.5fr) 108px minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important;padding-left:10px!important;padding-right:10px!important}
+body:not(.mob) .trr .tv{grid-template-columns:auto 46px;gap:4px}
+body:not(.mob) .trr>span:first-child{overflow-wrap:normal;word-break:keep-all}
+body:not(.mob) .th>span:first-child{white-space:nowrap}
+body:not(.mob) .trr>span:first-child{min-width:0}
+body:not(.mob) .trr>span:first-child .muted{white-space:nowrap}
+body:not(.mob) .trr .tp{white-space:nowrap}
+/* มือถือ: แถวรายชื่อเขต 2 บรรทัด (บน: ชื่อเขต + ตัวเลข / ล่าง: แท่งระยะห่าง + พรรค) */
+@media (max-width:640px){
+  body.mob .list .r[data-k]{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto;column-gap:12px!important;row-gap:4px!important;height:auto!important;padding:8px 12px!important;align-items:center!important}
+  body.mob .list .r[data-k]>span:first-child{grid-column:1;grid-row:1;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;font-size:13px;font-weight:600;color:#2b2927}
+  body.mob .list .r[data-k]>span:first-child .muted{display:inline!important;font-weight:400}
+  body.mob .list .r[data-k] .v{grid-column:2!important;grid-row:1!important;text-align:right;font-size:13px;font-weight:700}
+  body.mob .list .r[data-k] .tr{grid-column:1;grid-row:2;height:8px;align-self:center}
+  body.mob .list .r[data-k] .op{grid-column:2!important;grid-row:2!important;display:flex!important;justify-self:end!important;align-items:center;gap:4px;font-size:11.5px;white-space:nowrap;text-align:right}
+  body.mob .lhd{grid-template-columns:1fr auto!important;padding:5px 12px 4px!important}
+  body.mob .lhd span:nth-child(2){grid-column:2!important;text-align:right!important}
+  body.mob .lhd .lab{display:none!important}
+  body.mob .list .r[data-k] .op b{margin-left:4px}
+}
+/* แถบเมนูซ้ายจอคอม: หัวข้อ มุมมอง / ตัวกรอง สีเดียวกับมือถือ และแบ่งหมวดตัวกรอง (เขตที่สนใจ / ตัวเลือกเพิ่มเติม) */
+body.dsk .dsl{color:#9b9488!important;font-size:11.5px!important;font-weight:700;letter-spacing:.6px}
+body.dsk .dsub{font-size:11px;font-weight:700;letter-spacing:.6px;color:#9b9488;margin:12px 4px 6px}
+body.dsk .dsub[hidden]{display:none}
+body.dsk .dsub.dsubo{margin-top:12px;padding-top:10px;border-top:1px solid #4a4742}
+body.dsk.sidec .dsub{display:none}
+@media (max-height:760px){ body.dsk .dsub{margin:8px 4px 4px} body.dsk .dsub.dsubo{margin-top:8px;padding-top:7px} }
+/* จอเตี้ย (เช่นโน้ตบุ๊ก 13 นิ้ว): ยังโชว์หัวข้อแต่ชิดขึ้น ซ่อนเฉพาะจอเตี้ยมาก */
+@media (max-height:660px){ body.dsk #modes button{padding:4px 8px!important} body.dsk #filters .chip{padding:4px 10px} body.dsk #bigf,body.dsk #y66{padding:5px 10px!important} body.dsk .dreset{margin-top:6px} body.dsk .dsl{display:block!important;margin:5px 8px 2px!important} body.dsk .dsub{margin:5px 4px 3px} body.dsk .dsub.dsubo{margin-top:6px;padding-top:5px} }
+@media (max-height:590px){ body.dsk .dsl,body.dsk .dsub{display:none!important} }
+/* แถบซ้ายจอคอม: หัวข้อ มุมมอง / ตัวกรอง สีขาวเหมือนหัวแผ่นตัวกรองบนมือถือ, หัวข้อย่อยสีเทาอุ่นเหมือนมือถือ */
+/* แถบซ้ายจอคอม: มุมมอง ใช้สีและขนาดเดียวกับ เขตที่สนใจ, ไม่มีหัวข้อ ตัวกรอง / ภาค / ตัวเลือกเพิ่มเติม (เหลือเส้นคั่น) */
+body.dsk #dside .dslm{color:#9b9488!important;font-size:11px!important;font-weight:700;letter-spacing:.6px;margin:12px 4px 6px!important}
+body.dsk #dside .dslf{display:none!important}
+body.dsk .dsub{color:#9b9488!important}
+body.dsk #dside .dflt{margin-top:14px}
+body.dsk #dside .dsub.dsubo{margin:12px 4px 10px!important;padding:0!important;height:0;border-top:1px solid #4a4742}
+body.dsk #filters .flab{display:none!important}
