@@ -1135,7 +1135,7 @@ body.dsk #filters .flab{color:#d9d3c8;font-size:12px;width:100%;display:flex;gap
 body.dsk #bigf,body.dsk #y66{position:static!important;display:flex!important;width:100%;background:#58544b!important;border:0!important;box-shadow:none!important;color:#e6e0d5;border-radius:10px!important;padding:9px 11px!important;font-size:13px!important;margin:0!important;grid-column:auto!important;grid-row:auto!important}
 body.dsk #bigf .house path{fill:#e6e0d5}body.dsk #y66 small{display:none!important}body.dsk #y66 b{font-weight:600}
 body.dsk #bigf.on,body.dsk #y66.on{background:rgba(243,146,0,.22)!important;color:#fff}
-body.dsk .app{margin-left:188px;height:100vh!important;min-height:0!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;gap:12px;padding:16px 20px!important}
+body.dsk .app{margin-left:188px;height:100vh!important;height:100dvh!important;min-height:0!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;gap:12px;padding:16px 20px!important}
 body.dsk header.bar{display:none!important}
 #dtop{display:flex;justify-content:space-between;align-items:center}#dtop h1{margin:0;font-size:21px}#dtop small{color:#7d766b;font-size:12.5px}
 .dsrch{position:relative;width:340px}.dsrch input{width:100%;border:0;background:#fff;border-radius:99px;padding:10px 16px 10px 38px;font:inherit;font-size:13.5px;box-shadow:0 1px 3px rgba(0,0,0,.07);outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239b9488' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center;background-size:16px}
@@ -1490,3 +1490,90 @@ body.mob #mfs #y66.dis .why,body.mob #mfs #bigf.dis .why,body.mob #mfs .dis span
 body.mob #mfs #y66.dis,body.mob #mfs #bigf.dis{opacity:1!important;filter:none!important}
 body.mob #mfs #y66.dis>*:not(.why):not(input),body.mob #mfs #bigf.dis>*:not(.why):not(input){opacity:.42;filter:grayscale(1)}
 body:not(.mob) #y66 .why,body:not(.mob) #bigf .why{display:none}
+
+/* ===== กราฟ overview + detail: คำอธิบาย, เลนส์ขยาย, ปุ่มเปลี่ยนช่วง ===== */
+.ovcap{font-size:12px;color:#5d6370;line-height:1.5;margin:-2px 0 6px}
+.ovcap .cw{color:#c2560a}.ovcap .cl{color:#3e6763}
+.rk,.half,#ovm-c{position:relative}
+svg.lens{position:absolute;left:0;top:0;pointer-events:none;z-index:1;overflow:visible}
+.list.lensed{box-shadow:inset 1.5px 0 #e8740f,inset -1.5px 0 #e8740f,inset 0 -1.5px #e8740f;border-radius:0 0 8px 8px}
+.desc .cnt b{color:#c2560a}
+.ovnav{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 2px 2px}
+.ovnav button{padding:6px 13px;border-radius:99px;border:1px solid #d9cfbf;background:#fff;font-weight:700;font-size:12px;white-space:nowrap}
+.ovnav button.pri{background:#2b2927;color:#fff;border-color:#2b2927}
+.ovnav button:disabled{opacity:.35;cursor:default}
+.ovhint{font-size:11px;color:#9b9488;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.half .ovnav button{padding:4px 10px;font-size:11px}.half .ovhint{display:none}
+/* การ์ดสรุป: ป้ายตัวกรอง */
+.kpi .ktag{display:inline-block;align-self:flex-start;background:#fff;color:#c2560a;font-size:11px;font-weight:800;border-radius:99px;padding:2px 9px;margin-bottom:5px;position:relative;z-index:1}
+.kpi .ktag.k2{background:rgba(255,255,255,.25);color:#fff}
+/* คำอธิบายสีโหมดบัญชีรายชื่อ: เตือนว่าเป็นจำนวนเขต */
+.lnote.lwarn{color:#a94f05;background:#fff3e3;border-radius:7px;padding:5px 7px;margin:2px 0 6px;line-height:1.45}
+.legend .lg .n small{font-size:10px;color:#7d766b;font-weight:400}
+/* มือถือ: ปุ่มซูมย้ายขึ้นขวาบน ไม่บังภาคใต้ */
+body.mob .zoom{top:calc(var(--hdh) + 8px)!important;bottom:auto!important}
+body.mob .ovcap{font-size:11.5px}
+body.mob .kpi .ktag{font-size:10px;padding:1px 7px;margin-bottom:3px}
+
+/* ===== รอบแก้ไข: หัวคอลัมน์รายการ, คอลัมน์ขวาชิดขวา, ป้ายการ์ดสรุปไม่ดันความสูง, คำอธิบายสีไม่ตกบรรทัด, หัวข้อหน้า ===== */
+.desc.info{margin:0 0 4px}
+.lhd{display:grid;grid-template-columns:128px 1fr 52px 122px;gap:8px;align-items:center;padding:5px 8px 4px;font-size:11px;color:#7d766b;font-weight:600}
+.lhd span:nth-child(2){grid-column:2/4;text-align:center}
+.lhd .lab{text-align:right}
+.lhd.lensed{box-shadow:inset 1.5px 0 #e8740f,inset -1.5px 0 #e8740f,inset 0 1.5px #e8740f;border-radius:8px 8px 0 0;border-bottom:1px solid var(--line);position:relative;z-index:2}
+.r[data-k] .v{text-align:right}
+.r[data-k] .op{justify-content:flex-end;justify-self:end}
+body.mob .lhd{grid-template-columns:1fr 60px 150px;padding:5px 10px 4px}
+body.mob .lhd span:nth-child(2){grid-column:2;text-align:right}
+@media (max-width:640px){ .lhd{grid-template-columns:110px 1fr 48px} .lhd span:nth-child(2){grid-column:2/4;text-align:right} .lhd .lab{display:none} }
+/* การ์ดสรุป: ป้ายตัวกรองลอยมุมขวาบน ไม่ดันเนื้อหา ความสูงการ์ดคงที่ */
+.kpi .ktag{position:absolute!important;right:12px;top:10px;margin:0!important;z-index:2}
+.kpi .ktag{font-size:0!important}.kpi .ktag::after{content:attr(data-s);font-size:11px}
+body.mob .kpi .ktag{right:8px;top:7px;padding:1px 7px}
+body.mob .kpi .ktag::after{font-size:10px}
+body.mob .kpi:has(.ktag) .l{padding-right:64px}
+/* คำอธิบายสี: ชื่อกลุ่มและตัวเลขไม่ตกบรรทัด */
+.legend .lg>span:nth-child(2),.legend .lg .n{white-space:nowrap}
+.legend .lg{column-gap:8px}
+/* มือถือ: หมายเหตุของคำอธิบายสี แสดงเหนือแถบ */
+#lgnote{display:none}
+body.mob #lgnote{display:block;position:absolute;left:8px;right:8px;z-index:6;font-size:11px;line-height:1.4;color:#5d4a2c;background:rgba(255,243,227,.95);border-radius:9px;padding:5px 9px;box-shadow:0 2px 8px rgba(40,30,10,.08);pointer-events:none}
+body.mob #lgnote:empty{display:none}
+/* หัวข้อหน้า: ชิดบรรทัดรองด้านล่าง */
+#dtop h1{line-height:1.1;margin:0 0 1px!important}
+#dtop small{display:block;line-height:1.3}
+#dtop>div:first-child{display:flex;flex-direction:column;justify-content:flex-end;gap:0}
+body.mob.lgn #map{height:calc(100% - 86px)!important}
+body.mob .right.kc .kpi .ktag.k2{display:none}
+/* รอบแก้: ป้ายตัวกรองบนการ์ดมือถือเป็นป้ายลอยบนขอบการ์ด, หัวกราฟชิดกัน, ช่องสีพรรคเท่ากัน */
+body.mob .kpi{overflow:visible!important}
+body.mob .kpi .ktag{top:-9px!important;right:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.15);white-space:nowrap}
+body.mob .kpi:has(.ktag) .l{padding-right:0!important}
+.rk .hd{margin-bottom:0!important}
+.rk>.desc.info:first-of-type,.rk .hd+.desc,.rk .hd+.ovcap+.desc{margin-top:-6px!important}
+.op .sw,.list .sw{width:9px!important;height:9px!important;min-width:9px;flex:0 0 9px!important}
+#rk .hd+.desc.info,.half h4+.desc.info{margin-top:-7px!important}
+body.dsk .kpis{padding-top:10px}
+.kpi{overflow:visible!important}
+.kpi .ktag{top:-9px!important;right:12px!important;box-shadow:0 2px 6px rgba(0,0,0,.15);white-space:nowrap}
+.kpi .ktag.k2{background:#fff!important;color:#7d766b!important}
+.kpi:has(.ktag) .l{padding-right:0!important}
+/* ช่องสีพรรคเรียงเป็นแนวเดียวกันทุกแถว (ตำแหน่งเดียวกัน จึงคมเท่ากัน) ชื่อพรรคและหัวคอลัมน์ชิดซ้ายของคอลัมน์ */
+.r[data-k] .op{justify-content:flex-start!important;justify-self:stretch!important}
+.lhd .lab{text-align:left!important}
+/* การ์ดสรุปทั้ง 2 ใบใช้สีเดียวกัน (เดิมใบที่ 2 จบด้วย #f39200 ใบแรกจบด้วย #ef7d00) */
+body.dsk .kpi:nth-child(n),body.mob .kpi:nth-child(n){background:linear-gradient(135deg,#e89611,#ef7d00)!important}
+
+/* ===== ไอแพด / Safari: ความสูงจอจริง (ไม่รวมแถบเครื่องมือ Safari) คำอธิบายสีและการ์ดสรุปเขตจึงไม่ตกขอบล่าง ===== */
+html,body{height:100%;height:100dvh}
+#dside{height:100dvh;bottom:auto}
+body.dsk .mapcard{min-height:0!important}
+#peek .pk-tip{max-height:min(40vh,calc(100dvh - 220px))}
+/* ไอแพดแนวตั้ง: ไอคอนและตัวหนังสือแถบมุมมองใหญ่ขึ้น, คำอธิบายสีอยู่เหนือแผนที่เสมอ */
+@media (min-width:641px){
+  body.mob{--tabh:70px}
+  body.mob #mtabs button svg{width:24px!important;height:24px!important}
+  body.mob #mtabs button,body.mob #mtabs button span{font-size:13px!important}
+  body.mob .legend{z-index:6!important;bottom:calc(22px + env(safe-area-inset-bottom,0px))!important}
+  body.mob .legend .lg{font-size:13px}
+}
