@@ -175,7 +175,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .pc.r .pn,.cc.r .pn{order:2;text-align:right}
 .pc.r .pv,.cc.r .pv{order:1;text-align:left}
 .lg2{display:grid;place-items:center}
-.pn{display:grid;min-width:0;padding:6px 0}
+.pn{display:inline !important;min-width:0;padding:6px 0}
 .pn b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pn span{font-size:11px;color:var(--muted)}
 .pv{font-family:"IBM Plex Sans Thai",sans-serif;font-size:22px;font-weight:600;line-height:1}
@@ -669,7 +669,7 @@ header.bar .seg {
 
   .pc.r .pn, .cc.r .pn {
     order: 2;
-    text-align: left;
+    text-align: right!important;
   }
 
   .ptab .nm span:hover {
@@ -1336,7 +1336,7 @@ body.mob header.bar .brand b .mk{display:block;color:#f39200;font-size:10.5px;fo
 body.mob header.bar .brand span{color:#9b9488!important;font-size:11.5px!important}
 body.mob #mflt{background:#58544b;border:0;color:#f1ece4}
 body.mob #mflt.has{box-shadow:inset 0 0 0 1.5px #f39200}
-body.mob .hhelp{background:#58544b;color:#fff}
+body.mob .hhelp{background:#f39200;color:#fff}
 body.mob .mapcard{background:radial-gradient(70% 60% at 55% 50%,#fff7ec,#fff7ec 80%)!important}
 body.mob .legend{background:rgba(255,255,255,.92)!important;border:0!important;border-radius:12px!important;box-shadow:0 4px 16px rgba(40,30,10,.10)!important;backdrop-filter:blur(6px)}
 body.mob .legend .lg{border:0!important;background:#fff7ec!important;border-radius:8px!important}
@@ -1355,7 +1355,7 @@ body.mob .sub .on{background:#363430;border-color:#363430;color:#fff}
 /* แถบมุมมองด้านล่าง: สีเข้ม ปุ่มที่เลือกเป็นแถบส้มแบบเดียวกับเมนูจอคอม */
 body.mob #mtabs{background:#363430;border-top:0;padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:4px}
 body.mob #mtabs button{color:#9b9488;border-radius:12px;transition:background .25s,color .25s}
-body.mob #mtabs button.on{background:#f39200;color:#fff;box-shadow:0 4px 14px rgba(243,146,0,.35)}
+body.mob #mtabs button.on{background:#f39200!important;color:#fff;box-shadow:0 4px 14px rgba(243,146,0,.35)}
 /* แผ่นตัวกรอง: สีเข้มแบบแถบเมนูจอคอม */
 body.mob .mfs-box{background:#363430;color:#e6e0d5}
 body.mob .mfs-box .mgrab::before{background:#4a4742}
@@ -1369,7 +1369,7 @@ body.mob #mfs .y66,body.mob #mfs .bigf{background:#58544b!important;border:0!imp
 body.mob #mfs .bigf .house path{fill:#e6e0d5}
 body.mob #mfs .y66.on,body.mob #mfs .bigf.on{background:rgba(243,146,0,.22)!important;color:#fff}
 body.mob .mrst{color:#f39200!important}
-body.mob .mgo{background:#f39200;color:#fff;box-shadow:0 6px 18px rgba(243,146,0,.35)}
+body.mob .mgo{background:#f39200;color:#fff;}
 /* ไอแพดแนวตั้ง: แผ่นตัวกรองไม่กว้างเต็มจอ */
 @media (min-width:641px){ body.mob .mfs-box{left:50%;right:auto;width:560px;transform:translate(-50%,100%)} body.mob #mfs.open .mfs-box{transform:translate(-50%,0)} }
 /* ไอแพดแนวตั้ง: จอกว้างพอ แถวในรายการใช้บรรทัดเดียวแบบจอคอม */
@@ -1465,14 +1465,13 @@ body.mob #mfs #filters{display:flex!important;flex-direction:column!important;ga
 body.mob #mfs #filters .chip{width:100%;display:flex;align-items:center;justify-content:space-between;border-radius:10px!important;padding:9px 12px!important;font-size:13.5px!important}
 body.mob #mfs #filters .chip .n{margin-left:auto}
 body.mob #mfs #filters .chip .ck{margin-left:8px;font-size:10.5px;background:#4a4742!important;border-radius:6px;padding:1px 6px}
-body.mob #mfs #filters .chip.on{box-shadow:inset 3px 0 0 #f39200}
 body.mob .mfs-t{margin:14px 0 0;padding-top:10px;border-top:1px solid #4a4742}
 body.mob .mfs-t::before{content:'ตัวเลือกเพิ่มเติม';display:block;font-size:11.5px;letter-spacing:.6px;color:#9b9488;font-weight:700;margin-bottom:8px}
 body.mob #mfs .y66,body.mob #mfs .bigf{padding:11px 12px!important;margin-top:6px!important;align-items:center;flex-wrap:wrap;row-gap:2px}
 body.mob #mfs .why{display:none;flex-basis:100%;padding-left:28px;font-size:11px;color:#ff8a80;font-weight:600;opacity:1!important;filter:none!important}
 body.mob #mfs .dis .why{display:block}
 body.mob #mfs .dis::after{display:none!important}
-body.mob .mgo{position:sticky;bottom:0;margin:14px 0 calc(12px + env(safe-area-inset-bottom))!important;width:100%!important;border-radius:14px!important;padding:14px!important;font-size:15px!important;box-shadow:0 -10px 20px 6px #363430,0 6px 18px rgba(243,146,0,.35)!important}
+body.mob .mgo{position:sticky;bottom:0;margin:14px 0 calc(12px + env(safe-area-inset-bottom))!important;width:100%!important;border-radius:14px!important;padding:14px!important;font-size:15px!important;}
 /* ตัวเลือกที่ใช้ไม่ได้: เมาส์เป็นรูปห้ามทั้งปุ่ม (รวมช่องติ๊กและข้อความ) */
 #y66.dis,#y66.dis *,#bigf.dis,#bigf.dis *{cursor:not-allowed!important}
 /* การ์ดสรุปเขต: เด้งขึ้นนุ่มๆ แถวผู้สมัครค่อยๆ เข้ามา, เปลี่ยนเขตแล้วเนื้อหาจางเข้า */
@@ -1830,8 +1829,8 @@ body.mob #mtabs .mpill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60
   body.mob .cmp .rkb{grid-area:rk;font-size:14px!important;margin-top:-6px!important;margin-bottom:-6px!important}
   body.mob .cmp .lg2{grid-area:lg}
   body.mob .cmp .pn{grid-area:nm;padding:0!important;display:block!important;min-width:0}
-  body.mob .cmp .pn b{display:block;font-size:12.5px!important}
-  body.mob .cmp .pn span{display:flex!important;align-items:center;gap:4px;max-height:none!important;font-size:10.5px!important;white-space:nowrap;overflow:hidden}
+  body.mob .cmp .pn b{font-size:12.5px!important}
+  body.mob .cmp .pn span{display:inline!important;align-items:center;gap:4px;max-height:none!important;font-size:10.5px!important;white-space:nowrap;overflow:hidden}
   body.mob .cmp .r .pn span{justify-content:flex-end}
   body.mob .cmp .r .pn b{text-align:right}
   body.mob .cmp .pv{grid-area:pv;display:flex;align-items:baseline;gap:4px;font-size:13px!important;line-height:1.3;white-space:nowrap}
@@ -1854,7 +1853,7 @@ body.mob #mtabs .mpill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60
   body.mob .cmp .pc{grid-template-columns:22px 24px minmax(0,1fr) auto!important;grid-template-areas:"rk lg nm pv" "rk lg sb sb"!important;column-gap:5px!important;row-gap:1px;padding:5px 7px 5px 0!important;min-height:46px}
   body.mob .cmp .pc.r{grid-template-columns:auto minmax(0,1fr) 24px 22px!important;grid-template-areas:"pv nm lg rk" "sb sb lg rk"!important;padding:5px 0 5px 7px!important}
   body.mob .cmp .pc .pn{display:contents!important}
-  body.mob .cmp .pc .pn>b{grid-area:nm;font-size:12px!important;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.mob .cmp .pc .pn>b{grid-area:nm;font-size:12px!important;min-width:0;white-space:nowrap;overflow:visible;text-overflow:unset}
   body.mob .cmp .pc .pn>span{grid-area:sb;display:flex!important;flex-wrap:wrap;align-items:center;gap:2px 4px;font-size:10px!important;line-height:1.35;white-space:nowrap;overflow:visible;min-width:0}
   body.mob .cmp .pc.r .pn>b,body.mob .cmp .pc.r .pn>span{text-align:right;justify-content:flex-end}
   body.mob .cmp .pc .pv{grid-area:pv;font-size:15px!important;font-weight:700;line-height:1}
@@ -1876,3 +1875,51 @@ body.mob #mtabs .mpill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60
 }
 /* หน้า 10 อันดับแรก เทียบปี 66: ป้ายเปลี่ยนอันดับ (▲ ▼ ใหม่) อยู่หน้าชื่อพรรค ไม่ตกไปอยู่บรรทัดใหม่ใต้คะแนน (ทุกขนาดจอ) */
 .pc .pn>b .bd{margin:0 5px 0 0!important;vertical-align:1px}
+
+
+.pn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px; 
+  width: 100%;
+}
+
+.pn > span {
+  white-space: nowrap; 
+  flex-shrink: 0;      
+}
+
+@media (max-width: 640px) {
+  body.mob .r .cmp .pc .pn {
+    display: contents !important;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+  }
+
+  /* body.mob .cmp .pc .pn > span {
+    margin-left: auto;
+    white-space: nowrap;
+  } */
+
+  
+  body.mob .cmp .pc .pn > span {
+  margin-left: auto;
+  white-space: nowrap;
+  }
+
+  body.mob .cmp .pc.l .pn > span {
+  margin-left: 0;
+  margin-right: auto; 
+  }
+
+   .pc.r.sm {
+      text-align: right;
+   }
+}
+
+.r .pn b {
+    display: block;
+}
