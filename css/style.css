@@ -1355,7 +1355,7 @@ body.mob .sub .on{background:#363430;border-color:#363430;color:#fff}
 /* แถบมุมมองด้านล่าง: สีเข้ม ปุ่มที่เลือกเป็นแถบส้มแบบเดียวกับเมนูจอคอม */
 body.mob #mtabs{background:#363430;border-top:0;padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:4px}
 body.mob #mtabs button{color:#9b9488;border-radius:12px;transition:background .25s,color .25s}
-body.mob #mtabs button.on{background:#f39200!important;color:#fff;box-shadow:0 4px 14px rgba(243,146,0,.35)}
+body.mob #mtabs button.on{background:#f39200;color:#fff;box-shadow:0 4px 14px rgba(243,146,0,.35)}
 /* แผ่นตัวกรอง: สีเข้มแบบแถบเมนูจอคอม */
 body.mob .mfs-box{background:#363430;color:#e6e0d5}
 body.mob .mfs-box .mgrab::before{background:#4a4742}
