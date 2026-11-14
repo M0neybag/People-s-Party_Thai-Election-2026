@@ -1,5 +1,6 @@
 /* พรรคประชาชน */
 'use strict';
+const T_LOAD = performance.now();   /* เวลาที่เปิดเว็บ ใช้แยกการวาดกราฟใหม่ช่วงหน้ากำลังจัดวาง */
 /* หมายเหตุ: คำว่า สส.บัญชีรายชื่อ ในข้อความที่แสดงบนจอ มีอักขระ U+2060 (word joiner มองไม่เห็น) คั่นไว้ เพื่อไม่ให้คำถูกตัดขึ้นบรรทัดใหม่กลางคำ */
 const PPN = 'ประชาชน';
 const MAIN5 = ['ภูมิใจไทย','ประชาชน','เพื่อไทย','กล้าธรรม','ประชาธิปัตย์'];
@@ -139,13 +140,15 @@ function init() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
   $('#rescon').addEventListener('click', e => { const b = e.target.closest('[data-res]'); if (b) { ST.h.res = b.dataset.res; render(); } });
   setupMap(); render(); fitView(false);
-  let to, first = true;
+  let to, first = true, liveQ = false;
   /* กรอบเปลี่ยนขนาด (ย่อหน้าต่าง / พับแถบเมนู): ถ้าผู้ใช้ยังไม่ได้ซูมหรือลากแผนที่ จัดให้พอดีกรอบใหม่, ถ้าซูมหรือลากไว้แล้ว คงจุดกลางและระดับซูมเดิม */
   let sz = null; const mapSz = () => { const n = svg.node(); return [n.clientWidth, n.clientHeight]; };
   /* ระหว่างกรอบค่อย ๆ กว้างขึ้นหรือแคบลง (เช่น พับแถบเมนูซ้าย) เลื่อนแผนที่ตามทุกเฟรม ให้จุดกึ่งกลางเดิมอยู่กลางกรอบเสมอ แผนที่จึงเลื่อนไปอย่างนุ่มนวล ไม่กระโดดทีหลัง */
   new ResizeObserver(() => { if (first) { first = false; sz = mapSz(); return; }
     const t0 = d3.zoomTransform(svg.node()), c0 = sz ? t0.invert([sz[0] / 2, sz[1] / 2]) : null, [W0, H0] = mapSz();
     if (c0 && W0 && H0) { svg.interrupt(); gRoot.attr('transform', d3.zoomIdentity.translate(W0 / 2 - t0.k * c0[0], H0 / 2 - t0.k * c0[1]).scale(t0.k)); svg.node().__zoom = d3.zoomIdentity.translate(W0 / 2 - t0.k * c0[0], H0 / 2 - t0.k * c0[1]).scale(t0.k); sz = [W0, H0]; }
+    /* กราฟด้านขวาวาดใหม่ตามความกว้างทุกเฟรมไปพร้อมกับแถบเมนูที่กำลังหดหรือขยาย (ไม่รอให้แถบเลื่อนเสร็จก่อน) */
+    if (performance.now() - T_LOAD > 4000 && !liveQ) { liveQ = true; requestAnimationFrame(() => { liveQ = false; window.__LIVE = true; try { renderRight(); } finally { window.__LIVE = false; } }); }
     clearTimeout(to); to = setTimeout(() => {
     const t = d3.zoomTransform(svg.node()), c = sz ? t.invert([sz[0] / 2, sz[1] / 2]) : null;
     render();
@@ -403,7 +406,7 @@ function chartBlock(host, kind, OH, wkey) {
   ORD.sort(ST.sort === 'reg' ? (a, b) => RO.indexOf(a.reg) - RO.indexOf(b.reg) || vv(b) - vv(a) : (a, b) => vv(b) - vv(a));
   const listEl = host.querySelector('.list'), ovw = host.querySelector('.ovw');
   const ow = listEl.clientWidth, NR = Math.max(4, Math.floor((listEl.clientHeight - 2) / ROWH));
-  const N = ORD.length, lo = -70, hi = 55, x0 = 28, bw = (ow - x0 - 2) / Math.max(1, N);   /* แท่งแคบกว่า 3px เว้นช่องว่างเล็กน้อยระหว่างแท่ง (ประมาณ 1 ใน 4 ของช่อง) */
+  const N = ORD.length, lo = -70, hi = 55, x0 = 28, bw = (ow - x0 - 2) / Math.max(1, N);   
   const ext = null;
   const yy = v => 8 + (hi - v) / (hi - lo) * (OH - 22);
   const ticks = [40, 20, 0, -20, -40, -60];
@@ -421,7 +424,7 @@ function chartBlock(host, kind, OH, wkey) {
     if (nw) s += `<rect x="${x0}" y="2" width="${xm - x0}" height="${OH - 14}" fill="#f39200" opacity=".07"/>`;
     if (nw < N) s += `<rect x="${xm}" y="2" width="${ow - xm}" height="${OH - 14}" fill="#3e6763" opacity=".06"/>`; }
   ticks.forEach(v => s += `<line x1="${x0}" x2="${ow}" y1="${yy(v)}" y2="${yy(v)}" stroke="#e1e4ea" stroke-dasharray="2 3"/><text x="24" y="${yy(v) + 3}" font-size="9" text-anchor="end" fill="#5d6370" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
-  ORD.forEach((d, i) => { const v = val(d) ?? 0; s += `<rect data-ob="${key(d)}" x="${bw < 3 ? x0 + i * bw + bw * .04 : x0 + i * bw + bw * .075}" width="${bw < 3 ? bw * 0.92 : Math.max(.7, bw * .85)}" y="${yy(Math.max(0, v))}" height="${Math.max(.8, Math.abs(yy(v) - yy(0)))}" fill="${gcolv(val(d))}" opacity="${on(d) ? 1 : .22}"/>`; });
+  ORD.forEach((d, i) => { const v = val(d) ?? 0; s += `<rect data-ob="${key(d)}" x="${x0 + i * bw + bw * .075}" width="${Math.max(.7, bw * .85)}" y="${yy(Math.max(0, v))}" height="${Math.max(.8, Math.abs(yy(v) - yy(0)))}" fill="${gcolv(val(d))}" opacity="${on(d) ? 1 : .22}"/>`; });
   if (c5) [['+5%', c5[0], 'end', -3], ['−5%', c5[1], 'start', 3]].forEach(([t, x, an, dx]) => s += `<text x="${x + dx}" y="${yy(-52)}" font-size="10" font-weight="700" text-anchor="${an}" fill="#c2560a" paint-order="stroke" stroke="#fff" stroke-width="3">${t}</text>`);
   if (ST.sort === 'reg') { let s0 = 0; RO.forEach(r => { const n = ORD.filter(d => d.reg === r).length; if (!n) return; const xa = x0 + s0 * bw, xb = x0 + (s0 + n) * bw;
     s += `<text x="${(xa + xb) / 2}" y="${OH - 2}" font-size="9.5" text-anchor="middle" fill="#5d6370">${short(r)}</text>`; if (s0) s += `<line x1="${xa}" x2="${xa}" y1="4" y2="${OH - 12}" stroke="#9aa0ab" stroke-dasharray="3 3"/>`; s0 += n; }); }
@@ -542,7 +545,8 @@ function renderTier(rk) {
   [[(-72 + T.far) / 2,38,'far'],[(T.far + T.lo) / 2,38,'cand'],[(T.hi + 46) / 2,38,'safe'],[(T.hi + 46) / 2,-50,'hold']].forEach(([a, b, k]) => sv += `<text x="${xs(a)}" y="${ys(b)}" text-anchor="middle" font-size="12" font-weight="700" fill="${d3.color(TT[k][1]).darker({far:1.4, hold:1.4, safe:.4, cand:2.2}[k])}">${TT[k][0]}</text>`);
   sv += `<text x="${xs(T.lo / 2)}" y="${m.t - 3}" text-anchor="middle" font-size="11" font-weight="700" fill="${d3.color(TT.flip[1]).darker(1.1)}">พลิกได้</text>`;
   [-60,-40,-20,0,20,40].forEach(v => sv += `<text x="${m.l - 6}" y="${ys(v) + 3}" font-size="9.5" text-anchor="end" fill="#5d6370" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
-  [T.far,T.lo,0,T.hi].forEach(v => sv += `<line x1="${xs(v)}" x2="${xs(v)}" y1="${m.t}" y2="${SH - m.b}" stroke="#2b2927" stroke-width="${v ? 1 : 1.6}" ${v ? 'stroke-dasharray="4 3"' : ''} opacity=".7"/><text x="${xs(v)}" y="${SH - m.b + 13}" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
+  const MOBX = document.body.classList.contains('mob');   /* มือถือ: ป้าย −5% ชิดซ้ายเส้นประ (% ตรงเส้น) และ +5% ชิดขวาเส้นประ (+ ตรงเส้น) ไม่ทับเลข 0 */
+  [T.far,T.lo,0,T.hi].forEach(v => sv += `<line x1="${xs(v)}" x2="${xs(v)}" y1="${m.t}" y2="${SH - m.b}" stroke="#2b2927" stroke-width="${v ? 1 : 1.6}" ${v ? 'stroke-dasharray="4 3"' : ''} opacity=".7"/><text x="${xs(v)}" y="${SH - m.b + 13}" font-size="10" text-anchor="${MOBX && v === T.lo ? 'end' : MOBX && v === T.hi ? 'start' : 'middle'}" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   sv += `<line x1="${m.l}" x2="${W - m.r}" y1="${ys(T.ly)}" y2="${ys(T.ly)}" stroke="#2b2927" stroke-width="1.6" opacity=".7"/>`;
   sv += `<text x="${(m.l + W) / 2}" y="${SH - 3}" font-size="11" text-anchor="middle" fill="#2b2927" font-weight="700">← แพ้   ผลการแข่งขัน สส.เขต ของพรรคประชาชน   ชนะ →</text>`;
   sv += `<text transform="translate(11,${(SH - m.b + m.t) / 2}) rotate(-90)" font-size="11" text-anchor="middle" fill="#2b2927" font-weight="700">สส.⁠บัญชี⁠ราย⁠ชื่อ แพ้ ← → ชนะ</text>`;
@@ -902,7 +906,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(R + ' rect[data-ob]').forEach(r => ob[hid(r) + r.dataset.ob] = attrs(r));
     document.querySelectorAll(R + ' .r[data-k] .tr i').forEach(i => { const r = i.closest('.r'); rows[hid(r) + r.dataset.k] = {left:i.style.left, width:i.style.width}; });
     document.querySelectorAll(R + ' circle.dot[data-k]').forEach(c => dots[c.dataset.k] = attrs(c));
-    return {ob, rows, dots};
+    const ow = {}; document.querySelectorAll(R + ' svg.ov').forEach(sv => ow[hid(sv)] = sv.getAttribute('width'));   /* ความกว้างกราฟก่อนวาดใหม่ */
+    return {ob, rows, dots, ow};
   }
   let C_morph = false;   
   function chartPlay(S, R = '#rk', f = 1) {   /* f = ตัวคูณความช้า (popup ใช้ 1.5) */
@@ -911,12 +916,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(R + ' svg.ov').forEach(sv => {
       const z = [...sv.querySelectorAll('line')].find(l => l.getAttribute('opacity') === '.55'), y0 = z ? +z.getAttribute('y1') : 0, rs = sv.querySelectorAll('rect[data-ob]'), n = rs.length || 1;
       let moved = 0;
+      /* ช่วงเพิ่งเปิดเว็บ (หน้ายังจัดวางไม่เสร็จ) กราฟถูกวาดใหม่เพราะความกว้างเปลี่ยน → เริ่มยืดแท่งจากแกน 0 ใหม่ที่ตำแหน่งจริง ไม่วิ่งหดตามแนวนอน
+         หลังจากนั้น (เช่น เปิดหรือปิดแถบเมนูซ้าย) แท่งยังเลื่อนไปตำแหน่งใหม่แบบเดิม */
+      const resized = performance.now() - T_LOAD < 4000 && S.ow && S.ow[hid(sv)] != null && S.ow[hid(sv)] !== sv.getAttribute('width');
       /* ชุดเขตเปลี่ยน (เช่น เลือกภาคจาก dropdown) → ถือเป็นกราฟใหม่ ทุกแท่งงอกจากเส้น 0% */
       const same = rs.length === Object.keys(S.ob).filter(k => k.startsWith(hid(sv))).length && [...rs].every(r => S.ob[hid(r) + r.dataset.ob]);
       /* มีแท่งที่ทั้งย้ายที่และเปลี่ยนความสูง = สลับ สส.เขต ↔ บัญชีรายชื่อ → ทุกแท่งต้องยุบแล้วงอกใหม่พร้อมกัน (รวมแท่งที่บังเอิญอยู่ลำดับเดิม) */
-      const swap = same && [...rs].some(r => { const o = S.ob[hid(r) + r.dataset.ob]; return o.x !== r.getAttribute('x') && (o.y !== r.getAttribute('y') || o.height !== r.getAttribute('height')); });
+      const swap = same && !resized && [...rs].some(r => { const o = S.ob[hid(r) + r.dataset.ob]; return o.x !== r.getAttribute('x') && (o.y !== r.getAttribute('y') || o.height !== r.getAttribute('height')); });
       if (swap) anySwap = true;
-      rs.forEach((r, i) => { const o = same ? S.ob[hid(r) + r.dataset.ob] : null, now = attrs(r), t = d3.select(r);
+      rs.forEach((r, i) => { const o = same && !resized ? S.ob[hid(r) + r.dataset.ob] : null, now = attrs(r), t = d3.select(r);
         if (!o) return svgTween(r, {y:y0, height:0}, i / n * 400, C_DUR);          /* แท่งใหม่ → งอกจากเส้น 0% ไล่ซ้ายไปขวา */
         const dx = o.x !== now.x, dh = o.y !== now.y || o.height !== now.height;
         if (!dx && !swap) return svgTween(r, {y:o.y, height:o.height}, 0, C_DUR);
@@ -942,6 +950,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.chartAnim = {snap:chartSnap, play:chartPlay, off:() => RM.matches};   /* ให้ popup กราฟขยายใช้ animation ชุดเดียวกัน */
   const _renderRight = renderRight;
   renderRight = function () {
+    if (window.__LIVE) { _renderRight(); return; }   /* วาดตามขนาดกรอบทุกเฟรมระหว่างเปิดหรือปิดแถบเมนู ไม่ต้องมี animation ซ้อน */
     const C = RM.matches || ST.mode === 'house' ? null : chartSnap();
     _renderRight();
     if (C) chartPlay(C);
