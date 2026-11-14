@@ -1007,7 +1007,7 @@ div.hd.a-in h3 {
 .pin button:hover{border-color:var(--ink)}
 .ovm-empty{font-size:12.5px;color:var(--muted)}
 .ovm-ch{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;position:relative}
-.ovm-lane{position:relative;height:0;flex:none;margin:0 0 -4px}
+.ovm-lane{position:relative;height:50px;flex:none;margin:0 0 -4px}
 .ovm-lane .pl{position:absolute;transform:translateX(-50%);font-size:11px;font-weight:700;color:#fff;background:var(--pc);padding:0 6px;line-height:15px;border-radius:4px;white-space:nowrap;z-index:1}
 .ovm-lane .pll{position:absolute;bottom:0;width:0;border-left:1px dashed var(--pc)}
 @media (max-width:700px){
@@ -1875,7 +1875,15 @@ body.mob #mtabs .mpill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60
 }
 /* หน้า 10 อันดับแรก เทียบปี 66: ป้ายเปลี่ยนอันดับ (▲ ▼ ใหม่) อยู่หน้าชื่อพรรค ไม่ตกไปอยู่บรรทัดใหม่ใต้คะแนน (ทุกขนาดจอ) */
 .pc .pn>b .bd{margin:0 5px 0 0!important;vertical-align:1px}
+/* หน้าขยายกราฟ: แถวหมุดเล็กลง (ชื่อเขต ปุ่มดูรายละเอียด ปุ่มปิด) */
+.ovm-pins{gap:6px!important;min-height:28px!important}
+.ovm-pins .pin{gap:6px!important;padding:2px 6px 2px 7px!important;border-left-width:4px!important;border-radius:7px!important;font-size:11px!important}
+.ovm-pins .pin .nm,.ovm-pins .pin .nm *{font-size:11.5px!important}
+.ovm-pins .pin button{font-size:10.5px!important;padding:1px 7px!important;line-height:1.5!important;min-height:0!important;height:auto!important}
+.ovm-pins .pin button:last-child{width:20px!important;height:20px!important;padding:0!important;display:grid;place-items:center}
+.ovm-pins .pin button svg{width:10px!important;height:10px!important}
 
+/* ===== ส่วนที่ทีมแก้ (การ์ดพรรค .pn) ===== */
 
 .pn {
   display: flex;
@@ -1923,3 +1931,17 @@ body.mob #mtabs .mpill{background:#e8850a!important;box-shadow:0 1px 2px rgba(60
 .r .pn b {
     display: block;
 }
+
+/* ===== เปลี่ยนคำ บัญชีรายชื่อ เป็น สส.บัญชีรายชื่อ: จัดจุดที่คำยาวขึ้น ===== */
+/* แถบซ้ายจอคอม: แถบกว้างเท่าเดิม ปุ่มโหมดตัวเล็กลงนิดหนึ่งให้ "สส.เขต + สส.บัญชีรายชื่อ" อยู่บรรทัดเดียว */
+body.dsk #modes button{font-size:13px!important;gap:9px!important;line-height:1.3;white-space:normal!important}
+body.dsk #modes button *{white-space:normal!important}
+/* มือถือ: หัวการ์ด KPI ขึ้น 2 บรรทัดได้ ไม่ถูกตัดท้าย */
+body.mob .kpi .l{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.35}
+/* หัวกล่องโหมดรวม 2 แบบ: จอแคบให้ขึ้น 2 บรรทัด ปุ่มเรียงยังอยู่ด้านขวา */
+.rk2 .hd h3{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.3}
+/* แถบซ้ายตอนพับ: ไอคอนโหมดอยู่กึ่งกลางปุ่มพอดี (กฎขนาดตัวอักษรของปุ่มโหมดด้านบนเคยเพิ่มระยะห่างให้ไอคอนเยื้องซ้าย) */
+body.dsk.sidec #modes button{gap:0!important;justify-content:center!important;padding:10px 0!important}
+body.dsk.sidec #modes button::before{margin:0!important}
+body.dsk.sidec #dside{overflow:hidden!important;scrollbar-gutter:auto!important}
+#dside,body.dsk .app{transition:width .3s cubic-bezier(.3,.7,.3,1),margin-left .3s cubic-bezier(.3,.7,.3,1),padding .3s cubic-bezier(.3,.7,.3,1)!important}

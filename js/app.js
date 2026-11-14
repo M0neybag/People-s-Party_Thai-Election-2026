@@ -1,11 +1,12 @@
 /* พรรคประชาชน */
 'use strict';
+/* หมายเหตุ: คำว่า สส.บัญชีรายชื่อ ในข้อความที่แสดงบนจอ มีอักขระ U+2060 (word joiner มองไม่เห็น) คั่นไว้ เพื่อไม่ให้คำถูกตัดขึ้นบรรทัดใหม่กลางคำ */
 const PPN = 'ประชาชน';
 const MAIN5 = ['ภูมิใจไทย','ประชาชน','เพื่อไทย','กล้าธรรม','ประชาธิปัตย์'];
 let OTHER = '#5E6573', NODATA = '#D3D3D3';   /* let: ไฟล์แต่งสีเปลี่ยนค่าได้ */
 const REGIONS = ['กรุงเทพมหานคร','ภาคกลาง','ภาคเหนือ','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคตะวันตก','ภาคใต้'];
 const RO = ['กรุงเทพมหานคร','ภาคกลาง','ภาคตะวันตก','ภาคตะวันออกเฉียงเหนือ','ภาคตะวันออก','ภาคใต้','ภาคเหนือ'];
-const MODES = [['win','สส.เขต'],['list','บัญชีรายชื่อ'],['both','สส.เขต + บัญชีรายชื่อ'],['tier','วางแผนพรรค'],['house','ข้อมูลบ้านใหญ่']];
+const MODES = [['win','สส.เขต'],['list','สส.⁠บัญชี⁠ราย⁠ชื่อ'],['both','สส.เขต + สส.⁠บัญชี⁠ราย⁠ชื่อ'],['tier','วางแผนพรรค'],['house','ข้อมูลบ้านใหญ่']];
 const GB = [['#a65923','ชนะ มากกว่า 15%'],['#d1853d','ชนะ 5–15%'],['#f8a64c','ชนะ ไม่เกิน 5%'],['#96cac5','แพ้ ไม่เกิน 5%'],['#68aca6','แพ้ 5–15%'],['#4a7d7b','แพ้ 15–30%'],['#325854','แพ้ มากกว่า 30%']];
 const TT = {flip:['พลิกได้','#FFA500'],hold:['รักษาฐานเสียง','#D2691E'],cand:['ดันผู้สมัคร','#EEDD82'],safe:['ฐานเสียง','#8B4513'],far:['ปรับแผนใหม่','#BEBEBE'],none:['ไม่ส่งผู้สมัคร','#e3e5ea']};
 const TK = ['safe','hold','flip','cand','far'];
@@ -141,12 +142,16 @@ function init() {
   let to, first = true;
   /* กรอบเปลี่ยนขนาด (ย่อหน้าต่าง / พับแถบเมนู): ถ้าผู้ใช้ยังไม่ได้ซูมหรือลากแผนที่ จัดให้พอดีกรอบใหม่, ถ้าซูมหรือลากไว้แล้ว คงจุดกลางและระดับซูมเดิม */
   let sz = null; const mapSz = () => { const n = svg.node(); return [n.clientWidth, n.clientHeight]; };
-  new ResizeObserver(() => { if (first) { first = false; sz = mapSz(); return; } clearTimeout(to); to = setTimeout(() => {
+  /* ระหว่างกรอบค่อย ๆ กว้างขึ้นหรือแคบลง (เช่น พับแถบเมนูซ้าย) เลื่อนแผนที่ตามทุกเฟรม ให้จุดกึ่งกลางเดิมอยู่กลางกรอบเสมอ แผนที่จึงเลื่อนไปอย่างนุ่มนวล ไม่กระโดดทีหลัง */
+  new ResizeObserver(() => { if (first) { first = false; sz = mapSz(); return; }
+    const t0 = d3.zoomTransform(svg.node()), c0 = sz ? t0.invert([sz[0] / 2, sz[1] / 2]) : null, [W0, H0] = mapSz();
+    if (c0 && W0 && H0) { svg.interrupt(); gRoot.attr('transform', d3.zoomIdentity.translate(W0 / 2 - t0.k * c0[0], H0 / 2 - t0.k * c0[1]).scale(t0.k)); svg.node().__zoom = d3.zoomIdentity.translate(W0 / 2 - t0.k * c0[0], H0 / 2 - t0.k * c0[1]).scale(t0.k); sz = [W0, H0]; }
+    clearTimeout(to); to = setTimeout(() => {
     const t = d3.zoomTransform(svg.node()), c = sz ? t.invert([sz[0] / 2, sz[1] / 2]) : null;
     render();
-    if (!mapMoved || !c) fitView(false);
+    if (!mapMoved || !c) { mapMoved = false; setZoomLimits(); svg.transition().duration(350).ease(d3.easeCubicOut).call(zoom.transform, viewTransform()); }   /* ปรับขนาดให้พอดีกรอบใหม่แบบค่อย ๆ ซูม */
     else { setZoomLimits(); const [W, H] = mapSz(), k = Math.max(K0, t.k); svg.call(zoom.transform, d3.zoomIdentity.translate(W / 2 - k * c[0], H / 2 - k * c[1]).scale(k)); }
-    sz = mapSz(); }, 150); }).observe($('.cols'));
+    sz = mapSz(); }, 120); }).observe($('.cols'));
 }
 function render() { hideTip(); renderHeader(); renderLegend(); drawTiles(); renderKPI(); renderRight(); if (ST.sel) renderPanel(); drawHi(); }
 
@@ -155,7 +160,7 @@ function renderHeader() {
   $('#modes').innerHTML = MODES.map(([k, t]) => `<button data-m="${k}" class="${k === ST.mode ? 'on' : ''}">${t}</button>`).join('');
   const sub = D.filter(d => okR(d) && okBig(d) && okL(d) && inB(d)), ck = closeKind();   /* ตัวเลขชิปนับตาม legend ที่เลือก + กรอบที่ลากใน scatter ด้วย */
   const cl = ck === 'both' ? `<span class="n">${sub.filter(closeW).length} / ${sub.filter(closeL).length}</span>` : `<span class="n">${sub.filter(ck === 'list' ? closeL : closeW).length}</span>`;
-  const lab = {win:'สส.เขต', list:'บัญชีรายชื่อ', both:'เขต - บัญชีฯ'}[ck];
+  const lab = {win:'สส.เขต', list:'บัญชีฯ', both:'เขต - บัญชีฯ'}[ck];   /* ป้ายเล็กบนปุ่มตัวกรองใช้ชื่อสั้น */
   $('#filters').innerHTML = `<button class="chip ${!ST.fil ? 'on' : ''}" data-f="">ทั้งหมด <span class="n">${sub.length}</span></button>`
     + `<button class="chip ${ST.fil === 'close' ? 'on' : ''}" data-f="close">สูสี ±5% <span class="ck">${lab}</span> ${cl}</button>`
     + `<button class="chip ${ST.fil === 'split' ? 'on' : ''}" data-f="split">เขต-พรรค สวนทาง <span class="n">${sub.filter(d => d.split).length}</span></button>`;
@@ -167,7 +172,7 @@ function renderHeader() {
   $('#bign').textContent = sub.filter(d => d.w[4]).length;
   /* เหตุผลที่ใช้ไม่ได้ ขึ้นในกล่องข้อความดำ (ไม่ใช้ title ของเบราว์เซอร์ จะได้ไม่ขึ้นซ้อนกัน 2 กล่อง) */
   b.title = bdis ? '' : 'แสดงเฉพาะเขตที่ผู้ชนะ สส.เขต เป็นบ้านใหญ่';
-  b.dataset.dtip = 'ไม่สามารถใช้ในโหมดนี้ได้'; if (0) b.dataset.dtip = ST.mode === 'list' ? 'ใช้ไม่ได้ในโหมดบัญชีรายชื่อ (บัตรเลือกพรรคไม่มีตัวผู้สมัคร)' : 'ใช้ไม่ได้ในโหมดข้อมูลบ้านใหญ่ (หน้านี้แสดงบ้านใหญ่อยู่แล้ว)';
+  b.dataset.dtip = 'ไม่สามารถใช้ในโหมดนี้ได้'; if (0) b.dataset.dtip = ST.mode === 'list' ? 'ใช้ไม่ได้ในโหมด สส.⁠บัญชี⁠ราย⁠ชื่อ (บัตรเลือกพรรคไม่มีตัวผู้สมัคร)' : 'ใช้ไม่ได้ในโหมดข้อมูลบ้านใหญ่ (หน้านี้แสดงบ้านใหญ่อยู่แล้ว)';
   y.title = ''; y.dataset.dtip = 'ไม่สามารถใช้ในโหมดนี้ได้';
   const H = ST.mode === 'house';
   $('#filters').style.visibility = ''; b.style.display = H ? 'none' : ''; $('#rescon').hidden = true;
@@ -188,7 +193,7 @@ function tileGlyph(kind) {
   let s;
   if (kind === 'both') {
     s = `<polygon points="${pts([TL, TR, BL])}" fill="#322485"/><polygon points="${pts([TR, BR, BL])}" fill="#FF6411"/><line x1="${TR[0]}" y1="${TR[1]}" x2="${BL[0]}" y2="${BL[1]}" stroke="#fff" stroke-width="2"/>`
-      + lab(x0 + .5 * u, y0 + .25 * u, 'สส.เขต') + lab(x0 + .9 * u, y0 + .78 * u, 'บัญชีรายชื่อ');
+      + lab(x0 + .5 * u, y0 + .25 * u, 'สส.เขต') + lab(x0 + .9 * u, y0 + .78 * u, 'สส.⁠บัญชี⁠ราย⁠ชื่อ');
   } else {
     const T = .8, p1 = [BR[0] + (BL[0] - BR[0]) * T, BR[1]], p2 = [BR[0] + (TR[0] - BR[0]) * T, BR[1] + (TR[1] - BR[1]) * T];
     s = `<polygon points="${pts([BL, BR, TR, TL])}" fill="#322485"/><polygon points="${pts([BR, p1, p2])}" fill="#FF6411" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>`
@@ -207,12 +212,12 @@ function renderLegend() {
     n:M === 'both' ? D.filter(d => base(d, 'w') && pk(d.w[1]) === p).length + ' / ' + D.filter(d => base(d, 'l') && pk(d.pltop) === p).length   /* สส.เขต, บัญชีรายชื่อ */
       : D.filter(d => base(d) && (M === 'list' ? pk(d.pltop) : pk(d.w[1])) === p).length}));
   const all = {k:'', sw:'<span class="sw allsw"></span>', t:'ทั้งหมด', n:D.filter(d => base(d)).length};
-  const title = y ? (M === 'list' ? 'บัญชีรายชื่ออันดับ 1 69 เทียบ 66' : 'ผู้ชนะ สส.เขต 69 เทียบ 66')
-    : {tier:'ระดับโอกาส', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้คะแนนบัญชีรายชื่อสูงสุดในเขต', both:'สส.เขต + บัญชีรายชื่อ', gap:'ระยะห่างของพรรคประชาชน: ' + (M === 'list' ? 'บัญชีรายชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
+  const title = y ? (M === 'list' ? 'สส.⁠บัญชี⁠ราย⁠ชื่ออันดับ 1 69 เทียบ 66' : 'ผู้ชนะ สส.เขต 69 เทียบ 66')
+    : {tier:'ระดับโอกาส', win:'พรรคที่ชนะ สส.เขต', list:'พรรคที่ได้คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อสูงสุดในเขต', both:'สส.เขต + สส.⁠บัญชี⁠ราย⁠ชื่อ', gap:'ระยะห่างของพรรคประชาชน: ' + (M === 'list' ? 'สส.⁠บัญชี⁠ราย⁠ชื่อ' : 'สส.เขต')}[GV() ? 'gap' : M];
   $('#legend').style.display = M === 'house' ? 'none' : '';   /* โหมดบ้านใหญ่ไม่แสดง legend (ซ้ำกับกราฟแยกตามพรรคด้านขวา) */
   if (M === 'house') return;
   const gk = (M === 'win' || M === 'list') && !y ? `<div class="gk"><button data-gk="party" class="${ST.cb === 'party' ? 'on' : ''}">สีตามพรรค</button><button data-gk="gap" class="${ST.cb === 'gap' ? 'on' : ''}">สีตามระยะห่าง</button></div>` : '';
-  const glyph = M === 'list' && !y ? (GV() ? '<div class="lnote lwarn">ตัวเลข = จำนวนเขต ไม่ใช่ที่นั่ง</div>' : '<div class="lnote lwarn">ตัวเลข = จำนวนเขตที่พรรคได้คะแนนสูงสุด ไม่ใช่จำนวนที่นั่ง</div>') : M === 'both' ? tileGlyph('both') + '<div class="lnote">ตัวเลข = ชนะ สส.เขต / บัญชีรายชื่ออันดับ 1</div>' : y ? tileGlyph('66') + '<div class="lnote">มุมเทา = ไม่มีเขตนี้ในปี 66</div>' : '';
+  const glyph = M === 'list' && !y ? (GV() ? '<div class="lnote lwarn">ตัวเลข = จำนวนเขต ไม่ใช่ที่นั่ง</div>' : '<div class="lnote lwarn">ตัวเลข = จำนวนเขตที่พรรคได้คะแนนสูงสุด ไม่ใช่จำนวนที่นั่ง</div>') : M === 'both' ? tileGlyph('both') + '<div class="lnote">ตัวเลข = ชนะ สส.เขต / เลือกพรรคสูงสุด</div>' : y ? tileGlyph('66') + '<div class="lnote">มุมเทา = ไม่มีเขตนี้ในปี 66</div>' : '';
   $('#legend').innerHTML = `<div class="t">${title}</div>${gk}${glyph}` + [all, ...items].map(it => {
     const on = (ST.lg || '') === it.k, dim = ST.lg && !on && it.k !== '';
     return `<button class="lg ${on ? 'on' : ''} ${dim ? 'dim' : ''}" data-k="${it.k}">${it.sw}<span>${it.t}</span><span class="n">${it.n}${M === 'list' && !y ? '<small> เขต</small>' : ''}</span></button>`;
@@ -332,8 +337,8 @@ function tipHTML(d) {
   let body, right;
   const rk = (i, p) => `<span class="rkn" style="background:${col(p)};color:${ink(col(p))}">${i + 1}</span>`;
   if (M === 'list') {
-    body = d.pl.slice(0, 4).map((x, i) => `<div class="tc ${x[0] === PPN ? 'pp' : ''}">${rk(i, x[0])}<span class="nm">${x[0]}</span><span class="vv">${fmt(x[1])}<small>${(x[1] / d.plt * 100).toFixed(1)}%</small></span><span class="pt">บัญชีรายชื่อ</span></div>`).join('');
-    right = 'คะแนนบัญชีรายชื่อ';
+    body = d.pl.slice(0, 4).map((x, i) => `<div class="tc ${x[0] === PPN ? 'pp' : ''}">${rk(i, x[0])}<span class="nm">${x[0]}</span><span class="vv">${fmt(x[1])}<small>${(x[1] / d.plt * 100).toFixed(1)}%</small></span><span class="pt">สส.⁠บัญชี⁠ราย⁠ชื่อ</span></div>`).join('');
+    right = 'คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อ';
   } else {
     body = d.cand.slice(0, 4).map((c, i) => `<div class="tc ${c[1] === PPN ? 'pp' : ''}">${rk(i, c[1])}<span class="nm">${c[0]}${c[4] ? HOUSE : ''}</span><span class="vv">${fmt(c[2])}<small>${(c[2] / d.good * 100).toFixed(1)}%</small></span><span class="pt">${c[1]}</span></div>`).join('');
     right = M === 'tier' ? `<span class="tp" style="background:${TT[d.tier][1]};color:${ink(TT[d.tier][1])}">${TT[d.tier][0]}</span>` : 'ผู้สมัคร สส.เขต';
@@ -351,7 +356,7 @@ function renderKPI() {
     $('#k1l').textContent = 'พรรคประชาชนชนะ สส.เขต'; $('#k1v').innerHTML = `${won}<small> / ${D.length} เขต</small>`;
     $('#k1s').textContent = r === 0 ? `อันดับ 1 ตามด้วย${cs[1][0]} (${cs[1][1]})` : `อันดับ ${r + 1} รองจาก${cs[0][0]} (${cs[0][1]})`;
     const lv = Object.entries(n69.lv).sort((a, b) => b[1] - a[1]), lr = lv.findIndex(x => x[0] === PPN), v = n69.lv[PPN];
-    $('#k2l').textContent = 'พรรคประชาชน บัญชีรายชื่อ'; $('#k2v').innerHTML = `${n69.ls[PPN] || 0}<small> / 100 ที่นั่ง</small>`;
+    $('#k2l').textContent = 'พรรคประชาชน สส.⁠บัญชี⁠ราย⁠ชื่อ'; $('#k2v').innerHTML = `${n69.ls[PPN] || 0}<small> / 100 ที่นั่ง</small>`;
     $('#k2s').textContent = `คะแนน ${(v / 1e6).toFixed(2)} ล้าน อันดับ ${lr + 1} (${(v / n69.lt * 100).toFixed(1)}%)`;
   } else {
     const sub = D.filter(okR), won = sub.filter(d => d.ppr === 1).length;
@@ -359,7 +364,7 @@ function renderKPI() {
     $('#k1l').textContent = 'พรรคประชาชนชนะ สส.เขต ' + ST.reg; $('#k1v').innerHTML = `${won}<small> / ${sub.length} เขต</small>`;
     $('#k1s').textContent = r < 0 ? `ไม่ชนะในภาคนี้ ${cnt[0][0]} ชนะมากสุด (${cnt[0][1]})` : r === 0 ? 'อันดับ 1 ในภาคนี้' + (cnt[1] ? ` ตามด้วย${cnt[1][0]} (${cnt[1][1]})` : '') : `อันดับ ${r + 1} ในภาคนี้ รองจาก${cnt[0][0]} (${cnt[0][1]})`;
     const pv = d3.sum(sub, d => (d.pl.find(x => x[0] === PPN) || [0, 0])[1]), tot = d3.sum(sub, d => d.plt), lead = sub.filter(d => d.lrank === 1).length;
-    $('#k2l').textContent = 'พรรคประชาชน บัญชีรายชื่อ ' + ST.reg; $('#k2v').innerHTML = `${lead}<small> / ${sub.length} เขตที่ชนะ</small>`;
+    $('#k2l').textContent = 'พรรคประชาชน สส.⁠บัญชี⁠ราย⁠ชื่อ ' + ST.reg; $('#k2v').innerHTML = `${lead}<small> / ${sub.length} เขตที่ชนะ</small>`;
     $('#k2s').textContent = `คะแนน ${(pv / 1e6).toFixed(2)} ล้าน (${(pv / tot * 100).toFixed(1)}%) ทั้งประเทศ ${n69.ls[PPN] || 0} ที่นั่ง`;
   }
 }
@@ -375,9 +380,9 @@ function renderRight() {
   if (ST.mode === 'tier') { rk.className = 'card rk3 tier'; renderTier(rk); return; }
   if (ST.mode === 'both') {
     rk.className = 'card rk2';
-    rk.innerHTML = `<div class="hd"><h3>พรรคประชาชน: สส.เขต เทียบ บัญชีรายชื่อ</h3>${sortBtns()}</div>
+    rk.innerHTML = `<div class="hd"><h3>พรรคประชาชน: สส.เขต เทียบ สส.⁠บัญชี⁠ราย⁠ชื่อ</h3>${sortBtns()}</div>
       <div class="half" id="h1"><h4>สส.เขต: ห่างผู้ชนะ / อันดับ 2</h4>${chartShell()}</div>
-      <div class="half" id="h2"><h4>บัญชีรายชื่อ: ห่างพรรคที่ชนะ / อันดับ 2</h4>${chartShell()}</div>`;
+      <div class="half" id="h2"><h4>สส.⁠บัญชี⁠ราย⁠ชื่อ: ห่างพรรคที่ชนะ / อันดับ 2</h4>${chartShell()}</div>`;
     if (document.body.classList.contains('dsk')) { renderBoth(rk); return; }
     const mOH = document.body.classList.contains('mob') ? 64 : 96;   /* มือถือ: กราฟภาพรวมเตี้ยลง ให้รายชื่อเขตเห็นได้มากขึ้น */
     chartBlock($('#h1'), 'win', mOH, 'bw'); chartBlock($('#h2'), 'list', mOH, 'bl'); return;
@@ -398,7 +403,7 @@ function chartBlock(host, kind, OH, wkey) {
   ORD.sort(ST.sort === 'reg' ? (a, b) => RO.indexOf(a.reg) - RO.indexOf(b.reg) || vv(b) - vv(a) : (a, b) => vv(b) - vv(a));
   const listEl = host.querySelector('.list'), ovw = host.querySelector('.ovw');
   const ow = listEl.clientWidth, NR = Math.max(4, Math.floor((listEl.clientHeight - 2) / ROWH));
-  const N = ORD.length, lo = -70, hi = 55, x0 = 28, bw = (ow - x0 - 2) / Math.max(1, N);
+  const N = ORD.length, lo = -70, hi = 55, x0 = 28, bw = (ow - x0 - 2) / Math.max(1, N);   /* แท่งแคบกว่า 3px เว้นช่องว่างเล็กน้อยระหว่างแท่ง (ประมาณ 1 ใน 4 ของช่อง) */
   const ext = null;
   const yy = v => 8 + (hi - v) / (hi - lo) * (OH - 22);
   const ticks = [40, 20, 0, -20, -40, -60];
@@ -416,7 +421,7 @@ function chartBlock(host, kind, OH, wkey) {
     if (nw) s += `<rect x="${x0}" y="2" width="${xm - x0}" height="${OH - 14}" fill="#f39200" opacity=".07"/>`;
     if (nw < N) s += `<rect x="${xm}" y="2" width="${ow - xm}" height="${OH - 14}" fill="#3e6763" opacity=".06"/>`; }
   ticks.forEach(v => s += `<line x1="${x0}" x2="${ow}" y1="${yy(v)}" y2="${yy(v)}" stroke="#e1e4ea" stroke-dasharray="2 3"/><text x="24" y="${yy(v) + 3}" font-size="9" text-anchor="end" fill="#5d6370" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
-  ORD.forEach((d, i) => { const v = val(d) ?? 0; s += `<rect data-ob="${key(d)}" x="${x0 + i * bw + bw * .075}" width="${Math.max(.7, bw * .85)}" y="${yy(Math.max(0, v))}" height="${Math.max(.8, Math.abs(yy(v) - yy(0)))}" fill="${gcolv(val(d))}" opacity="${on(d) ? 1 : .22}"/>`; });
+  ORD.forEach((d, i) => { const v = val(d) ?? 0; s += `<rect data-ob="${key(d)}" x="${bw < 3 ? x0 + i * bw + bw * .04 : x0 + i * bw + bw * .075}" width="${bw < 3 ? bw * 0.92 : Math.max(.7, bw * .85)}" y="${yy(Math.max(0, v))}" height="${Math.max(.8, Math.abs(yy(v) - yy(0)))}" fill="${gcolv(val(d))}" opacity="${on(d) ? 1 : .22}"/>`; });
   if (c5) [['+5%', c5[0], 'end', -3], ['−5%', c5[1], 'start', 3]].forEach(([t, x, an, dx]) => s += `<text x="${x + dx}" y="${yy(-52)}" font-size="10" font-weight="700" text-anchor="${an}" fill="#c2560a" paint-order="stroke" stroke="#fff" stroke-width="3">${t}</text>`);
   if (ST.sort === 'reg') { let s0 = 0; RO.forEach(r => { const n = ORD.filter(d => d.reg === r).length; if (!n) return; const xa = x0 + s0 * bw, xb = x0 + (s0 + n) * bw;
     s += `<text x="${(xa + xb) / 2}" y="${OH - 2}" font-size="9.5" text-anchor="middle" fill="#5d6370">${short(r)}</text>`; if (s0) s += `<line x1="${xa}" x2="${xa}" y1="4" y2="${OH - 12}" stroke="#9aa0ab" stroke-dasharray="3 3"/>`; s0 += n; }); }
@@ -540,7 +545,7 @@ function renderTier(rk) {
   [T.far,T.lo,0,T.hi].forEach(v => sv += `<line x1="${xs(v)}" x2="${xs(v)}" y1="${m.t}" y2="${SH - m.b}" stroke="#2b2927" stroke-width="${v ? 1 : 1.6}" ${v ? 'stroke-dasharray="4 3"' : ''} opacity=".7"/><text x="${xs(v)}" y="${SH - m.b + 13}" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${v > 0 ? '+' : ''}${v}%</text>`);
   sv += `<line x1="${m.l}" x2="${W - m.r}" y1="${ys(T.ly)}" y2="${ys(T.ly)}" stroke="#2b2927" stroke-width="1.6" opacity=".7"/>`;
   sv += `<text x="${(m.l + W) / 2}" y="${SH - 3}" font-size="11" text-anchor="middle" fill="#2b2927" font-weight="700">← แพ้   ผลการแข่งขัน สส.เขต ของพรรคประชาชน   ชนะ →</text>`;
-  sv += `<text transform="translate(11,${(SH - m.b + m.t) / 2}) rotate(-90)" font-size="11" text-anchor="middle" fill="#2b2927" font-weight="700">บัญชีรายชื่อ แพ้ ← → ชนะ</text>`;
+  sv += `<text transform="translate(11,${(SH - m.b + m.t) / 2}) rotate(-90)" font-size="11" text-anchor="middle" fill="#2b2927" font-weight="700">สส.⁠บัญชี⁠ราย⁠ชื่อ แพ้ ← → ชนะ</text>`;
   const sc = d3.select(rk).select('svg.sc').attr('width', W).attr('height', SH).html(sv);
   const br = d3.brush().extent([[m.l, m.t], [W - m.r, SH - m.b]]).on('end', e => { if (!e.sourceEvent) return; const s = e.selection;
     ST.brush = s ? [xs.invert(s[0][0]), xs.invert(s[1][0]), ys.invert(s[1][1]), ys.invert(s[0][1])] : null; render(); });
@@ -555,7 +560,7 @@ function renderTier(rk) {
   let rows = sub.filter(d => d.has && inB(d) && okF(d) && okL(d) && okBig(d));
   rows.sort((a, b) => TK.indexOf(a.tier) - TK.indexOf(b.tier) || Math.abs(a.gap) - Math.abs(b.gap));
   const num = v => `<span class="tv"><span class="tw">${v > 0 ? 'ชนะ' : 'แพ้'}</span><span class="tn">${Math.abs(v).toFixed(1)}%</span></span>`;
-  rk.querySelector('.tl').innerHTML = `<div class="th"><span>จังหวัด เขต</span><span>ระดับโอกาส</span><span style="text-align:right">สส.เขต</span><span style="text-align:right">บัญชีรายชื่อ</span></div>`
+  rk.querySelector('.tl').innerHTML = `<div class="th"><span>จังหวัด เขต</span><span>ระดับโอกาส</span><span style="text-align:right">สส.เขต</span><span style="text-align:right">สส.⁠บัญชี⁠ราย⁠ชื่อ</span></div>`
     + (rows.length ? rows.map(d => `<div class="trr ${ST.sel === key(d) ? 'sel' : ''}" data-k="${key(d)}"><span>${d.pv} <span class="muted">เขต ${d.d}</span>${d.w[4] && ST.big ? HOUSE : ''}</span><span><span class="tp" style="background:${TT[d.tier][1]};color:${ink(TT[d.tier][1])}">${TT[d.tier][0]}</span></span>${num(d.gap)}${num(d.lgap)}</div>`).join('')
       : '<div class="muted" style="padding:10px 12px">ไม่มีเขตที่ตรงเงื่อนไข</div>');
 }
@@ -580,7 +585,7 @@ function render66(rk) {
   const nR = Math.max(r66.length, r69.length);   /* ครบ 10 อันดับเสมอ (พรรคที่ได้ 0 ที่นั่งเรียงตามคะแนน) ถ้ามีพรรคไม่ถึง 10 ไม่มีกล่องว่าง */
   let rows = ''; for (let i = 0; i < nR; i++) rows += (r66[i] ? card(i, r66[i][0], r66[i][1], 66) : '<div class="pc gap"></div>') + '<div class="arr">»</div>' + (r69[i] ? card(i, r69[i][0], r69[i][1], 69) : '<div class="pc gap"></div>');
   const ttl = '10 อันดับแรก';
-  rk.innerHTML = `<div class="hd"><h3>${L_ ? 'ที่นั่ง บัญชีรายชื่อ' : 'ที่นั่ง สส.เขต'}${ST.reg ? ' ' + (L_ ? 'ทั้งประเทศ' : ST.reg) : ''} ${ttl}</h3></div>
+  rk.innerHTML = `<div class="hd"><h3>${L_ ? 'ที่นั่ง สส.⁠บัญชี⁠ราย⁠ชื่อ' : 'ที่นั่ง สส.เขต'}${ST.reg ? ' ' + (L_ ? 'ทั้งประเทศ' : ST.reg) : ''} ${ttl}</h3></div>
     <div class="cmph"><span>ปี 66</span><span>»</span><span>ปี 69</span></div><div class="cmpw"><div class="cmp">${rows}</div></div>`;
 }
 
@@ -588,7 +593,7 @@ function render66(rk) {
 function select(d) { ST.sel = key(d); ST.pexp = {c:false, l:false}; ST.ps = {c:{k:'v',dir:-1}, l:{k:'v',dir:-1}}; hideTip(); renderPanel(); refreshSel(); }
 function closePanel() { if (!ST.sel) return; ST.sel = null; const p = $('#panel'); p.classList.remove('open'); $('#right').classList.remove('pop'); refreshSel(); }
 function refreshSel() { drawHi(); document.querySelectorAll('#rk [data-k]').forEach(e => { if (!e.classList.contains('dot')) e.classList.toggle('sel', e.dataset.k === ST.sel); }); styleDots(); }
-const ballotRows = d => ({c:{lab:'บัตร สส.เขต', to:d.to, g:d.good, b:d.bad, n:d.nv}, l:{lab:'บัตรบัญชีรายชื่อ', to:d.lto, g:d.lgood, b:d.lbad, n:d.lnv}});
+const ballotRows = d => ({c:{lab:'บัตร สส.เขต', to:d.to, g:d.good, b:d.bad, n:d.nv}, l:{lab:'บัตร สส.⁠บัญชี⁠ราย⁠ชื่อ', to:d.lto, g:d.lgood, b:d.lbad, n:d.lnv}});
 function ballots(d, rows) {
   const R = ballotRows(d); let h = '<div style="display:grid;gap:7px">';
   rows.forEach(k => { const r = R[k], p = v => v / r.to * 100, seg = (kk, v, c, t) => `<div data-bk="${k}-${kk}" style="flex:${Math.max(p(v), 6)};background:${c}">${t}</div>`;
@@ -604,7 +609,7 @@ function butterfly(d) {
   const parts = [...new Set([...d.cand.slice(0, 4).map(c => c[1]), ...d.pl.slice(0, 4).map(x => x[0])])].slice(0, 6);
   const R = [...parts.map(p => [p, cv[p] || 0, lv[p] || 0, col(p)]), ['พรรคอื่น', Math.max(0, 100 - d3.sum(parts, p => cv[p] || 0)), Math.max(0, 100 - d3.sum(parts, p => lv[p] || 0)), '#9aa0ab']];
   const bm = d3.max(R, r => Math.max(r[1], r[2]));
-  return `<div class="bfly"><span></span><span style="text-align:right;padding-right:6px;font-size:11px;color:#5d6370">&lt; สส.เขต</span><span style="padding-left:6px;font-size:11px;color:#5d6370">บัญชีรายชื่อ &gt;</span>`
+  return `<div class="bfly"><span></span><span style="text-align:right;padding-right:6px;font-size:11px;color:#5d6370">&lt; สส.เขต</span><span style="padding-left:6px;font-size:11px;color:#5d6370">สส.⁠บัญชี⁠ราย⁠ชื่อ &gt;</span>`
     + R.map(([p, a, b, c]) => `<span class="ell" style="${p === PPN ? 'font-weight:700' : p === 'พรรคอื่น' ? 'color:#5d6370' : ''}">${p}</span><span class="l"><i style="width:${a / bm * 74}%;background:${c}"></i><span class="lv" style="right:${a / bm * 74 + 2}%">${a.toFixed(1)}</span></span><span class="rr"><i style="width:${b / bm * 74}%;background:${c}"></i><span class="rv" style="left:${b / bm * 74 + 2}%">${b.toFixed(1)}</span></span>`).join('') + '</div>';
 }
 /* ตารางผู้สมัคร / บัญชีรายชื่อ — กดหัวคอลัมน์ เบอร์ / คะแนนเสียง / % เพื่อเรียง ; แสดง 5 แถวแรก */
@@ -636,21 +641,21 @@ function panel66(d) {
     const rc = y === 69 ? (rA.indexOf(c[1]) < 0 ? null : rA.indexOf(c[1]) - i) : null;
     const bd = y === 69 && A.length ? (rc == null ? '<span class="bd new">ใหม่</span>' : rc > 0 ? `<span class="bd up">▲${rc}</span>` : rc < 0 ? `<span class="bd dn">▼${-rc}</span>` : '') : '';
     const pn = y === 66 ? nm66(c[1]) : c[1];
-    return `<div class="cc ${y === 69 ? 'r' : 'l'}" data-p="${c[1]}"><div class="rkb" style="background:${col(c[1])}">${i + 1}</div><div class="lg2">${y === 66 ? LGO66(c[1], 30) : LGO(c[1], 30)}</div><div class="pn"><b>${L_ ? pn : c[0]}${c[4] ? HOUSE : ''}</b><span>${L_ ? 'บัญชีรายชื่อ' : pn} ${bd}</span></div><div class="pv" style="font-size:16px">${fmt(c[2])}<small>${(c[2] / (y === 69 ? tb : ta) * 100).toFixed(1)}%</small></div></div>`; };
+    return `<div class="cc ${y === 69 ? 'r' : 'l'}" data-p="${c[1]}"><div class="rkb" style="background:${col(c[1])}">${i + 1}</div><div class="lg2">${y === 66 ? LGO66(c[1], 30) : LGO(c[1], 30)}</div><div class="pn"><b>${L_ ? pn : c[0]}${c[4] ? HOUSE : ''}</b><span>${L_ ? 'สส.⁠บัญชี⁠ราย⁠ชื่อ' : pn} ${bd}</span></div><div class="pv" style="font-size:16px">${fmt(c[2])}<small>${(c[2] / (y === 69 ? tb : ta) * 100).toFixed(1)}%</small></div></div>`; };
   const has = L_ ? d.p66 : d.c66; let rows = ''; for (let i = 0, n = Math.max(A.length, B.length); i < n; i++) rows += pc(A[i], i, 66) + pc(B[i], i, 69);
-  const w = L_ ? 'บัญชีรายชื่อ' : 'คะแนน';
+  const w = L_ ? 'สส.⁠บัญชี⁠ราย⁠ชื่อ' : 'คะแนน';
   return panelHead(d) + `<div class="pb"><div class="cmph two2"><span>ผล${w}ปี 66</span><span>ผล${w}ปี 69</span></div><div class="cmp two2">${rows}</div>${has && d.chg ? '<div class="desc">⚠ จำนวนผู้มีสิทธิ์ต่างจากปี 66 เกิน 5% เขตนี้อาจถูกแบ่งใหม่</div>' : ''}</div>`;
 }
 function panelBoth(d) {
-  return panelHead(d) + `<div class="pb"><div class="two"><div><div class="st">สส.เขต</div>${table(d, 'c', true)}</div><div><div class="st">บัญชีรายชื่อ</div>${table(d, 'l', true)}</div></div>
-    <div style="display:grid;gap:5px"><span class="st">สส.เขต เทียบ บัญชีรายชื่อ ในเขตนี้ (%)</span>${butterfly(d)}</div>
+  return panelHead(d) + `<div class="pb"><div class="two"><div><div class="st">สส.เขต</div>${table(d, 'c', true)}</div><div><div class="st">สส.⁠บัญชี⁠ราย⁠ชื่อ</div>${table(d, 'l', true)}</div></div>
+    <div style="display:grid;gap:5px"><span class="st">สส.เขต เทียบ สส.⁠บัญชี⁠ราย⁠ชื่อ ในเขตนี้ (%)</span>${butterfly(d)}</div>
     <div style="display:grid;gap:6px"><span class="st">ผู้มาใช้สิทธิ์ ${fmt(d.to)} จาก ${fmt(d.el)} คน (${(d.to / d.el * 100).toFixed(1)}%)</span>${ballots(d, ['c', 'l'])}</div></div>`;
 }
 function panelOne(d) {
   const L2 = ST.mode === 'list', tot = L2 ? d.lto : d.to;
   return panelHead(d) + `<div class="pb">${table(d, L2 ? 'l' : 'c')}
-    <div style="display:grid;gap:5px"><span class="st">สส.เขต เทียบ บัญชีรายชื่อ ในเขตนี้ (%)</span>${butterfly(d)}</div>
-    <div style="display:grid;gap:5px"><span class="st">${L2 ? 'บัตรบัญชีรายชื่อ: ' : ''}ผู้มาใช้สิทธิ์ ${fmt(tot)} จาก ${fmt(d.el)} คน (${(tot / d.el * 100).toFixed(1)}%)</span>${ballots(d, [L2 ? 'l' : 'c'])}</div></div>`;
+    <div style="display:grid;gap:5px"><span class="st">สส.เขต เทียบ สส.⁠บัญชี⁠ราย⁠ชื่อ ในเขตนี้ (%)</span>${butterfly(d)}</div>
+    <div style="display:grid;gap:5px"><span class="st">${L2 ? 'บัตร สส.⁠บัญชี⁠ราย⁠ชื่อ: ' : ''}ผู้มาใช้สิทธิ์ ${fmt(tot)} จาก ${fmt(d.el)} คน (${(tot / d.el * 100).toFixed(1)}%)</span>${ballots(d, [L2 ? 'l' : 'c'])}</div></div>`;
 }
 
 
@@ -1036,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function pinStrip() {
     Q('#ovm-p').innerHTML = PM.pins.length ? PM.pins.map((k, i) => { const d = byK[k];
       return `<div class="pin" style="--pc:${PIN_C[i]}"><b class="nm">${d.pv} เขต ${d.d}</b><button data-pd="${k}">ดูรายละเอียด</button><button data-px="${k}" aria-label="เลิกติดตาม">✕</button></div>`; }).join('')
-      : `<span class="ovm-empty">คลิกแถวในรายการด้านล่าง เพื่อปักหมุดติดตามเขต (สูงสุด 3 เขต) แล้วลองกดสลับ สส.เขต ↔ บัญชีรายชื่อ</span>`;
+      : `<span class="ovm-empty">คลิกแถวในรายการด้านล่าง เพื่อปักหมุดติดตามเขต (สูงสุด 3 เขต) แล้วลองกดสลับ สส.เขต ↔ สส.⁠บัญชี⁠ราย⁠ชื่อ</span>`;
     Q('#ovm-css').textContent = PM.pins.map((k, i) => `#ovm .r[data-k="${k}"]{box-shadow:inset 4px 0 0 ${PIN_C[i]};background:${PIN_C[i]}14}`).join('');
   }
   /* แท่งของเขตที่ปักหมุด: สีหมุด หนาขึ้น + เส้นแนวตั้ง + ป้ายชื่อด้านบน (ตามแท่งไประหว่างวิ่ง) */
@@ -1048,8 +1053,8 @@ document.addEventListener('DOMContentLoaded', () => {
       r.dataset.pw = r.getAttribute('width'); r.setAttribute('width', Math.max(3, +r.dataset.pw * 2.2)); r.style.fill = PIN_C[i]; sv.appendChild(r);
       const ln = d3.select(sv).append('line').attr('class', 'pinl').attr('y1', 0).attr('y2', H - 12).attr('stroke', PIN_C[i]).attr('stroke-dasharray', '3 2').attr('pointer-events', 'none').node();
       return {r, ln, i}; }).filter(Boolean);
-    lane.innerHTML = items.map(({i}, j) => { const d = byK[PM.pins[i]]; return `<span class="pl" style="--pc:${PIN_C[i]};top:${j * 16}px">${d.pv} ${d.d}</span>`; }).join('');
-    { const lh = items.length ? (items.length * 16 + 2) + 'px' : '0px'; if (lane.style.height !== lh) { lane.style.height = lh; const oc = Q('#ovm-c'); if (oc && oc._geo) oc._geo(); } }   /* ป้ายหมุดอยู่เหนือกราฟ สูงเท่าจำนวนหมุดพอดี ไม่มีหมุดก็ไม่กินที่ */
+    /* แถบป้ายหมุดสูงคงที่ (พอดีหมุดสูงสุด 3 อัน) ปักหรือเอาหมุดออก กราฟและรายชื่อจึงไม่ขยับ ป้ายเรียงชิดขอบล่างใกล้กราฟ */
+    lane.innerHTML = items.map(({i}, j) => { const d = byK[PM.pins[i]]; return `<span class="pl" style="--pc:${PIN_C[i]};top:${48 - (items.length - j) * 16}px">${d.pv} ${d.d}</span>`; }).join('');   /* ป้ายหมุดอยู่เหนือกราฟ สูงเท่าจำนวนหมุดพอดี ไม่มีหมุดก็ไม่กินที่ */
     const labs = lane.querySelectorAll('.pl'), lls = lane.querySelectorAll('.pll'), W = lane.clientWidth;
     const pos = () => items.forEach(({r, ln}, j) => { const x = +r.getAttribute('x') + +r.getAttribute('width') / 2;
       ln.setAttribute('x1', x); ln.setAttribute('x2', x); if (lls[j]) lls[j].style.left = x + 'px';
@@ -1058,9 +1063,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function draw(snap, center) {
     const c = Q('#ovm-c'), K = PM.kind;
-    Q('#ovm-t').textContent = K === 'list' ? 'บัญชีรายชื่อ: พรรคประชาชนห่างพรรคที่ชนะ / อันดับ 2' : 'สส.เขต: พรรคประชาชนห่างผู้ชนะ / อันดับ 2';
+    Q('#ovm-t').textContent = K === 'list' ? 'สส.⁠บัญชี⁠ราย⁠ชื่อ: พรรคประชาชนห่างพรรคที่ชนะ / อันดับ 2' : 'สส.เขต: พรรคประชาชนห่างผู้ชนะ / อันดับ 2';
     Q('#ovm-f').innerHTML = filtNote();
-    Q('#ovm-k').innerHTML = [['win', 'สส.เขต'], ['list', 'บัญชีรายชื่อ']].map(([k, t]) => `<button data-pk="${k}" class="${K === k ? 'on' : ''}">${t}</button>`).join('');
+    Q('#ovm-k').innerHTML = [['win', 'สส.เขต'], ['list', 'สส.⁠บัญชี⁠ราย⁠ชื่อ']].map(([k, t]) => `<button data-pk="${k}" class="${K === k ? 'on' : ''}">${t}</button>`).join('');
     Q('#ovm-s').innerHTML = [['gap', 'ตามระยะห่าง'], ['reg', 'แยกภาค']].map(([k, t]) => `<button data-ps2="${k}" class="${PM.sort === k ? 'on' : ''}">${t}</button>`).join('');
     const S = snap && !chartAnim.off() ? (snap === 'empty' ? {ob:{}, rows:{}, dots:{}} : chartAnim.snap('#ovm-c')) : null;
     c.innerHTML = chartShell(); c.querySelector('.ovw').insertAdjacentHTML('beforebegin', '<div class="ovm-lane" id="ovm-l"></div>');   /* ป้ายหมุดอยู่ระหว่างบรรทัดจำนวนเขตกับกราฟ */
@@ -1193,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     [-60,-40,-20,0,20,40].forEach(v => ax.append('text').attr('x', m.l - 6).attr('y', Y(v) + 3).attr('font-size', 10).attr('text-anchor', 'end').attr('fill', '#5d6370').text((v > 0 ? '+' : '') + v + '%'));
     [-60,-40,-20,0,20,40].forEach(v => ax.append('text').attr('x', X(v)).attr('y', H - m.b + 14).attr('font-size', 10).attr('text-anchor', 'middle').attr('fill', '#9aa0ab').text((v > 0 ? '+' : '') + v + '%'));
     ax.append('text').attr('x', (m.l + W) / 2).attr('y', H - 4).attr('font-size', 11.5).attr('text-anchor', 'middle').attr('fill', '#2b2927').attr('font-weight', 700).text('← แพ้   ผลการแข่งขัน สส.เขต ของพรรคประชาชน   ชนะ →');
-    ax.append('text').attr('transform', `translate(13,${(H - m.b + m.t) / 2}) rotate(-90)`).attr('font-size', 11.5).attr('text-anchor', 'middle').attr('fill', '#2b2927').attr('font-weight', 700).text('บัญชีรายชื่อ แพ้ ← → ชนะ');
+    ax.append('text').attr('transform', `translate(13,${(H - m.b + m.t) / 2}) rotate(-90)`).attr('font-size', 11.5).attr('text-anchor', 'middle').attr('fill', '#2b2927').attr('font-weight', 700).text('สส.⁠บัญชี⁠ราย⁠ชื่อ แพ้ ← → ชนะ');
     ax.append('line').attr('x1', X(0)).attr('x2', X(0)).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', '#2b2927').attr('stroke-width', 1.6).attr('opacity', .7);
     sv.append('g').attr('class', 'zl');
     sv.append('g').attr('class', 'dots').selectAll('circle').data(sub).join('circle').attr('class', 'dot').attr('r', 3.6).attr('stroke', '#fff').attr('stroke-width', .7)
@@ -1204,7 +1209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sv.append('g').attr('class', 'hl').attr('pointer-events', 'none');
     /* เส้นเกณฑ์ที่ลากได้: [ชื่อ, แกน, คำอธิบาย] */
     const G = sv.append('g').attr('class', 'thr');
-    [['far', 'x', 'ปรับแผนใหม่'], ['lo', 'x', 'พลิกได้'], ['hi', 'x', 'ฐานเสียง'], ['ly', 'y', 'บัญชีรายชื่อ']].forEach(([k, a, t]) => {
+    [['far', 'x', 'ปรับแผนใหม่'], ['lo', 'x', 'พลิกได้'], ['hi', 'x', 'ฐานเสียง'], ['ly', 'y', 'สส.⁠บัญชี⁠ราย⁠ชื่อ']].forEach(([k, a, t]) => {
       const g = G.append('g').attr('class', 'th-' + k).attr('cursor', a === 'x' ? 'ew-resize' : 'ns-resize');
       g.append('rect').attr('class', 'hit').attr('fill', 'transparent');
       g.append('line').attr('class', 'ln').attr('stroke', '#e8740f').attr('stroke-width', 2).attr('stroke-dasharray', '6 3');
@@ -1252,7 +1257,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function table() {
     const rows = sub.map(d => [d, tierOf(d, T)]).sort((a, b) => TK.indexOf(a[1]) - TK.indexOf(b[1]) || Math.abs(a[0].gap) - Math.abs(b[0].gap));
     const num = v => `<span class="tv"><span class="tw">${v > 0 ? 'ชนะ' : 'แพ้'}</span><span class="tn">${Math.abs(v).toFixed(1)}%</span></span>`;
-    Q('.tvm-tl').innerHTML = `<div class="th"><span>จังหวัด เขต</span><span>ระดับโอกาส</span><span style="text-align:right">สส.เขต</span><span style="text-align:right">บัญชีรายชื่อ</span></div>`
+    Q('.tvm-tl').innerHTML = `<div class="th"><span>จังหวัด เขต</span><span>ระดับโอกาส</span><span style="text-align:right">สส.เขต</span><span style="text-align:right">สส.⁠บัญชี⁠ราย⁠ชื่อ</span></div>`
       + rows.map(([d, t]) => `<div class="trr" data-tk="${key(d)}"><span>${d.pv} <span class="muted">เขต ${d.d}</span><button class="tdet" data-tdet="${key(d)}" title="ดูรายละเอียดเขต" aria-label="ดูรายละเอียดเขต">↗</button></span><span><span class="tp" style="background:${TT[t][1]};color:${ink(TT[t][1])}">${TT[t][0]}</span>${t !== d.tier ? ' <span class="chg">เปลี่ยน</span>' : ''}</span>${num(d.gap)}${num(d.lgap)}</div>`).join('');
   }
   /* เขตที่ชี้ / ปักหมุด: จุดใหญ่ขึ้น + วงแหวน + ป้ายชื่อ + เส้นประไปแกน, จุดอื่นจางลง */
@@ -1358,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
   const MQ = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)');   /* ไอแพดแนวตั้ง (กว้างไม่ถึง 1100px) ใช้หน้าตาแบบมือถือ */
   const ICON = {win:'<path d="M3 4h7v7H3zM12 4h7v7h-7zM3 13h7v7H3z"/>', list:'<path d="M4 6h16M4 12h16M4 18h10"/>', both:'<path d="M4 4h16v16H4zM4 20 20 4"/>', tier:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>', house:'<path d="M3 11 12 4l9 7v9h-6v-6H9v6H3z"/>'};
-  const SHORT = {win:'สส.เขต', list:'บัญชีรายชื่อ', both:'รวม 2 แบบ', tier:'วางแผน', house:'บ้านใหญ่'};
+  const SHORT = {win:'สส.เขต', list:'สส.บัญชีฯ', both:'รวม 2 แบบ', tier:'วางแผน', house:'บ้านใหญ่'};
   let on = false, st = 'peek', home = [];
   /* ส่วนที่สร้างเพิ่มสำหรับมือถือ */
   const tabs = document.createElement('nav'); tabs.id = 'mtabs';
@@ -1457,7 +1462,7 @@ document.addEventListener('DOMContentLoaded', () => {
    ใช้ปุ่ม ตัวกรอง กราฟ และข้อมูลชุดเดิมทั้งหมด แค่ย้ายตำแหน่งและเปลี่ยนสี */
 (function () {
   const MQ = matchMedia('(min-width:1100px)');
-  const TITLE = {win:'ภาพรวม สส.เขต', list:'ภาพรวม บัญชีรายชื่อ', both:'สส.เขต + บัญชีรายชื่อ', tier:'วางแผนพรรค', house:'ข้อมูลบ้านใหญ่'};
+  const TITLE = {win:'ภาพรวม สส.เขต', list:'ภาพรวม สส.⁠บัญชี⁠ราย⁠ชื่อ', both:'สส.เขต + สส.⁠บัญชี⁠ราย⁠ชื่อ', tier:'วางแผนพรรค', house:'ข้อมูลบ้านใหญ่'};
   let on = false, home = [];
   const side = document.createElement('aside'); side.id = 'dside';
   side.innerHTML = `<div class="dlogo"><div class="dlt"><small>พรรคประชาชน</small><b>THAILAND<br>ELECTION 2026</b><span>เลือกตั้ง สส. 2569</span></div>
@@ -1579,17 +1584,17 @@ document.addEventListener('DOMContentLoaded', () => {
      m:'ด้านบนคือแผนที่ 400 เขต (1 ช่อง = 1 เขต) ด้านล่างคือรายละเอียดของข้อมูลแต่ละเขตซึ่งเชื่อมกับแผนที่ ปัดขึ้นเพื่อดูเพิ่ม ปุ่มตัวกรองอยู่มุมขวาบน เมนูมุมมองอยู่แถบล่างสุด',
      tip:{d:'ค้นหาเขตได้จากช่องค้นหาด้านบนขวา โดยพิมพ์ชื่อจังหวัดหรือเขต', m:'กดปุ่ม ? มุมขวาบนเพื่อเปิดหน้านี้อีกครั้งได้ทุกเมื่อ'}},
     {t:'เลือกมุมมอง', v:'2.mp4',
-     d:'มี 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), บัญชีรายชื่อ (พรรคที่ได้คะแนน สส.บัญชีรายชื่อสูงสุดในเขต), สส.เขต + บัญชีรายชื่อ (เปรียบเทียบคู่กัน), วางแผนพรรค (จัดกลุ่มเขตตามระดับโอกาส) และข้อมูลบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)',
-     m:'แตะแถบล่างสุดเพื่อสลับ 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), บัญชีรายชื่อ (พรรคที่ได้คะแนน สส.บัญชีรายชื่อสูงสุดในเขต), รวม 2 แบบ (เปรียบเทียบคู่กัน), วางแผน (จัดกลุ่มเขตตามระดับโอกาส) และบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)'},
+     d:'มี 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), สส.⁠บัญชี⁠ราย⁠ชื่อ (พรรคที่ได้คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อสูงสุดในเขต), สส.เขต + สส.⁠บัญชี⁠ราย⁠ชื่อ (เปรียบเทียบคู่กัน), วางแผนพรรค (จัดกลุ่มเขตตามระดับโอกาส) และข้อมูลบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)',
+     m:'แตะแถบล่างสุดเพื่อสลับ 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), สส.⁠บัญชี⁠ราย⁠ชื่อ (พรรคที่ได้คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อสูงสุดในเขต), รวม 2 แบบ (เปรียบเทียบคู่กัน), วางแผน (จัดกลุ่มเขตตามระดับโอกาส) และบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)'},
     {t:'คลิกเขตบนแผนที่', mt:'แตะเขตบนแผนที่', v:'3.mp4',
-     d:'ชี้ที่ช่องเพื่อดูคะแนนแบบย่อ คลิกเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับบัญชีรายชื่อ กด ✕ หรือปุ่ม Esc เพื่อปิด',
-     m:'แตะช่องเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับบัญชีรายชื่อ กด ✕ เพื่อปิด'},
+     d:'ชี้ที่ช่องเพื่อดูคะแนนแบบย่อ คลิกเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ กด ✕ หรือปุ่ม Esc เพื่อปิด',
+     m:'แตะช่องเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ กด ✕ เพื่อปิด'},
     {t:'ลากกรอบสีส้มบนกราฟ', v:'4.mp4',
      d:'กราฟด้านบนเรียงทุกเขตจากชนะขาดลอยไปแพ้ขาดลอย ลากกรอบสีส้มไปทางซ้ายหรือขวา รายการด้านล่างจะเปลี่ยนเป็นเขตในช่วงนั้น ลากขอบกรอบเพื่อยืดหรือหด',
      m:'ปัดแผ่นด้านล่างขึ้นเพื่อดูกราฟ กราฟเรียงทุกเขตจากชนะขาดลอยไปแพ้ขาดลอย ใช้นิ้วลากกรอบสีส้มไปทางซ้ายหรือขวา รายการด้านล่างจะเปลี่ยนเป็นเขตในช่วงนั้น'},
     {t:'ขยายกราฟและปักหมุด', v:'5.mp4',
-     d:'กดปุ่ม “ขยาย” มุมขวาบนของกราฟ คลิกแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับบัญชีรายชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน',
-     m:'กดปุ่ม “ขยาย” บนหัวกราฟ แตะแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับบัญชีรายชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน'},
+     d:'กดปุ่ม “ขยาย” มุมขวาบนของกราฟ คลิกแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน',
+     m:'กดปุ่ม “ขยาย” บนหัวกราฟ แตะแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน'},
     {t:'ปรับเกณฑ์วางแผนพรรค', v:'6.mp4',
      d:'ในมุมมองวางแผนพรรค 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขด้านขวาจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม',
      m:'ในมุมมองวางแผน 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วใช้นิ้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม'},
@@ -1603,19 +1608,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- คำศัพท์: g = team (ศัพท์เฉพาะ) หรือ pol (ศัพท์การเมือง), a = คำอื่นที่ให้ขีดเส้นใต้ในหน้าเว็บ ---------- */
   const TERMS = [
-    {k:'สส.เขต', g:'pol', d:'ผู้แทนที่ชนะการเลือกตั้งในแต่ละเขต มีทั้งหมด 400 เขต เขตละ 1 คน มาจากบัตรใบที่เลือกผู้สมัคร'},
-    {k:'บัญชีรายชื่อ', g:'pol', d:'100 ที่นั่ง แบ่งให้แต่ละพรรคตามคะแนนบัตรใบที่เลือกพรรครวมทั้งประเทศ ในเว็บนี้ดูได้ว่าแต่ละเขต พรรคไหนได้คะแนนบัตรเลือกพรรคสูงสุด'},
-    {k:'บ้านใหญ่', g:'pol', d:'ครอบครัวนักการเมืองที่มีอิทธิพลอยู่ตามท้องถิ่นต่าง ๆ มีทั้งลงการเมืองในพื้นที่ไปจนถึงลงการเมืองระดับประเทศ'},
+    {k:'สส.เขต', g:'pol', d:'สมาชิกที่มาจากการเลือกตั้งแบบแบ่งเขตเลือกตั้ง มีทั้งหมด 400 คน เขตละ 1 คน ผู้สมัครที่ได้คะแนนสูงสุดในเขตเป็นผู้ได้รับเลือก'},
+    {k:'สส.⁠บัญชี⁠ราย⁠ชื่อ', g:'pol', d:'สมาชิกที่มาจากบัญชีรายชื่อของพรรคการเมือง จำนวน 100 คน แต่ละพรรคได้ที่นั่งตามสัดส่วนคะแนนจากบัตรเลือกพรรคที่ได้รวมทั้งประเทศ'},
+    {k:'บ้านใหญ่', g:'pol', d:'ครอบครัวหรือตระกูลนักการเมืองผู้มีอิทธิพลในท้องถิ่น ซึ่งมีฐานเสียงและครองความนิยมในพื้นที่นั้น ๆ มาอย่างยาวนาน'},
     {k:'ระยะห่าง', g:'team', d:'คะแนนของพรรคประชาชนเทียบกับคู่แข่งที่ใกล้ที่สุด คิดเป็น % ของบัตรดีในเขต ถ้าพรรคชนะ จะเปรียบเทียบกับอันดับ 2 ถ้าพรรคแพ้จะเปรียบเทียบกับผู้ชนะ โดยค่าบวก = ชนะ ค่าลบ = แพ้'},
     {k:'สูสี ±5%', g:'team', d:'เขตที่มีระยะห่างของคะแนนเมื่อพรรคประชาชนชนะหรือแพ้ไม่เกิน 5%'},
-    {k:'เขต-พรรค สวนทาง', g:'team', d:'เขตที่พรรคชนะ สส.เขต แต่ไม่ชนะ สส.บัญชีรายชื่อ หรือเขตที่พรรคชนะ สส.บัญชีรายชื่อ แต่ไม่ชนะ สส.เขต'},
-    {k:'ระดับโอกาส', g:'team', d:'การกำหนดพื้นที่เป้าหมายสำหรับวางแผนการเลือกตั้งครั้งถัดไป โดยใช้เกณฑ์ระยะห่างของคะแนน สส.เขต และ สส.บัญชีรายชื่อประกอบกัน',
+    {k:'เขต-พรรค สวนทาง', g:'team', d:'เขตที่พรรคชนะ สส.เขต แต่ไม่ชนะ สส.⁠บัญชี⁠ราย⁠ชื่อ หรือเขตที่พรรคชนะ สส.⁠บัญชี⁠ราย⁠ชื่อ แต่ไม่ชนะ สส.เขต'},
+    {k:'ระดับโอกาส', g:'team', d:'การกำหนดพื้นที่เป้าหมายสำหรับวางแผนการเลือกตั้งครั้งถัดไป โดยใช้เกณฑ์ระยะห่างของคะแนน สส.เขต และ สส.⁠บัญชี⁠ราย⁠ชื่อประกอบกัน',
      sub:[   /* [ชื่อกลุ่ม, ความหมาย, เกณฑ์] */
-       ['ฐานเสียง','พื้นที่ที่คนในเขตสนับสนุนพรรคและผู้สมัครของพรรคอย่างชัดเจน','ชนะ สส.เขต ห่างเกิน 5% และบัญชีรายชื่อชนะในเขต'],
-       ['รักษาฐานเสียง','พื้นที่ที่ สส.เขต ชนะเฉียดฉิว ต้องระวังถูกพลิกกลับในการเลือกตั้งครั้งถัดไป จึงต้องรักษาฐานสนับสนุน','ชนะ สส.เขต แต่ห่างไม่เกิน 5% หรือบัญชีรายชื่อไม่ชนะในเขต'],
+       ['ฐานเสียง','พื้นที่ที่คนในเขตสนับสนุนพรรคและผู้สมัครของพรรคอย่างชัดเจน','ชนะ สส.เขต ห่างเกิน 5% และ สส.⁠บัญชี⁠ราย⁠ชื่อชนะในเขต'],
+       ['รักษาฐานเสียง','พื้นที่ที่ สส.เขต ชนะเฉียดฉิว ต้องระวังถูกพลิกกลับในการเลือกตั้งครั้งถัดไป จึงต้องรักษาฐานสนับสนุน','ชนะ สส.เขต แต่ห่างไม่เกิน 5% หรือ สส.⁠บัญชี⁠ราย⁠ชื่อไม่ชนะในเขต'],
        ['พลิกได้','แพ้แบบเฉียดฉิว ถ้าลงแรงเพิ่มอาจมีโอกาสชนะในครั้งหน้า','แพ้ สส.เขต ไม่เกิน 5%'],
-       ['ดันผู้สมัคร','คนในเขตเลือกพรรคแล้ว แต่ผู้สมัครยังสู้คู่แข่งไม่ได้ ต้องทำให้ผู้สมัครเป็นที่รู้จักมากขึ้น','แพ้ สส.เขต เกิน 5% แต่ไม่เกิน 30% และบัญชีรายชื่อชนะในเขต'],
-       ['ปรับแผนใหม่','พื้นที่ที่มีคะแนนของพรรคและผู้สมัครตามหลังคู่แข่งค่อนข้างมาก ต้องวางแผนการหาเสียงใหม่','แพ้ สส.เขต เกิน 30% หรือแพ้ทั้ง สส.เขต และบัญชีรายชื่อ']]}
+       ['ดันผู้สมัคร','คนในเขตเลือกพรรคแล้ว แต่ผู้สมัครยังสู้คู่แข่งไม่ได้ ต้องทำให้ผู้สมัครเป็นที่รู้จักมากขึ้น','แพ้ สส.เขต เกิน 5% แต่ไม่เกิน 30% และ สส.⁠บัญชี⁠ราย⁠ชื่อชนะในเขต'],
+       ['ปรับแผนใหม่','พื้นที่ที่มีคะแนนของพรรคและผู้สมัครตามหลังคู่แข่งค่อนข้างมาก ต้องวางแผนการหาเสียงใหม่','แพ้ สส.เขต เกิน 30% หรือแพ้ทั้ง สส.เขต และ สส.⁠บัญชี⁠ราย⁠ชื่อ']]}
   ];
   const GL = {all:'ทั้งหมด', pol:'ศัพท์การเมือง', team:'ศัพท์เฉพาะ'};   /* ศัพท์การเมืองขึ้นก่อน */
 
@@ -1686,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const n = g => TERMS.filter(t => g === 'all' || t.g === g).length;
       Q('.tut-list').innerHTML = Object.entries(GL).map(([g, t]) => `<button data-tg="${g}" class="${S.g === g ? 'on' : ''}"><span>${t}</span><em>${n(g)}</em></button>`).join('');
       const keep = Q('.tut-q') && document.activeElement === Q('.tut-q');
-      if (!keep) Q('.tut-body').innerHTML = `<div class="tut-k">คำศัพท์</div><h3 id="tut-h">คำที่ใช้ในเว็บนี้</h3>
+      if (!keep) Q('.tut-body').innerHTML = `<div class="tut-k">คำศัพท์</div><h3 id="tut-h">คำที่ใช้ในเว็บไซต์นี้</h3>
         <input class="tut-q" type="search" placeholder="ค้นหาคำศัพท์" aria-label="ค้นหาคำศัพท์" value="${S.q}"><div class="tut-gl"></div>`;
       terms();
     }
@@ -1992,7 +1997,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 /* ===== โหมด สส.เขต + บัญชีรายชื่อ บนจอคอม: หัวข้อกระชับ (บรรทัดจำนวนเขตและปุ่มก่อนหน้า/ถัดไป อยู่แถวเดียวกับหัวข้อ) ให้รายชื่อเขตมีพื้นที่มากขึ้น ===== */
-var BT = {w:['สส.เขต: ห่างผู้ชนะ / อันดับ 2', 'win', 'bw'], l:['บัญชีรายชื่อ: ห่างพรรคที่ชนะ / อันดับ 2', 'list', 'bl']};
+var BT = {w:['สส.เขต: ห่างผู้ชนะ / อันดับ 2', 'win', 'bw'], l:['สส.⁠บัญชี⁠ราย⁠ชื่อ: ห่างพรรคที่ชนะ / อันดับ 2', 'list', 'bl']};
 function fitWin(host, wkey) {   /* ขนาดรายการเปลี่ยน → ปรับจำนวนแถวของกรอบส้มให้พอดี โดยคงตำแหน่งกึ่งกลางเดิม */
   const w = ST.win[wkey], L = host.querySelector('.list'); if (!w || !L) return;
   const NR = Math.max(4, Math.floor((L.clientHeight - 2) / ROWH)), c = (w[0] + w[1]) / 2, a = Math.max(0, Math.round(c - NR / 2));
@@ -2000,7 +2005,7 @@ function fitWin(host, wkey) {   /* ขนาดรายการเปลี่
 }
 function renderBoth(rk) {
   const lhd = '<div class="lhd"><span>เขต</span><span>ห่าง</span><span class="lab"></span></div>';
-  let h = `<div class="hd"><h3>พรรคประชาชน: สส.เขต เทียบ บัญชีรายชื่อ</h3>${sortBtns()}</div>`;
+  let h = `<div class="hd"><h3>พรรคประชาชน: สส.เขต เทียบ สส.⁠บัญชี⁠ราย⁠ชื่อ</h3>${sortBtns()}</div>`;
   ['w', 'l'].forEach((k, j) => h += `<div class="half" id="h${j + 1}"><div class="hrow"><h4>${BT[k][0]}</h4><div class="desc info"><span class="cnt"></span></div><div class="ovnav"><button data-pg="-1">‹ ก่อนหน้า</button><span class="ovhint"></span><button data-pg="1" class="pri">ถัดไป ›</button></div></div><div class="ovw"></div>${lhd}<div class="list"></div></div>`);
   rk.className = 'card rk2 bv-b'; rk.innerHTML = h;
   ['w', 'l'].forEach((k, j) => { const [, kind, wk] = BT[k], host = $('#h' + (j + 1)); fitWin(host, wk); chartBlock(host, kind, 86, wk); });
