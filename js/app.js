@@ -1073,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function draw(snap, center) {
     const c = Q('#ovm-c'), K = PM.kind;
     Q('#ovm-t').textContent = K === 'list' ? 'สส.⁠บัญชี⁠ราย⁠ชื่อ: พรรคประชาชนห่างพรรคที่ชนะ / อันดับ 2' : 'สส.เขต: พรรคประชาชนห่างผู้ชนะ / อันดับ 2';
+    Q('#ovm-t').insertAdjacentHTML('beforeend', window.QH ? QH(1) : '');   /* ปุ่ม ? เปิดวิธีใช้เรื่องขยายกราฟและปักหมุด */
     Q('#ovm-f').innerHTML = filtNote();
     Q('#ovm-k').innerHTML = [['win', 'สส.เขต'], ['list', 'สส.⁠บัญชี⁠ราย⁠ชื่อ']].map(([k, t]) => `<button data-pk="${k}" class="${K === k ? 'on' : ''}">${t}</button>`).join('');
     Q('#ovm-s').innerHTML = [['gap', 'ตามระยะห่าง'], ['reg', 'แยกภาค']].map(([k, t]) => `<button data-ps2="${k}" class="${PM.sort === k ? 'on' : ''}">${t}</button>`).join('');
@@ -1587,32 +1588,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (/\.png$/.test(v)) { const im = new Image(); im.src = u; } else if (!u.startsWith('blob:')) fetch(u).catch(() => {}); }); };
 
   /* ---------- เนื้อหาวิธีใช้: t = หัวข้อ, d = คำอธิบายจอคอม, m = คำอธิบายมือถือ, v = ชื่อไฟล์ภาพหรือคลิป ---------- */
+  /* ขั้นตอนวิธีใช้ 3 ขั้น แต่ละขั้นมีหลายเรื่องย่อย (ปุ่มเลือกเหนือคลิป) คลิปเรื่องย่อยเล่นต่อกันเอง */
   const STEPS = [
-    {t:'ภาพรวมหน้าเว็บ', v:'1.png',
-     d:'ซ้ายมือคือเมนูเลือกมุมมองและตัวกรอง ตรงกลางคือแผนที่ 400 เขต (1 ช่อง = 1 เขต) ขวามือคือรายละเอียดของข้อมูลแต่ละเขตซึ่งเชื่อมกับแผนที่',
-     m:'ด้านบนคือแผนที่ 400 เขต (1 ช่อง = 1 เขต) ด้านล่างคือรายละเอียดของข้อมูลแต่ละเขตซึ่งเชื่อมกับแผนที่ ปัดขึ้นเพื่อดูเพิ่ม ปุ่มตัวกรองอยู่มุมขวาบน เมนูมุมมองอยู่แถบล่างสุด',
-     tip:{d:'ค้นหาเขตได้จากช่องค้นหาด้านบนขวา โดยพิมพ์ชื่อจังหวัดหรือเขต', m:'กดปุ่ม ? มุมขวาบนเพื่อเปิดหน้านี้อีกครั้งได้ทุกเมื่อ'}},
-    {t:'เลือกมุมมอง', v:'2.mp4',
-     d:'มี 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), สส.⁠บัญชี⁠ราย⁠ชื่อ (พรรคที่ได้คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อสูงสุดในเขต), สส.เขต + สส.⁠บัญชี⁠ราย⁠ชื่อ (เปรียบเทียบคู่กัน), วางแผนพรรค (จัดกลุ่มเขตตามระดับโอกาส) และข้อมูลบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)',
-     m:'แตะแถบล่างสุดเพื่อสลับ 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), สส.⁠บัญชี⁠ราย⁠ชื่อ (พรรคที่ได้คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อสูงสุดในเขต), รวม 2 แบบ (เปรียบเทียบคู่กัน), วางแผน (จัดกลุ่มเขตตามระดับโอกาส) และบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)'},
-    {t:'คลิกเขตบนแผนที่', mt:'แตะเขตบนแผนที่', v:'3.mp4',
-     d:'ชี้ที่ช่องเพื่อดูคะแนนแบบย่อ คลิกเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ กด ✕ หรือปุ่ม Esc เพื่อปิด',
-     m:'แตะช่องเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ กด ✕ เพื่อปิด'},
-    {t:'ลากกรอบสีส้มบนกราฟ', v:'4.mp4',
-     d:'กราฟด้านบนเรียงทุกเขตจากชนะขาดลอยไปแพ้ขาดลอย ลากกรอบสีส้มไปทางซ้ายหรือขวา รายการด้านล่างจะเปลี่ยนเป็นเขตในช่วงนั้น ลากขอบกรอบเพื่อยืดหรือหด',
-     m:'ปัดแผ่นด้านล่างขึ้นเพื่อดูกราฟ กราฟเรียงทุกเขตจากชนะขาดลอยไปแพ้ขาดลอย ใช้นิ้วลากกรอบสีส้มไปทางซ้ายหรือขวา รายการด้านล่างจะเปลี่ยนเป็นเขตในช่วงนั้น'},
-    {t:'ขยายกราฟและปักหมุด', v:'5.mp4',
-     d:'กดปุ่ม “ขยาย” มุมขวาบนของกราฟ คลิกแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน',
-     m:'กดปุ่ม “ขยาย” บนหัวกราฟ แตะแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน'},
-    {t:'ปรับเกณฑ์วางแผนพรรค', v:'6.mp4',
-     d:'ในมุมมองวางแผนพรรค 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขด้านขวาจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม',
-     m:'ในมุมมองวางแผน 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วใช้นิ้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม'},
-    {t:'กราฟเชื่อมกันในบ้านใหญ่', v:'8.mp4',
-     d:'ในมุมมองข้อมูลบ้านใหญ่ กราฟทุกส่วนเชื่อมกัน คลิกแท่งของภาคในกราฟ “แยกตามภาค” กราฟแยกตามพรรคและแผนที่จะเหลือเฉพาะภาคนั้น คลิกแถวของพรรคในกราฟ “แยกตามพรรคของบ้านใหญ่” กราฟแยกตามภาคและแผนที่จะเหลือเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร คลิกซ้ำหรือกด ✕ บนป้ายด้านบนเพื่อยกเลิก',
-     m:'ในมุมมองบ้านใหญ่ กราฟทุกส่วนเชื่อมกัน แตะแท่งของภาคในกราฟ “แยกตามภาค” กราฟแยกตามพรรคและแผนที่จะเหลือเฉพาะภาคนั้น แตะแถวของพรรคในกราฟ “แยกตามพรรคของบ้านใหญ่” กราฟแยกตามภาคและแผนที่จะเหลือเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร แตะซ้ำหรือกด ✕ บนป้ายด้านบนเพื่อยกเลิก'},
-    {t:'ตัวกรองและรีเซ็ต', v:'7.mp4',
-     d:'เลือกภาค แล้วกดตัวกรอง “สูสี ±5%” หรือ “เขต-พรรค สวนทาง” เพื่อดูข้อมูลเฉพาะเขตกลุ่มนั้น ติ๊ก “บ้านใหญ่ชนะ” หรือ “เปรียบเทียบปี 66” เพิ่มได้ โดยกดปุ่ม “รีเซ็ตตัวกรอง” เพื่อล้างตัวกรองทั้งหมด',
-     m:'กดปุ่ม ตัวกรอง มุมขวาบน เลือกภาค แล้วกด “สูสี ±5%” หรือ “เขต-พรรค สวนทาง” เพื่อดูข้อมูลเฉพาะเขตกลุ่มนั้น ติ๊ก “บ้านใหญ่ชนะ” หรือ “เปรียบเทียบปี 66” เพิ่มได้ แล้วกด ดูผล โดยกด รีเซ็ต เพื่อล้างตัวกรองทั้งหมด'}
+    {t:'ภาพรวมหน้าเว็บ', tip:{d:'ค้นหาเขตได้จากช่องค้นหาด้านบนขวา โดยพิมพ์ชื่อจังหวัดหรือเขต', m:'กดปุ่ม ? มุมขวาบนเพื่อเปิดหน้านี้อีกครั้งได้ทุกเมื่อ'}, parts:[
+      {c:'ส่วนต่าง ๆ ของหน้า', v:'1.png',
+       d:'ซ้ายมือคือเมนูเลือกมุมมองและตัวกรอง ตรงกลางคือแผนที่ 400 เขต (1 ช่อง = 1 เขต) ขวามือคือรายละเอียดของข้อมูลแต่ละเขตซึ่งเชื่อมกับแผนที่',
+       m:'ด้านบนคือแผนที่ 400 เขต (1 ช่อง = 1 เขต) ด้านล่างคือรายละเอียดของข้อมูลแต่ละเขตซึ่งเชื่อมกับแผนที่ ปัดขึ้นเพื่อดูเพิ่ม ปุ่มตัวกรองอยู่มุมขวาบน เมนูมุมมองอยู่แถบล่างสุด'},
+      {c:'เลือกมุมมอง', v:'2.mp4',
+       d:'มี 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), สส.⁠บัญชี⁠ราย⁠ชื่อ (พรรคที่ได้คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อสูงสุดในเขต), สส.เขต + สส.⁠บัญชี⁠ราย⁠ชื่อ (เปรียบเทียบคู่กัน), วางแผนพรรค (จัดกลุ่มเขตตามระดับโอกาส) และข้อมูลบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)',
+       m:'แตะแถบล่างสุดเพื่อสลับ 5 มุมมอง ได้แก่ สส.เขต (ผู้ชนะ สส.เขตแต่ละเขต), สส.⁠บัญชี⁠ราย⁠ชื่อ (พรรคที่ได้คะแนน สส.⁠บัญชี⁠ราย⁠ชื่อสูงสุดในเขต), รวม 2 แบบ (เปรียบเทียบคู่กัน), วางแผน (จัดกลุ่มเขตตามระดับโอกาส) และบ้านใหญ่ (เขตที่มีผู้สมัครเป็นตระกูลที่มีอิทธิพลในพื้นที่)'}]},
+    {t:'แผนที่และตัวกรอง', parts:[
+      {c:'คลิกเขตบนแผนที่', mc:'แตะเขตบนแผนที่', v:'3.mp4',
+       d:'ชี้ที่ช่องเพื่อดูคะแนนแบบย่อ คลิกเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ กด ✕ หรือปุ่ม Esc เพื่อปิด',
+       m:'แตะช่องเพื่อเปิดรายละเอียดแต่ละเขต โดยมีข้อมูลชื่อผู้สมัคร คะแนนที่ได้ และกราฟเปรียบเทียบคะแนน สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ กด ✕ เพื่อปิด'},
+      {c:'ตัวกรองและรีเซ็ต', v:'7.mp4',
+       d:'เลือกภาค แล้วกดตัวกรอง “สูสี ±5%” หรือ “เขต-พรรค สวนทาง” เพื่อดูข้อมูลเฉพาะเขตกลุ่มนั้น ติ๊ก “บ้านใหญ่ชนะ” หรือ “เปรียบเทียบปี 66” เพิ่มได้ โดยกดปุ่ม “รีเซ็ตตัวกรอง” เพื่อล้างตัวกรองทั้งหมด',
+       m:'กดปุ่ม ตัวกรอง มุมขวาบน เลือกภาค แล้วกด “สูสี ±5%” หรือ “เขต-พรรค สวนทาง” เพื่อดูข้อมูลเฉพาะเขตกลุ่มนั้น ติ๊ก “บ้านใหญ่ชนะ” หรือ “เปรียบเทียบปี 66” เพิ่มได้ แล้วกด ดูผล โดยกด รีเซ็ต เพื่อล้างตัวกรองทั้งหมด'}]},
+    {t:'กราฟ', parts:[
+      {c:'ลากกรอบสีส้ม', v:'4.mp4',
+       d:'กราฟด้านบนเรียงทุกเขตจากชนะขาดลอยไปแพ้ขาดลอย ลากกรอบสีส้มไปทางซ้ายหรือขวา รายการด้านล่างจะเปลี่ยนเป็นเขตในช่วงนั้น ลากขอบกรอบเพื่อยืดหรือหด',
+       m:'ปัดแผ่นด้านล่างขึ้นเพื่อดูกราฟ กราฟเรียงทุกเขตจากชนะขาดลอยไปแพ้ขาดลอย ใช้นิ้วลากกรอบสีส้มไปทางซ้ายหรือขวา รายการด้านล่างจะเปลี่ยนเป็นเขตในช่วงนั้น'},
+      {c:'ขยายกราฟและปักหมุด', v:'5.mp4',
+       d:'กดปุ่ม “ขยาย” มุมขวาบนของกราฟ คลิกแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน',
+       m:'กดปุ่ม “ขยาย” บนหัวกราฟ แตะแถวในรายการเพื่อปักหมุดเขตที่สนใจ (ได้สูงสุด 3 เขต) แล้วสลับ สส.เขต กับ สส.⁠บัญชี⁠ราย⁠ชื่อ หมุดจะพาไปดูว่าเขตนั้นย้ายไปอยู่ตรงไหน'},
+      {c:'ปรับเกณฑ์วางแผนพรรค', v:'6.mp4',
+       d:'ในมุมมองวางแผนพรรค 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขด้านขวาจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม',
+       m:'ในมุมมองวางแผน 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วใช้นิ้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม'},
+      {c:'กราฟเชื่อมกันในบ้านใหญ่', v:'8.mp4',
+       d:'ในมุมมองข้อมูลบ้านใหญ่ กราฟทุกส่วนเชื่อมกัน คลิกแท่งของภาคในกราฟ “แยกตามภาค” กราฟแยกตามพรรคและแผนที่จะเหลือเฉพาะภาคนั้น คลิกแถวของพรรคในกราฟ “แยกตามพรรคของบ้านใหญ่” กราฟแยกตามภาคและแผนที่จะเหลือเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร คลิกซ้ำหรือกด ✕ บนป้ายด้านบนเพื่อยกเลิก',
+       m:'ในมุมมองบ้านใหญ่ กราฟทุกส่วนเชื่อมกัน แตะแท่งของภาคในกราฟ “แยกตามภาค” กราฟแยกตามพรรคและแผนที่จะเหลือเฉพาะภาคนั้น แตะแถวของพรรคในกราฟ “แยกตามพรรคของบ้านใหญ่” กราฟแยกตามภาคและแผนที่จะเหลือเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร แตะซ้ำหรือกด ✕ บนป้ายด้านบนเพื่อยกเลิก'}]}
   ];
 
   /* ---------- คำศัพท์: g = team (ศัพท์เฉพาะ) หรือ pol (ศัพท์การเมือง), a = คำอื่นที่ให้ขีดเส้นใต้ในหน้าเว็บ ---------- */
@@ -1647,13 +1651,13 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>`;
   document.body.appendChild(box);
   const Q = s => box.querySelector(s);
-  const S = {tab:'how', i:0, g:'all', q:'', last:null};
+  const S = {tab:'how', i:0, p:0, g:'all', q:'', last:null};
 
-  function media(v) {
+  function media(v, once) {
     if (!v) return '';
     const f = (MOB() ? 'm' : 'd') + v;
     return /\.png$/.test(v) ? `<div class="tut-med"><img src="${src(f)}" alt=""></div>`
-      : `<div class="tut-med"><video src="${src(f)}" muted loop playsinline preload="auto" ${RMO.matches ? 'controls' : 'autoplay'}></video>${RMO.matches ? '' : '<span class="tut-vb">▶ เล่นวนอัตโนมัติ</span>'}</div>`;
+      : `<div class="tut-med"><video src="${src(f)}" muted ${once ? '' : 'loop '}playsinline preload="auto" ${RMO.matches ? 'controls' : 'autoplay'}></video>${RMO.matches ? '' : `<span class="tut-vb">▶ ${once ? 'เล่นต่อเรื่องถัดไปอัตโนมัติ' : 'เล่นวนอัตโนมัติ'}</span>`}</div>`;
   }
   /* ---------- อนิเมชั่น: แถบส้มของแท็บเลื่อน, แถบเลือกในรายการเลื่อนไปหาขั้นที่เลือก, เนื้อหาเลื่อนเข้าตามทิศ ---------- */
   const RM = () => RMO.matches;
@@ -1686,16 +1690,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (S.tab === 'how') {
       const st = STEPS[S.i];
       Q('.tut-list').innerHTML = STEPS.map((s, i) => `<button data-ti="${i}" class="${i === S.i ? 'on' : i < S.i ? 'done' : ''}"><i>${i + 1}</i><span>${mob && s.mt || s.t}</span></button>`).join('');
-      const tip = st.tip && st.tip[mob ? 'm' : 'd'];
-      Q('.tut-body').innerHTML = `<div class="tut-k">ขั้นที่ ${S.i + 1} จาก ${STEPS.length}</div><h3 id="tut-h">${mob && st.mt || st.t}</h3>
-        <p class="tut-p">${st[mob ? 'm' : 'd']}</p>${media(st.v)}${tip ? `<div class="tut-tip">💡 ${tip}</div>` : ''}`;
+      const tip = st.tip && st.tip[mob ? 'm' : 'd'], P = st.parts; S.p = Math.min(S.p, P.length - 1); const pt = P[S.p];
+      const chips = P.length > 1 ? `<div class="tut-chips" role="tablist">${P.map((x, j) => `<button data-tc="${j}" role="tab" class="${j === S.p ? 'on' : ''}" aria-selected="${j === S.p}">${mob && x.mc || x.c}</button>`).join('')}</div>` : '';
+      Q('.tut-body').innerHTML = `<div class="tut-k">ขั้นที่ ${S.i + 1} จาก ${STEPS.length}</div><h3 id="tut-h">${st.t}</h3>
+        ${chips}<p class="tut-p">${pt[mob ? 'm' : 'd']}</p>${media(pt.v, P.length > 1)}${tip ? `<div class="tut-tip">💡 ${tip}</div>` : ''}`;
       Q('[data-tp]').disabled = S.i === 0;
       Q('[data-tn]').textContent = S.i === STEPS.length - 1 ? 'เริ่มใช้งาน' : 'ถัดไป →';
       gloLink(Q('.tut-p'));
       const on = Q('.tut-list .on'); if (mob && on) on.scrollIntoView({inline:'center', block:'nearest'});   /* มือถือ: เลื่อนแถบขั้นให้เห็นขั้นปัจจุบัน */
       const vd = Q('video'); if (vd) vd.addEventListener('error', () => { const m = vd.closest('.tut-med'); if (m) m.hidden = true; });   /* ยังไม่มีคลิปของขั้นนี้ → ซ่อนกรอบคลิป ไม่ให้เห็นกรอบว่าง */
       if (vd && !RMO.matches) { const p = vd.play(); if (p && p.catch) p.catch(() => {}); }
-      if (STEPS[S.i + 1]) preload(STEPS[S.i + 1].v); if (STEPS[S.i - 1]) preload(STEPS[S.i - 1].v);
+      if (vd && P.length > 1) vd.addEventListener('ended', () => { if (box.hidden || S.tab !== 'how' || STEPS[S.i] !== st) return; S.p = (S.p + 1) % P.length; draw(); });   /* คลิปจบ → เรื่องย่อยถัดไป */
+      P.forEach((x, j) => { if (j !== S.p) preload(x.v); }); if (STEPS[S.i + 1]) preload(STEPS[S.i + 1].parts[0].v);
     } else {
       const n = g => TERMS.filter(t => g === 'all' || t.g === g).length;
       Q('.tut-list').innerHTML = Object.entries(GL).map(([g, t]) => `<button data-tg="${g}" class="${S.g === g ? 'on' : ''}"><span>${t}</span><em>${n(g)}</em></button>`).join('');
@@ -1712,10 +1718,10 @@ document.addEventListener('DOMContentLoaded', () => {
     Q('.tut-gl').innerHTML = L.length ? L.map(t => `<div class="tut-tm" data-term="${t.k}"><b>${t.k}<small>${GL[t.g]}</small></b><div><p>${t.d}</p>${t.sub ? `<ul>${t.sub.map(([a, b, c]) => `<li><b>${a}</b> ${b}${c ? `<small class="crit">เกณฑ์: ${c}</small>` : ''}</li>`).join('')}</ul>` : ''}</div></div>`).join('')
       : '<div class="tut-none">ไม่พบคำนี้</div>';
   }
-  function open(tab, at) {
+  function open(tab, at, part) {
     if (box.hidden) S.last = document.activeElement;
     S.tab = tab || 'how';
-    if (S.tab === 'how') S.i = typeof at === 'number' ? at : S.i;
+    if (S.tab === 'how') { S.i = typeof at === 'number' ? at : S.i; S.p = typeof part === 'number' ? part : 0; }
     if (S.tab === 'glo') { S.g = 'all'; S.q = ''; }
     Q('.tut-off input').checked = isOff();
     box.hidden = false; document.body.classList.add('tut-open'); prev = {tab:null, i:null, g:null};
@@ -1738,10 +1744,11 @@ document.addEventListener('DOMContentLoaded', () => {
   box.addEventListener('click', e => {
     if (e.target.closest('[data-tx]')) return close();
     const tt = e.target.closest('[data-tt]'); if (tt) { if (tt.dataset.tt !== S.tab) { S.tab = tt.dataset.tt; S.g = 'all'; S.q = ''; if (Q('.tut-q')) Q('.tut-q').remove(); draw(); } return; }
-    const ti = e.target.closest('[data-ti]'); if (ti) { S.i = +ti.dataset.ti; return draw(); }
+    const ti = e.target.closest('[data-ti]'); if (ti) { S.i = +ti.dataset.ti; S.p = 0; return draw(); }
+    const tc = e.target.closest('[data-tc]'); if (tc) { S.p = +tc.dataset.tc; return draw(); }
     const tg = e.target.closest('[data-tg]'); if (tg) { S.g = tg.dataset.tg; box.querySelectorAll('[data-tg]').forEach(b => b.classList.toggle('on', b === tg)); terms(); return motion(); }
-    if (e.target.closest('[data-tp]')) { if (S.i > 0) { S.i--; draw(); } return; }
-    if (e.target.closest('[data-tn]')) { if (S.i < STEPS.length - 1) { S.i++; draw(); } else close(); return; }
+    if (e.target.closest('[data-tp]')) { if (S.i > 0) { S.i--; S.p = 0; draw(); } return; }
+    if (e.target.closest('[data-tn]')) { if (S.i < STEPS.length - 1) { S.i++; S.p = 0; draw(); } else close(); return; }
     const gl = e.target.closest('.gl[data-g]'); if (gl) { e.preventDefault(); open('glo', gl.dataset.g); }
   });
   box.addEventListener('input', e => { if (e.target.classList.contains('tut-q')) { S.q = e.target.value; terms(); } });
@@ -1749,7 +1756,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', e => {
     if (box.hidden) return;
     if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); }
-    else if (S.tab === 'how' && !/INPUT/.test(document.activeElement.tagName) && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { S.i = Math.max(0, Math.min(STEPS.length - 1, S.i + (e.key === 'ArrowRight' ? 1 : -1))); draw(); }
+    else if (S.tab === 'how' && !/INPUT/.test(document.activeElement.tagName) && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { S.i = Math.max(0, Math.min(STEPS.length - 1, S.i + (e.key === 'ArrowRight' ? 1 : -1))); S.p = 0; draw(); }
     else if (e.key === 'Tab') {   /* กด Tab วนอยู่ในหน้าต่าง */
       const f = [...box.querySelectorAll('button:not([disabled]):not([hidden]),input,video[controls]')].filter(x => x.offsetParent); if (!f.length) return;
       if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
@@ -1806,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
     b.disabled = !(ST.reg || ST.fil || ST.big || ST.y66 || ST.lg != null || ST.brush || ST.h.party || ST.h.res !== 'all'); };
 
   /* ---------- เด้งขึ้นเมื่อเข้าเว็บ (รอข้อมูลและหน้าตาจอคอมหรือมือถือจัดเสร็จก่อน) ---------- */
-  const first = () => { if (!gTiles) return setTimeout(first, 120); setTimeout(() => { if (!isOff() && box.hidden) open('how', 0); }, 350); };
+  const first = () => { if (!gTiles) return setTimeout(first, 120); setTimeout(() => { if (!isOff() && box.hidden) { if (window.coachOpen) window.coachOpen(); else open('how', 0); } }, 350); };   /* เปิดเว็บครั้งแรก: แสดงหน้าแนะนำซ้อนบนเว็บ (หน้าวิธีใช้เปิดจากปุ่ม วิธีใช้) */
   first();
   matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)').addEventListener && matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)').addEventListener('change', () => { if (!box.hidden) setTimeout(draw, 50); });   /* หมุนจอ: เปลี่ยนคลิปและคำอธิบายให้ตรงกับจอ */
 })();
@@ -2027,3 +2034,76 @@ $('#rk').addEventListener('click', e => {
   const me = r.closest('.half'), d = byK[r.dataset.k];
   setTimeout(() => document.querySelectorAll('#rk .half').forEach(h => { if (h !== me && h._focus) h._focus(d); }), 0);
 });
+
+/* ===== หน้าแนะนำตอนเปิดเว็บ: ทำหน้าจอมืดลง ชี้ส่วนสำคัญด้วยกรอบส้ม และกล่องกลางจอบอกวิธีใช้เมาส์หรือนิ้ว ===== */
+;(function () {
+  const OFF = 'tutOff', NS = 'http://www.w3.org/2000/svg';
+  const setOff = v => { try { v ? localStorage.setItem(OFF, '1') : localStorage.removeItem(OFF); } catch (e) {} };
+  const isMob = () => document.body.classList.contains('mob');
+  const el = document.createElement('div'); el.id = 'coach'; el.hidden = true; document.body.appendChild(el);
+  const ICON = {   /* ตัวเมาส์: พื้นขาว → สีปุ่ม → เส้นขอบวาดทับด้านบน เส้นจึงไม่ถูกสีกิน (ยกเว้นลูกกลิ้งสีส้มที่วาดไว้หน้าเส้นกลาง) */
+    hover: '<svg viewBox="0 0 56 56"><g class="cz-hover"><path d="M20 10l20 19-9 1.4 5.6 11-4.2 2.1-5.6-11.2-6.8 6.2z" class="mp"/></g></svg>',
+    click: '<svg viewBox="0 0 56 56"><rect x="14" y="6" width="28" height="44" rx="14" class="mf"/><path d="M28 6A14 14 0 0 0 14 20V22H28z" class="cz-click"/><rect x="14" y="6" width="28" height="44" rx="14" class="mo2"/><path d="M28 6V22M14 22H42" class="ml"/></svg>',
+    drag: '<svg viewBox="0 0 56 56"><g class="cz-drag"><rect x="14" y="6" width="28" height="44" rx="14" class="mf"/><path d="M28 6A14 14 0 0 0 14 20V22H28z" class="mo"/><rect x="14" y="6" width="28" height="44" rx="14" class="mo2"/><path d="M28 6V22M14 22H42" class="ml"/><path d="M2 30h7M54 30h-7M2 30l4-4M2 30l4 4M54 30l-4-4M54 30l-4 4" class="ma"/></g></svg>',
+    wheel: '<svg viewBox="0 0 56 56"><rect x="14" y="6" width="28" height="44" rx="14" class="mf"/><rect x="14" y="6" width="28" height="44" rx="14" class="mo2"/><path d="M28 6V30" class="ml cz-mid"/><rect x="25" y="11" width="6" height="10" rx="3" class="cz-wheel"/></svg>',
+    tap: '<svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="15" class="cz-ring"/><circle cx="28" cy="28" r="15" class="cz-ring cz-ring2b"/><circle cx="28" cy="28" r="9" class="cz-dot"/></svg>',
+    drag2: '<svg viewBox="0 0 56 56"><g class="cz-drag"><path d="M6 28h44M6 28l5-5M6 28l5 5M50 28l-5-5M50 28l-5 5" class="ma"/><circle cx="28" cy="28" r="6" class="mp"/></g></svg>',
+    swipe: '<svg viewBox="0 0 56 56"><path d="M28 48V10M28 10l-6 6M28 10l6 6" class="ma"/><circle cx="28" cy="42" r="5.5" class="cz-up"/></svg>',
+    pinch: '<svg viewBox="0 0 56 56"><path d="M12 44l10-10M44 12L34 22" class="ma"/><circle cx="14" cy="42" r="5" class="cz-p1"/><circle cx="42" cy="14" r="5" class="cz-p2"/></svg>'
+  };
+  const R = s => { const e = typeof s === 'string' ? document.querySelector(s) : s; return e && e.getBoundingClientRect(); };
+  const U = rs => { rs = rs.filter(r => r && r.width); return rs.length ? {left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom))} : null; };
+  function spots() {
+    if (isMob()) { const hb = [...document.querySelectorAll('header button')].map(R);
+      return [[U(hb), 'ตัวกรอง และวิธีใช้', 'b'], [R('#mtabs'), 'เลือกมุมมอง', 'a']]; }
+    return [[R('#modes'), 'เลือกมุมมอง', 'r'], [U([R('#region'), R('#filters'), R('.dflt')]), 'เลือกภาคและกรองเขตที่สนใจ', 'r'],
+      [R('[data-reset]'), 'ล้างตัวกรองทั้งหมด', 'r'], [R('#dtop .dr'), 'ค้นหาเขต และเปิดวิธีใช้อีกครั้ง', 'b']];
+  }
+  function card() {
+    const m = isMob(), it = m ? [['tap', 'แตะ', 'ดูข้อมูลเขต<br>และรายละเอียด'], ['drag2', 'ลาก', 'เลื่อนกรอบส้ม<br>บนกราฟ'], ['swipe', 'ปัดขึ้น', 'ดูกราฟ<br>และรายชื่อเขต'], ['pinch', 'สองนิ้ว', 'ซูมแผนที่']]
+      : [['hover', 'ชี้', 'ดูคะแนนแบบย่อ'], ['click', 'คลิก', 'เปิดรายละเอียด<br>และปักหมุด'], ['drag', 'ลาก', 'เลื่อนกรอบส้ม<br>และเส้นเกณฑ์'], ['wheel', 'ลูกกลิ้ง', 'ซูมแผนที่<br>และเลื่อนรายชื่อ']];
+    return `<div class="cz-card" role="dialog" aria-modal="true" aria-labelledby="cz-h"><div class="cz-hd"><small>ยินดีต้อนรับ</small><b id="cz-h">${m ? 'ใช้นิ้วโต้ตอบกับแผนที่และกราฟ' : 'ใช้เมาส์โต้ตอบกับแผนที่และกราฟได้ทุกส่วน'}</b></div>
+      <div class="cz-g">${it.map(([k, t, d]) => `<div class="cz-i"><i>${ICON[k]}</i><em>${t}</em><span>${d}</span></div>`).join('')}</div>
+      <div class="cz-gl">คำที่มี <u>เส้นประใต้คำ</u> กดเพื่อดูความหมาย และกด <span class="qh qh-demo" aria-hidden="true">?</span> หลังหัวข้อกราฟเพื่อดูวิธีใช้กราฟนั้น</div>
+      <div class="cz-ft"><div class="cz-lk"><button data-cz="how">ดูวิธีใช้แบบละเอียด</button><button data-cz="glo">ดูคำศัพท์ทั้งหมด</button></div>
+      <div class="cz-go"><label><input type="checkbox"> ไม่ต้องแสดงอีก</label><button class="cz-start" data-cz="x">เริ่มใช้งาน →</button></div></div></div>`;
+  }
+  function layout() {
+    if (el.hidden) return;
+    const W = innerWidth, H = innerHeight, pad = 5, sp = spots().filter(x => x[0]);
+    const hole = r => `<rect x="${r.left - pad}" y="${r.top - pad}" width="${r.right - r.left + pad * 2}" height="${r.bottom - r.top + pad * 2}" rx="12"`;
+    let h = `<svg class="cz-bg" width="${W}" height="${H}"><defs><mask id="cz-m"><rect width="${W}" height="${H}" fill="#fff"/>${sp.map(([r]) => hole(r) + ' fill="#000"/>').join('')}</mask>
+      <marker id="cz-ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#ef7d00"/></marker></defs>
+      <rect width="${W}" height="${H}" class="cz-dim" mask="url(#cz-m)"/>${sp.map(([r]) => hole(r) + ' class="cz-ring2"/>').join('')}<g class="cz-ar"></g></svg>`;
+    h += sp.map(([, t], i) => `<div class="cz-tip" data-i="${i}">${t}</div>`).join('') + card();
+    const chk = el.querySelector('.cz-go input'), was = chk && chk.checked;
+    el.innerHTML = h; if (was) el.querySelector('.cz-go input').checked = true;
+    const ar = el.querySelector('.cz-ar');
+    sp.forEach(([r, , pos], i) => { const d = el.querySelector(`.cz-tip[data-i="${i}"]`), w = d.offsetWidth, hh = d.offsetHeight; let x, y, a;
+      if (pos === 'r') { x = r.right + 38; y = r.top + 6; a = [x, y + hh / 2, r.right + 9, y + hh / 2]; }
+      else if (pos === 'b') { x = Math.min(W - w - 10, r.right - w); y = r.bottom + 38; a = [x + w - 36, y, x + w - 36, r.bottom + 9]; }
+      else { x = W / 2 - w / 2; y = r.top - hh - 38; a = [W / 2, y + hh, W / 2, r.top - 9]; }
+      d.style.left = x + 'px'; d.style.top = y + 'px';
+      const ln = document.createElementNS(NS, 'line'); ln.setAttribute('x1', a[0]); ln.setAttribute('y1', a[1]); ln.setAttribute('x2', a[2]); ln.setAttribute('y2', a[3]); ln.setAttribute('marker-end', 'url(#cz-ah)'); ar.appendChild(ln); });
+  }
+  function open() { el.hidden = false; document.body.classList.add('coach-on'); layout(); requestAnimationFrame(() => el.classList.add('in')); const b = el.querySelector('.cz-start'); if (b) b.focus({preventScroll:true}); }
+  function close() { const c = el.querySelector('.cz-go input'); if (c && c.checked) setOff(true); el.classList.remove('in'); document.body.classList.remove('coach-on'); setTimeout(() => { el.hidden = true; el.innerHTML = ''; }, 220); }
+  el.addEventListener('click', e => {
+    const b = e.target.closest('[data-cz]');
+    if (b) { const k = b.dataset.cz; close(); if (k !== 'x' && window.tutOpen) setTimeout(() => window.tutOpen(k, k === 'how' ? 0 : undefined), 230); return; }
+    if (!e.target.closest('.cz-card')) close();   /* กดที่ว่างนอกกล่อง = ปิด */
+  });
+  document.addEventListener('keydown', e => { if (!el.hidden && e.key === 'Escape') { e.stopPropagation(); close(); } }, true);
+  addEventListener('resize', () => requestAnimationFrame(layout));
+  window.coachOpen = open; window.coachClose = close;
+})();
+
+/* ===== ปุ่ม ? เล็ก ๆ หลังหัวข้อกราฟที่โต้ตอบได้ → เปิดหน้าวิธีใช้ ขั้นที่ 3 (กราฟ) ตรงเรื่องของกราฟนั้น ===== */
+window.QH = part => `<button type="button" class="qh" data-qh="${part}" aria-label="วิธีใช้กราฟนี้" title="วิธีใช้กราฟนี้">?</button>`;
+;(function () {
+  const PART = {win:0, list:0, both:0, tier:2, house:3};
+  const add = () => { const h = document.querySelector('#rk h3'); if (!h || h.querySelector('.qh') || !(ST.mode in PART)) return; h.insertAdjacentHTML('beforeend', QH(PART[ST.mode])); };
+  const _r = renderRight; renderRight = function () { _r.apply(this, arguments); add(); };
+  document.addEventListener('click', e => { const b = e.target.closest('.qh'); if (!b) return; e.preventDefault(); e.stopPropagation(); if (window.tutOpen) tutOpen('how', 2, +b.dataset.qh); }, true);
+  add();
+})();
