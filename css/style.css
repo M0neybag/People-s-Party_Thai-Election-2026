@@ -2047,3 +2047,19 @@ body.mob .qh{width:20px;height:20px;font-size:12px}
 .qh:hover,.qh:focus-visible,.qh:active{background:#fff!important;color:#ef7d00!important}
 body.mob .qh{width:20px;height:20px;font-size:12px!important}
 #coach .qh-demo{margin:0 2px;pointer-events:none;top:-1px}
+
+/* ตอนโหลดหน้า: ซ่อนเนื้อหาจนกว่าจะจัดหน้าตาเสร็จ (body.ready) แล้วค่อย ๆ แสดง
+   ถ้าสคริปต์มีปัญหา หน้าจะแสดงเองหลัง 6 วินาที */
+body:not(.ready)>*:not(#tut):not(#coach){visibility:hidden;animation:bootshow 0s 6s forwards}
+body.ready>*{animation:bootfade .3s ease-out}
+@keyframes bootshow{to{visibility:visible}}
+@keyframes bootfade{from{opacity:0}to{opacity:1}}
+
+/* ปุ่ม ? หลังหัวข้อกราฟ: ลดลงมาให้กึ่งกลางตรงกับตัวหนังสือไทย */
+.qh{top:1px!important;vertical-align:middle!important}
+/* ช่องติ๊ก "ไม่ต้องแสดงอีก": ใช้เครื่องหมายถูกแบบเส้น วางกึ่งกลางกล่องพอดี */
+.tut-off input:checked+.box::after{content:''!important;width:9px;height:5px;border:solid #fff;border-width:0 0 2px 2px;transform:translateY(-1px) rotate(-45deg);font-size:0}
+/* แถบซ้ายจอคอม: "บ้านใหญ่ชนะ" ไอคอนบ้าน ตัวหนังสือ และตัวเลข อยู่แนวกึ่งกลางเดียวกัน และตัวหนังสือหนาเท่า "เปรียบเทียบปี 66" */
+body.dsk #dside #bigf{align-items:center}
+body.dsk #dside #bigf .house{vertical-align:0!important;align-self:center;margin-top:-3px}
+body.dsk #dside #bigf{font-weight:600}
