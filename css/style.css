@@ -2093,3 +2093,65 @@ body.mob #coach .cz-ring{animation-name:czringS}
 .qh{top:-1px!important}
 
 #coach:not(.in) .cz-card[style*="translateY"]{transform:translateY(-46%)!important}
+/* หน้าวิธีใช้อยู่ชั้นบนสุด เปิดจากปุ่ม ? ในหน้าขยายกราฟก็เห็นทันที */
+#tut{z-index:1100!important}
+/* หน้าแนะนำบนมือถือ: บรรทัดที่มีปุ่ม ? ไม่ซ้อนบรรทัดบน */
+body.mob #coach .cz-gl>span+span{margin-top:6px}
+body.mob #coach .cz-gl{line-height:1.7}
+
+/* เปรียบเทียบปี 66 + ตัวกรองเขต: แถบบอกว่าตารางไม่ขึ้นกับตัวกรอง */
+.y66n{display:flex;align-items:center;gap:8px;margin-left:auto;min-width:0;padding:3px 3px 3px 10px;border-radius:99px;background:#fdebd3;border:1px solid #f6c993;color:#7a4a12;font-size:11.5px;line-height:1.3}
+.y66n span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.y66n button{flex:none;border:0;border-radius:99px;background:#2b2927;color:#fff;font:inherit;font-size:11.5px;font-weight:700;padding:4px 11px;cursor:pointer;white-space:nowrap}
+#rk .hd:has(.y66n){display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+#rk .hd:has(.y66n) h3{flex:none}
+#rk .hd:has(.y66n) h3{order:0}
+#rk .hd:has(.y66n) .y66n{order:5}
+/* มือถือ: หัวข้อเต็มบรรทัด แถบบอกตัวกรองขึ้นบรรทัดใหม่ใต้หัวข้อ แสดงข้อความเต็ม */
+body.mob #rk .hd:has(.y66n){flex-wrap:wrap!important;row-gap:6px}
+body.mob #rk .hd:has(.y66n) h3{flex:1 1 100%}
+body.mob #rk .hd:has(.y66n) .y66n{flex:1 1 100%;margin-left:0;justify-content:space-between}
+body.mob #rk .hd:has(.y66n) .y66n span{white-space:normal}
+.y66n button:hover{background:#ef7d00}
+body.mob .y66n{font-size:12px}
+/* ปุ่ม ? หลังหัวข้อกราฟ: สีเดียวกับปุ่ม ? ของวิธีใช้ด้านบน */
+.qh{background:#f39200!important;border-color:#f39200!important}
+.qh:hover,.qh:focus-visible,.qh:active{background:#fff!important;color:#f39200!important}
+/* แถบซ้ายจอคอม: แคบลงและตัวหนังสือเล็กลงเล็กน้อย (โลโก้ด้านบนขนาดเดิม) */
+body.dsk #dside{width:170px!important}
+body.dsk .app{margin-left:170px!important}
+body.dsk.sidec #dside{width:60px!important}
+body.dsk.sidec .app{margin-left:60px!important}
+body.dsk:not(.sidec) #modes button{font-size:12px!important;gap:7px!important}
+body.dsk:not(.sidec) #modes button::before{width:16px;height:16px}
+body.dsk #region{font-size:12.5px!important}
+body.dsk #dside .dslm,body.dsk #dside .dsub{font-size:10.5px!important}
+body.dsk #filters .chip{font-size:12px!important}
+body.dsk #bigf,body.dsk #y66{font-size:12px!important}
+body.dsk .dreset{font-size:12px!important}
+
+/* ===== แถบซ้ายจอคอม: ปรับรอบ 2 ===== */
+body.dsk #dside{width:178px!important}
+body.dsk .app{margin-left:178px!important}
+/* โลโก้: ELECTION 2026 อยู่บรรทัดเดียวกัน (ขนาดตัวอักษรเดิม) */
+body.dsk .dlt b{white-space:nowrap}
+/* มุมมองและส่วนอื่นขยับขึ้น */
+body.dsk:not(.sidec) .dlogo{margin-bottom:2px!important}
+body.dsk #dside .dslm{margin:6px 4px 4px!important}
+/* บ้านใหญ่ชนะ: ช่องติ๊กขนาดเท่าเปรียบเทียบปี 66 และไอคอนบ้านกึ่งกลางพอดี */
+body.dsk #bigf .box{flex:none;width:18px!important;height:18px!important;box-sizing:border-box}
+body.dsk #dside #bigf .house{flex:none;width:13px;height:13px;margin-top:-2px!important}
+body.mob #rk .hd:has(.y66n){flex-direction:row!important;align-items:center!important}
+body.mob #rk .hd:has(.y66n) .y66n{border-radius:14px;padding:5px 5px 5px 11px}
+/* แถบบอกตัวกรอง: วรรณยุกต์ (เช่น ้ ในคำว่า ขึ้น) ไม่ถูกตัด */
+.y66n span{line-height:1.6;padding-top:1px}
+/* ตารางวางแผนพรรค: ไม่คำนวณแถวที่อยู่นอกจอ ตอนปล่อยกรอบจึงไม่ค้าง */
+#rk .tl .trr{content-visibility:auto;contain-intrinsic-size:auto 37px}
+
+/* กล่องเล็กตอนชี้จุดในกราฟวางแผนพรรค */
+.dtip{padding:8px 12px 9px;background:#fff;border-radius:10px;box-shadow:0 6px 20px rgba(30,26,20,.18),0 0 0 1px rgba(30,26,20,.06)}
+.dtip .dt1{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;color:#2b2927;white-space:nowrap}
+.dtip .dt1 i{font-style:normal;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;line-height:1.5}
+.dtip .dt2{margin-top:3px;font-size:12px;color:#6b6358;white-space:nowrap;display:flex;gap:10px}
+.dtip .dt2 b{color:#2b2927;font-weight:700}
+#ftip,.ftip{z-index:1200!important}   /* กล่องตอนชี้อยู่เหนือหน้าขยายกราฟด้วย */

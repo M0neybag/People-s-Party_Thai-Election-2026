@@ -321,6 +321,11 @@ const ftip = () => $('#ftip');
 function showTip(e, html) { const t = ftip(); t.innerHTML = html; t.style.display = 'block'; moveTip(e); }
 function moveTip(e) { const t = ftip(), w = t.offsetWidth, h = t.offsetHeight; let x = e.clientX + 16, y = e.clientY + 12;
   if (x + w > innerWidth - 8) x = e.clientX - w - 16; if (y + h > innerHeight - 8) y = Math.max(8, innerHeight - h - 8); t.style.left = x + 'px'; t.style.top = y + 'px'; }
+/* กล่องเล็กตอนชี้จุดในกราฟวางแผนพรรค: ชื่อเขต ป้ายระดับโอกาส และระยะห่าง 2 ค่า (รายชื่อผู้สมัครดูได้เมื่อคลิก) */
+function dotTip(d, T) {
+  const k = tierOf(d, T || TIER_T), c = TT[k] || ['', '#999'], v = x => `<b>${x > 0 ? 'ชนะ' : 'แพ้'} ${Math.abs(x).toFixed(1)}%</b>`;
+  return `<div class="dtip"><div class="dt1"><span>${d.pv} เขต ${d.d}</span>${c[0] ? `<i style="background:${c[1]};color:${['cand','flip','far'].includes(k) ? '#2b2927' : '#fff'}">${c[0]}</i>` : ''}</div><div class="dt2">สส.เขต ${v(d.gap)}<span>สส.\u2060บัญชี\u2060ราย\u2060ชื่อ ${v(d.lgap)}</span></div></div>`;
+}
 function hideTip() { const t = ftip(); if (t) t.style.display = 'none'; }
 function tipHTML(d) {
   const M = ST.mode;
@@ -551,22 +556,39 @@ function renderTier(rk) {
   sv += `<text x="${(m.l + W) / 2}" y="${SH - 3}" font-size="11" text-anchor="middle" fill="#2b2927" font-weight="700">← แพ้   ผลการแข่งขัน สส.เขต ของพรรคประชาชน   ชนะ →</text>`;
   sv += `<text transform="translate(11,${(SH - m.b + m.t) / 2}) rotate(-90)" font-size="11" text-anchor="middle" fill="#2b2927" font-weight="700">สส.⁠บัญชี⁠ราย⁠ชื่อ แพ้ ← → ชนะ</text>`;
   const sc = d3.select(rk).select('svg.sc').attr('width', W).attr('height', SH).html(sv);
-  const br = d3.brush().extent([[m.l, m.t], [W - m.r, SH - m.b]]).on('end', e => { if (!e.sourceEvent) return; const s = e.selection;
-    ST.brush = s ? [xs.invert(s[0][0]), xs.invert(s[1][0]), ys.invert(s[1][1]), ys.invert(s[0][1])] : null; render(); });
+  /* ระหว่างลากกรอบ: อัปเดตความเข้มของจุดทันทีทุกเฟรม (เบา) / ปล่อยเมาส์: วาดหน้าใหม่ทั้งหมดในเฟรมถัดไป และข้ามถ้ากรอบไม่เปลี่ยน */
+  const toB = s => s ? [xs.invert(s[0][0]), xs.invert(s[1][0]), ys.invert(s[1][1]), ys.invert(s[0][1])] : null;
+  let rafB = 0;
+  const br = d3.brush().extent([[m.l, m.t], [W - m.r, SH - m.b]])
+    .on('brush', e => { if (!e.sourceEvent) return; const b = toB(e.selection); cancelAnimationFrame(rafB);
+      rafB = requestAnimationFrame(() => { const dots = sc.node().querySelectorAll('circle.dot'); for (const c of dots) { const d = c.__data__, on = !b || (d.gap >= b[0] && d.gap <= b[1] && d.lgap >= b[2] && d.lgap <= b[3]); if (c.__on !== on) { c.__on = on; c.style.opacity = on ? '' : '.15'; } } }); })
+    .on('end', e => { if (!e.sourceEvent) return; cancelAnimationFrame(rafB); const b = toB(e.selection);
+      sc.node().querySelectorAll('circle.dot').forEach(c => { c.style.opacity = ''; c.__on = undefined; });   /* ล้างความจางชั่วคราวระหว่างลาก ให้ styleDots เป็นตัวกำหนด */
+      if (JSON.stringify(b) === JSON.stringify(ST.brush)) return; ST.brush = b;
+      /* อัปเดตเฉพาะส่วนที่ขึ้นกับกรอบ (ตัวเลข แผนที่ ตาราง) ไม่วาดกราฟจุดใหม่ทั้งกราฟ จึงไม่ค้างตอนปล่อยเมาส์ */
+      requestAnimationFrame(() => { hideTip(); styleDots(); if (rk.__fill) rk.__fill(); renderKPI(); renderHeader();
+        requestAnimationFrame(() => { renderLegend(); drawTiles(); if (ST.sel) renderPanel(); drawHi(); }); }); });   /* แบ่ง 2 เฟรม: กราฟกับตารางก่อน แผนที่ตามมา */
   const bg = sc.append('g').attr('class', 'brush').call(br);
   if (ST.brush) { const [a, b, c, e] = ST.brush; bg.call(br.move, [[xs(a), ys(e)], [xs(b), ys(c)]]); }
   sc.on('dblclick', () => { if (ST.brush) { ST.brush = null; render(); } });
+  /* คลิกตรงไหนก็ได้ในกล่องนี้ที่อยู่นอกกรอบเลือก (รวมพื้นขาวรอบกราฟ) → ล้างกรอบ ยกเว้นปุ่ม จุด และตาราง */
+  if (!rk.__clr) { rk.__clr = 1; let dn = null; rk.addEventListener('pointerdown', e => { dn = [e.clientX, e.clientY, e.target]; }, true);
+    rk.addEventListener('click', e => { const drag = !dn || Math.hypot(e.clientX - dn[0], e.clientY - dn[1]) > 4 || (dn[2].closest && dn[2].closest('g.brush')); if (drag || ST.mode !== 'tier' || !ST.brush || e.target.closest('g.brush, circle.dot, button, a, input, select, .trr, .th, .ast, .qh, [data-tip]')) return; ST.brush = null; render(); }); }
   sc.append('g').selectAll('circle').data(sub.filter(d => d.has)).join('circle').attr('class', 'dot').attr('data-k', key)
     .attr('cx', d => xs(Math.max(-72, Math.min(46, d.gap)))).attr('cy', d => ys(Math.max(-60, Math.min(45, d.lgap))))
     .attr('fill', d => TT[d.tier][1]).attr('opacity', d => inB(d) && okL(d) && okF(d) && okBig(d) ? 1 : .15)
-    .on('mouseenter', (e, d) => { showTip(e, tipHTML(d)); setHover(d); }).on('mousemove', moveTip).on('mouseleave', () => { hideTip(); setHover(null); }).on('click', (e, d) => select(d));
+    .on('mouseenter', (e, d) => { showTip(e, dotTip(d)); setHover(d); }).on('mousemove', moveTip).on('mouseleave', () => { hideTip(); setHover(null); })
+    .on('click', (e, d) => { if (matchMedia('(hover:none)').matches && rk.__tapK !== key(d)) { rk.__tapK = key(d); showTip(e, dotTip(d)); setHover(d); return; } rk.__tapK = null; select(d); });   /* จอสัมผัส: แตะครั้งแรกดูกล่องเล็ก แตะซ้ำเปิดรายละเอียด */
   styleDots();
+  const fill = () => {   /* ตารางรายชื่อเขต (เรียกซ้ำได้ตอนปล่อยกรอบ โดยไม่ต้องวาดกราฟจุดใหม่) */
   let rows = sub.filter(d => d.has && inB(d) && okF(d) && okL(d) && okBig(d));
   rows.sort((a, b) => TK.indexOf(a.tier) - TK.indexOf(b.tier) || Math.abs(a.gap) - Math.abs(b.gap));
   const num = v => `<span class="tv"><span class="tw">${v > 0 ? 'ชนะ' : 'แพ้'}</span><span class="tn">${Math.abs(v).toFixed(1)}%</span></span>`;
   rk.querySelector('.tl').innerHTML = `<div class="th"><span>จังหวัด เขต</span><span>ระดับโอกาส</span><span style="text-align:right">สส.เขต</span><span style="text-align:right">สส.⁠บัญชี⁠ราย⁠ชื่อ</span></div>`
     + (rows.length ? rows.map(d => `<div class="trr ${ST.sel === key(d) ? 'sel' : ''}" data-k="${key(d)}"><span>${d.pv} <span class="muted">เขต ${d.d}</span>${d.w[4] && ST.big ? HOUSE : ''}</span><span><span class="tp" style="background:${TT[d.tier][1]};color:${ink(TT[d.tier][1])}">${TT[d.tier][0]}</span></span>${num(d.gap)}${num(d.lgap)}</div>`).join('')
       : '<div class="muted" style="padding:10px 12px">ไม่มีเขตที่ตรงเงื่อนไข</div>');
+  };
+  fill(); rk.__fill = fill;
 }
 function styleDots() { d3.selectAll('#rk circle.dot').attr('opacity', d => inB(d) && okL(d) && okF(d) && okBig(d) ? 1 : .15).attr('r', d => ST.sel === key(d) ? 5.5 : 3).attr('stroke', d => ST.sel === key(d) ? '#2b2927' : '#fff').attr('stroke-width', d => ST.sel === key(d) ? 2 : .6).filter(d => ST.sel === key(d)).raise(); }
 
@@ -591,6 +613,10 @@ function render66(rk) {
   const ttl = '10 อันดับแรก';
   rk.innerHTML = `<div class="hd"><h3>${L_ ? 'ที่นั่ง สส.⁠บัญชี⁠ราย⁠ชื่อ' : 'ที่นั่ง สส.เขต'}${ST.reg ? ' ' + (L_ ? 'ทั้งประเทศ' : ST.reg) : ''} ${ttl}</h3></div>
     <div class="cmph"><span>ปี 66</span><span>»</span><span>ปี 69</span></div><div class="cmpw"><div class="cmp">${rows}</div></div>`;
+  /* ตัวกรองเขต (สูสี / สวนทาง / บ้านใหญ่ชนะ) ไม่มีผลกับตารางนี้ → บอกให้รู้ และมีปุ่มกลับไปดูกราฟของเขตที่กรอง */
+  const fl = []; if (ST.fil === 'close') fl.push('สูสี\u00a0±5%'); else if (ST.fil === 'split') fl.push('เขต-พรรค\u00a0สวนทาง'); if (ST.big && bigOK()) fl.push('บ้านใหญ่ชนะ');
+  if (fl.length) { rk.querySelector('.hd').insertAdjacentHTML('beforeend', `<div class="y66n" title="ตารางนี้นับทุกเขต${ST.reg ? 'ใน' + ST.reg : ''} ไม่ขึ้นกับตัวกรอง${fl.join(' และ ')}"><span>นับทุกเขต ไม่ขึ้นกับตัวกรอง${fl.join(' และ ')}</span><button type="button" data-y66off>ดูกราฟของเขตที่กรอง</button></div>`);   /* อยู่บรรทัดเดียวกับหัวข้อ ตารางไม่ขยับ */
+    rk.querySelector('[data-y66off]').addEventListener('click', () => { ST.y66 = false; const c = $('#cb66'); if (c) c.checked = false; render(); }); }
 }
 
 /* ---------- panel ---------- */
@@ -1215,7 +1241,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .attr('cx', d => X(Math.max(-72, Math.min(46, d.gap)))).attr('cy', d => Y(Math.max(-60, Math.min(45, d.lgap))))
       .on('click', (e, d) => { e.stopPropagation(); pinT(key(d)); })   /* คลิกจุด = ปักหมุด เหมือนคลิกแถว */
       .on('click', (e, d) => { const k = key(d); pins = pins.includes(k) ? pins.filter(x => x !== k) : [...pins, k].slice(-3); hl(); })   /* คลิกจุด = ปักหมุด เหมือนคลิกแถว */
-      .on('mouseenter', (e, d) => { showTip(e, tipHTML(d)); hov = key(d); hl(); rowOf(hov); }).on('mousemove', moveTip).on('mouseleave', () => { hideTip(); hov = null; hl(); rowOf(null); });
+      .on('mouseenter', (e, d) => { showTip(e, dotTip(d, T)); hov = key(d); hl(); rowOf(hov); }).on('mousemove', moveTip).on('mouseleave', () => { hideTip(); hov = null; hl(); rowOf(null); });
     sv.append('g').attr('class', 'hl').attr('pointer-events', 'none');
     /* เส้นเกณฑ์ที่ลากได้: [ชื่อ, แกน, คำอธิบาย] */
     const G = sv.append('g').attr('class', 'thr');
@@ -1471,7 +1497,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ===== หน้าตาใหม่ (จอคอม กว้าง 1100px ขึ้นไป): เมนูซ้ายสีเข้ม แผนที่เด่น ช่องค้นหาเขต =====
    ใช้ปุ่ม ตัวกรอง กราฟ และข้อมูลชุดเดิมทั้งหมด แค่ย้ายตำแหน่งและเปลี่ยนสี */
 (function () {
-  const MQ = matchMedia('(min-width:1100px)');
+  const MQ = matchMedia('(min-width:1100px), (min-width:641px) and (orientation:landscape) and (hover:hover)');   /* จอคอมทุกขนาด รวมตอนซูมเบราว์เซอร์ 150% ขึ้นไป (มือถือแนวนอนไม่นับ เพราะไม่มีเมาส์) */
   const TITLE = {win:'ภาพรวม สส.เขต', list:'ภาพรวม สส.⁠บัญชี⁠ราย⁠ชื่อ', both:'สส.เขต + สส.⁠บัญชี⁠ราย⁠ชื่อ', tier:'วางแผนพรรค', house:'ข้อมูลบ้านใหญ่'};
   let on = false, home = [];
   const side = document.createElement('aside'); side.id = 'dside';
@@ -1614,9 +1640,9 @@ document.addEventListener('DOMContentLoaded', () => {
       {c:'ปรับเกณฑ์วางแผนพรรค', v:'6.mp4',
        d:'ในมุมมองวางแผนพรรค 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขด้านขวาจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม',
        m:'ในมุมมองวางแผน 1 จุด = 1 เขต กด “ขยายและปรับเกณฑ์” แล้วใช้นิ้วลากเส้นประสีส้มเพื่อเปลี่ยนเกณฑ์ ตัวเลขจะคำนวณใหม่ทันที เมื่อพอใจแล้วกด “ใช้เกณฑ์นี้กับหน้าหลัก” หรือกด “กลับเกณฑ์เดิม” เพื่อคืนค่าเดิม'},
-      {c:'กราฟเชื่อมกันในบ้านใหญ่', v:'8.mp4',
-       d:'ในมุมมองข้อมูลบ้านใหญ่ กราฟทุกส่วนเชื่อมกัน คลิกแท่งของภาคในกราฟ “แยกตามภาค” กราฟแยกตามพรรคและแผนที่จะเหลือเฉพาะภาคนั้น คลิกแถวของพรรคในกราฟ “แยกตามพรรคของบ้านใหญ่” กราฟแยกตามภาคและแผนที่จะเหลือเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร คลิกซ้ำหรือกด ✕ บนป้ายด้านบนเพื่อยกเลิก',
-       m:'ในมุมมองบ้านใหญ่ กราฟทุกส่วนเชื่อมกัน แตะแท่งของภาคในกราฟ “แยกตามภาค” กราฟแยกตามพรรคและแผนที่จะเหลือเฉพาะภาคนั้น แตะแถวของพรรคในกราฟ “แยกตามพรรคของบ้านใหญ่” กราฟแยกตามภาคและแผนที่จะเหลือเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร แตะซ้ำหรือกด ✕ บนป้ายด้านบนเพื่อยกเลิก'}]}
+      {c:'คลิกกราฟบ้านใหญ่เพื่อกรอง', mc:'แตะกราฟบ้านใหญ่เพื่อกรอง', v:'8.mp4',
+       d:'ในมุมมองข้อมูลบ้านใหญ่ คลิกแท่งของภาคไหน แผนที่และกราฟพรรคจะเหลือเฉพาะภาคนั้น คลิกชื่อพรรคไหน จะเห็นเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร คลิกซ้ำหรือกด ✕ เพื่อกลับมาดูทั้งหมด',
+       m:'ในมุมมองข้อมูลบ้านใหญ่ แตะแท่งของภาคไหน แผนที่และกราฟพรรคจะเหลือเฉพาะภาคนั้น แตะชื่อพรรคไหน จะเห็นเฉพาะเขตที่บ้านใหญ่ของพรรคนั้นลงสมัคร แตะซ้ำหรือกด ✕ เพื่อกลับมาดูทั้งหมด'}]}
   ];
 
   /* ---------- คำศัพท์: g = team (ศัพท์เฉพาะ) หรือ pol (ศัพท์การเมือง), a = คำอื่นที่ให้ขีดเส้นใต้ในหน้าเว็บ ---------- */
@@ -2040,6 +2066,7 @@ $('#rk').addEventListener('click', e => {
   const OFF = 'tutOff', NS = 'http://www.w3.org/2000/svg';
   const setOff = v => { try { v ? localStorage.setItem(OFF, '1') : localStorage.removeItem(OFF); } catch (e) {} };
   const isMob = () => document.body.classList.contains('mob');
+  const TOUCH = () => matchMedia('(hover:none) and (pointer:coarse)').matches;   /* จอสัมผัส เช่น ไอแพดแนวนอน → สอนแบบนิ้ว ไม่ใช่เมาส์ */
   const el = document.createElement('div'); el.id = 'coach'; el.hidden = true; document.body.appendChild(el);
   const ICON = {   /* ตัวเมาส์: พื้นขาว → สีปุ่ม → เส้นขอบวาดทับด้านบน เส้นจึงไม่ถูกสีกิน (ยกเว้นลูกกลิ้งสีส้มที่วาดไว้หน้าเส้นกลาง) */
     hover: '<svg viewBox="0 0 56 56"><g class="cz-hover"><path d="M20 10l20 19-9 1.4 5.6 11-4.2 2.1-5.6-11.2-6.8 6.2z" class="mp"/></g></svg>',
@@ -2060,7 +2087,7 @@ $('#rk').addEventListener('click', e => {
       [R('[data-reset]'), 'ล้างตัวกรองทั้งหมด', 'r'], [R('#dtop .dr'), 'ค้นหาเขต และเปิดวิธีใช้อีกครั้ง', 'b']];
   }
   function card() {
-    const m = isMob(), it = m ? [['tap', 'แตะ', 'ดูข้อมูลเขต<br>และรายละเอียด'], ['drag2', 'ลาก', 'เลื่อนกรอบส้ม<br>บนกราฟ'], ['swipe', 'ปัดขึ้น', 'ดูกราฟ<br>และรายชื่อเขต'], ['pinch', 'สองนิ้ว', 'ซูมแผนที่']]
+    const m = isMob() || TOUCH(), it = m ? [['tap', 'แตะ', 'ดูข้อมูลเขต<br>และรายละเอียด'], ['drag2', 'ลาก', 'เลื่อนกรอบส้ม<br>บนกราฟ'], ['swipe', 'ปัดขึ้น', 'ดูกราฟ<br>และรายชื่อเขต'], ['pinch', 'สองนิ้ว', 'ซูมแผนที่']]
       : [['hover', 'ชี้', 'ดูคะแนนแบบย่อ'], ['click', 'คลิก', 'เปิดรายละเอียด<br>และปักหมุด'], ['drag', 'ลาก', 'เลื่อนกรอบส้ม<br>และเส้นเกณฑ์'], ['wheel', 'ลูกกลิ้ง', 'ซูมแผนที่<br>และเลื่อนรายชื่อ']];
     return `<div class="cz-card" role="dialog" aria-modal="true" aria-labelledby="cz-h"><div class="cz-hd"><small>ยินดีต้อนรับ</small><b id="cz-h">${m ? 'ใช้นิ้วโต้ตอบกับแผนที่และกราฟ' : 'ใช้เมาส์โต้ตอบกับแผนที่และกราฟได้ทุกส่วน'}</b></div>
       <div class="cz-g">${it.map(([k, t, d]) => `<div class="cz-i"><i>${ICON[k]}</i><em>${t}</em><span>${d}</span></div>`).join('')}</div>
@@ -2124,8 +2151,11 @@ window.QH = part => `<button type="button" class="qh" data-qh="${part}" aria-lab
 
 /* ===== ตอนโหลดหน้า: ซ่อนหน้าไว้จนกว่าจะจัดหน้าตาแบบจอคอมหรือมือถือเสร็จ ไม่ให้เห็นดีไซน์เดิมแวบขึ้นมา ===== */
 ;(function () {
-  const D1 = matchMedia('(min-width:1100px)'), M1 = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)'), b = document.body;
+  const D1 = matchMedia('(min-width:1100px), (min-width:641px) and (orientation:landscape) and (hover:hover)'), M1 = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)'), b = document.body;
   const done = () => (D1.matches ? b.classList.contains('dsk') : M1.matches ? b.classList.contains('mob') : true);
   const t0 = performance.now();
   (function wait() { if ((gTiles && done()) || performance.now() - t0 > 6000) requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add('ready'))); else setTimeout(wait, 40); })();
 })();
+
+/* กด Esc ตอนหน้าวิธีใช้เปิดอยู่ (เช่น เปิดจากปุ่ม ? ในหน้าขยายกราฟ) → ปิดเฉพาะหน้าวิธีใช้ หน้าขยายกราฟยังอยู่ */
+window.addEventListener('keydown', e => { const t = document.querySelector('#tut'); if (e.key === 'Escape' && t && !t.hidden && window.tutClose) { e.stopImmediatePropagation(); e.preventDefault(); tutClose(); } }, true);
