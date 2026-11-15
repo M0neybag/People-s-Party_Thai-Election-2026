@@ -1050,7 +1050,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function pinStrip() {
     Q('#ovm-p').innerHTML = PM.pins.length ? PM.pins.map((k, i) => { const d = byK[k];
       return `<div class="pin" style="--pc:${PIN_C[i]}"><b class="nm">${d.pv} เขต ${d.d}</b><button data-pd="${k}">ดูรายละเอียด</button><button data-px="${k}" aria-label="เลิกติดตาม">✕</button></div>`; }).join('')
-      : `<span class="ovm-empty">คลิกแถวในรายการด้านล่าง เพื่อปักหมุดติดตามเขต (สูงสุด 3 เขต) แล้วลองกดสลับ สส.เขต ↔ สส.⁠บัญชี⁠ราย⁠ชื่อ</span>`;
+      : `<span class="ovm-empty">คลิกแถวในรายการด้านล่าง เพื่อปักหมุดติดตามเขต (สูงสุด 3 เขต) แล้วลองกดสลับ สส.เขต ⇄ สส.⁠บัญชี⁠ราย⁠ชื่อ</span>`;
     Q('#ovm-css').textContent = PM.pins.map((k, i) => `#ovm .r[data-k="${k}"]{box-shadow:inset 4px 0 0 ${PIN_C[i]};background:${PIN_C[i]}14}`).join('');
   }
   /* แท่งของเขตที่ปักหมุด: สีหมุด หนาขึ้น + เส้นแนวตั้ง + ป้ายชื่อด้านบน (ตามแท่งไประหว่างวิ่ง) */
@@ -2064,7 +2064,7 @@ $('#rk').addEventListener('click', e => {
       : [['hover', 'ชี้', 'ดูคะแนนแบบย่อ'], ['click', 'คลิก', 'เปิดรายละเอียด<br>และปักหมุด'], ['drag', 'ลาก', 'เลื่อนกรอบส้ม<br>และเส้นเกณฑ์'], ['wheel', 'ลูกกลิ้ง', 'ซูมแผนที่<br>และเลื่อนรายชื่อ']];
     return `<div class="cz-card" role="dialog" aria-modal="true" aria-labelledby="cz-h"><div class="cz-hd"><small>ยินดีต้อนรับ</small><b id="cz-h">${m ? 'ใช้นิ้วโต้ตอบกับแผนที่และกราฟ' : 'ใช้เมาส์โต้ตอบกับแผนที่และกราฟได้ทุกส่วน'}</b></div>
       <div class="cz-g">${it.map(([k, t, d]) => `<div class="cz-i"><i>${ICON[k]}</i><em>${t}</em><span>${d}</span></div>`).join('')}</div>
-      <div class="cz-gl">คำที่มี <u>เส้นประใต้คำ</u> กดเพื่อดูความหมาย และกด <span class="qh qh-demo" aria-hidden="true">?</span> หลังหัวข้อกราฟเพื่อดูวิธีใช้กราฟนั้น</div>
+      <div class="cz-gl"><span>คำที่มี <u>เส้นประใต้คำ</u> กดเพื่อดูความหมาย</span> <span>และกด <span class="qh qh-demo" aria-hidden="true">?</span> หลังหัวข้อกราฟเพื่อดูวิธีใช้กราฟนั้น</span></div>
       <div class="cz-ft"><div class="cz-lk"><button data-cz="how">ดูวิธีใช้แบบละเอียด</button><button data-cz="glo">ดูคำศัพท์ทั้งหมด</button></div>
       <div class="cz-go"><label><input type="checkbox"> ไม่ต้องแสดงอีก</label><button class="cz-start" data-cz="x">เริ่มใช้งาน →</button></div></div></div>`;
   }
@@ -2083,8 +2083,22 @@ $('#rk').addEventListener('click', e => {
       if (pos === 'r') { x = r.right + 38; y = r.top + 6; a = [x, y + hh / 2, r.right + 9, y + hh / 2]; }
       else if (pos === 'b') { x = Math.min(W - w - 10, r.right - w); y = r.bottom + 38; a = [x + w - 36, y, x + w - 36, r.bottom + 9]; }
       else { x = W / 2 - w / 2; y = r.top - hh - 38; a = [W / 2, y + hh, W / 2, r.top - 9]; }
-      d.style.left = x + 'px'; d.style.top = y + 'px';
+      d.style.left = x + 'px'; d.style.top = y + 'px'; d.dataset.pos = pos;
+      if (isMob()) { const cd = el.querySelector('.cz-card'); if (pos === 'b') cd.dataset.t = y + hh; else cd.dataset.b = y; }
       const ln = document.createElementNS(NS, 'line'); ln.setAttribute('x1', a[0]); ln.setAttribute('y1', a[1]); ln.setAttribute('x2', a[2]); ln.setAttribute('y2', a[3]); ln.setAttribute('marker-end', 'url(#cz-ah)'); ar.appendChild(ln); });
+    fitCard();
+  }
+  function fitCard() {   /* มือถือ: วางกล่องให้อยู่กลางระหว่างป้ายบนกับป้ายล่าง ไม่บังป้าย */
+    const cd = el.querySelector('.cz-card'); if (!cd) return;
+    if (!isMob()) {   /* จอคอมและไอแพดแนวนอน: ถ้ากล่องกลางจอทับป้ายชี้ด้านซ้าย ให้เลื่อนกล่องไปทางขวาของป้าย */
+      cd.style.left = ''; cd.style.transform = '';
+      const r = cd.getBoundingClientRect(), W = innerWidth;
+      const L = Math.max(0, ...[...el.querySelectorAll('.cz-tip[data-pos="r"]')].map(t => t.getBoundingClientRect()).filter(t => t.bottom > r.top && t.top < r.bottom).map(t => t.right + 16));
+      if (L > r.left) { const x = Math.min(L, W - r.width - 12); cd.style.left = x + 'px'; cd.style.transform = 'translateY(-50%)'; }
+      return; }
+    if (!cd.dataset.t || !cd.dataset.b) return;
+    const t = +cd.dataset.t + 12, b = +cd.dataset.b - 12, h = cd.offsetHeight;
+    cd.style.top = (h <= b - t ? t + (b - t - h) / 2 : Math.max(8, t)) + 'px'; cd.style.transform = 'translateX(-50%)';
   }
   function open() { el.hidden = false; document.body.classList.add('coach-on'); layout(); requestAnimationFrame(() => el.classList.add('in')); const b = el.querySelector('.cz-start'); if (b) b.focus({preventScroll:true}); }
   function close() { const c = el.querySelector('.cz-go input'); if (c && c.checked) setOff(true); el.classList.remove('in'); document.body.classList.remove('coach-on'); setTimeout(() => { el.hidden = true; el.innerHTML = ''; }, 220); }
@@ -2102,7 +2116,7 @@ $('#rk').addEventListener('click', e => {
 window.QH = part => `<button type="button" class="qh" data-qh="${part}" aria-label="วิธีใช้กราฟนี้" title="วิธีใช้กราฟนี้">?</button>`;
 ;(function () {
   const PART = {win:0, list:0, both:0, tier:2, house:3};
-  const add = () => { const h = document.querySelector('#rk h3'); if (!h || h.querySelector('.qh') || !(ST.mode in PART)) return; h.insertAdjacentHTML('beforeend', QH(PART[ST.mode])); };
+  const add = () => { const h = document.querySelector('#rk h3'); if (!h || h.querySelector('.qh') || !(ST.mode in PART) || ((ST.mode === 'win' || ST.mode === 'list') && Y66())) return;   /* ตาราง 10 อันดับ เทียบปี 66 ไม่มีกราฟให้โต้ตอบ จึงไม่มีปุ่ม ? */ h.insertAdjacentHTML('beforeend', QH(PART[ST.mode])); };
   const _r = renderRight; renderRight = function () { _r.apply(this, arguments); add(); };
   document.addEventListener('click', e => { const b = e.target.closest('.qh'); if (!b) return; e.preventDefault(); e.stopPropagation(); if (window.tutOpen) tutOpen('how', 2, +b.dataset.qh); }, true);
   add();
