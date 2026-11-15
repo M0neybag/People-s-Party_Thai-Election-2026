@@ -2107,3 +2107,11 @@ window.QH = part => `<button type="button" class="qh" data-qh="${part}" aria-lab
   document.addEventListener('click', e => { const b = e.target.closest('.qh'); if (!b) return; e.preventDefault(); e.stopPropagation(); if (window.tutOpen) tutOpen('how', 2, +b.dataset.qh); }, true);
   add();
 })();
+
+/* ===== ตอนโหลดหน้า: ซ่อนหน้าไว้จนกว่าจะจัดหน้าตาแบบจอคอมหรือมือถือเสร็จ ไม่ให้เห็นดีไซน์เดิมแวบขึ้นมา ===== */
+;(function () {
+  const D1 = matchMedia('(min-width:1100px)'), M1 = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)'), b = document.body;
+  const done = () => (D1.matches ? b.classList.contains('dsk') : M1.matches ? b.classList.contains('mob') : true);
+  const t0 = performance.now();
+  (function wait() { if ((gTiles && done()) || performance.now() - t0 > 6000) requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add('ready'))); else setTimeout(wait, 40); })();
+})();
