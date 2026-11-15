@@ -1945,3 +1945,105 @@ body.dsk.sidec #modes button{gap:0!important;justify-content:center!important;pa
 body.dsk.sidec #modes button::before{margin:0!important}
 body.dsk.sidec #dside{overflow:hidden!important;scrollbar-gutter:auto!important}
 #dside,body.dsk .app{transition:width .3s cubic-bezier(.3,.7,.3,1),margin-left .3s cubic-bezier(.3,.7,.3,1),padding .3s cubic-bezier(.3,.7,.3,1)!important}
+
+/* ===== หน้าแนะนำตอนเปิดเว็บ (#coach) ===== */
+#coach{position:fixed;inset:0;z-index:9990;font-family:inherit;opacity:0;transition:opacity .22s ease}
+#coach.in{opacity:1}
+#coach[hidden]{display:none}
+#coach .cz-bg{position:absolute;inset:0}
+#coach .cz-dim{fill:rgba(28,24,20,.72)}
+#coach .cz-ring2{fill:none;stroke:#ef7d00;stroke-width:2;stroke-dasharray:6 5}
+#coach .cz-ar line{stroke:#ef7d00;stroke-width:2.5}
+#coach .cz-tip{position:absolute;background:#ef7d00;color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.35);white-space:nowrap;pointer-events:none;animation:czpop .35s .1s both cubic-bezier(.3,1.4,.5,1)}
+#coach .cz-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100vw - 32px));background:#fffaf2;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.45);overflow:hidden;transition:transform .25s cubic-bezier(.3,.7,.3,1)}
+#coach:not(.in) .cz-card{transform:translate(-50%,-46%)}
+#coach .cz-hd{background:#2b2927;color:#fff;padding:16px 22px}
+#coach .cz-hd small{display:block;color:#f39200;font-weight:700;font-size:12px;letter-spacing:.5px}
+#coach .cz-hd b{display:block;font-size:19px;margin-top:2px}
+#coach .cz-g{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 22px 16px}
+#coach .cz-i{text-align:center;display:flex;flex-direction:column;align-items:center}
+#coach .cz-i i{display:grid;place-items:center;height:60px}
+#coach .cz-i svg{width:58px;height:58px;overflow:visible}
+#coach .cz-i em{font-style:normal;display:inline-block;background:#ef7d00;color:#fff;font-weight:700;font-size:12px;padding:2px 12px;border-radius:99px;margin:4px 0 6px}
+#coach .cz-i span{font-size:12px;color:#5d5548;line-height:1.4}
+#coach .mb{fill:#fff;stroke:#2b2927;stroke-width:2}
+#coach .mf{fill:#fff}
+#coach .mo2{fill:none;stroke:#2b2927;stroke-width:2}
+#coach .ml{stroke:#2b2927;stroke-width:2;fill:none}
+#coach .mp{fill:#2b2927}
+#coach .mo{fill:#ef7d00}
+#coach .ma{stroke:#ef7d00;stroke-width:2.5;fill:none;stroke-linecap:round}
+#coach .cz-gl{margin:0 22px;padding:10px 12px;border-radius:10px;background:#f4efe6;font-size:12.5px;color:#5d5548}
+#coach .cz-gl u{text-decoration:none;border-bottom:1.5px dashed #9b9488;color:#2b2927;font-weight:600}
+#coach .cz-ft{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 22px 20px;flex-wrap:wrap}
+#coach .cz-lk{display:flex;gap:14px}
+#coach .cz-lk button{border:0;background:none;padding:0;color:#e8740f;font:inherit;font-size:12.5px;font-weight:600;text-decoration:underline;cursor:pointer}
+#coach .cz-go{display:flex;align-items:center;gap:12px}
+#coach .cz-go label{font-size:12px;color:#7d766b;display:flex;align-items:center;gap:6px;cursor:pointer}
+#coach .cz-go input{accent-color:#ef7d00;width:15px;height:15px;margin:0}
+#coach .cz-start{border:0;background:#2b2927;color:#fff;font:inherit;font-weight:700;font-size:14px;padding:10px 22px;border-radius:99px;cursor:pointer}
+#coach .cz-start:hover{background:#ef7d00}
+/* ไอคอนขยับวนสั้น ๆ */
+#coach .cz-hover{animation:czhover 1.8s ease-in-out infinite}
+#coach .cz-click{fill:#ef7d00;opacity:0;animation:czclick 1.6s ease-in-out infinite}
+#coach .cz-drag{animation:czdrag 2s ease-in-out infinite}
+#coach .cz-wheel{fill:#ef7d00;animation:czwheel 1.4s ease-in-out infinite}
+#coach .cz-ring{fill:#ef7d00;opacity:0;transform-origin:28px 28px;animation:czring 1.8s ease-out infinite}
+#coach .cz-ring2b{animation-delay:.6s}
+#coach .cz-dot{fill:#ef7d00;transform-origin:28px 28px;animation:czdot 1.8s ease-in-out infinite}
+@keyframes czdot{0%,100%{transform:scale(1)}12%{transform:scale(.8)}26%{transform:scale(1)}}
+#coach .cz-slide{fill:#2b2927;animation:czdrag 2s ease-in-out infinite}
+#coach .cz-up{fill:#2b2927;animation:czup 1.8s ease-in-out infinite}
+#coach .cz-p1{fill:#2b2927;animation:czp1 2s ease-in-out infinite}
+#coach .cz-p2{fill:#2b2927;animation:czp2 2s ease-in-out infinite}
+@keyframes czpop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes czhover{0%,100%{transform:translateY(-6px)}50%{transform:translateY(6px)}}
+@keyframes czclick{0%,40%,100%{opacity:0}50%,72%{opacity:1}}
+@keyframes czdrag{0%,100%{transform:translateX(-7px)}50%{transform:translateX(7px)}}
+@keyframes czwheel{0%,100%{transform:translateY(0)}50%{transform:translateY(9px)}}
+@keyframes czring{0%{transform:scale(.6);opacity:.45}100%{transform:scale(1.7);opacity:0}}
+@keyframes czup{0%{transform:translateY(0);opacity:1}80%{transform:translateY(-26px);opacity:.2}100%{transform:translateY(0);opacity:0}}
+@keyframes czp1{0%,100%{transform:translate(0,0)}50%{transform:translate(-5px,5px)}}
+@keyframes czp2{0%,100%{transform:translate(0,0)}50%{transform:translate(5px,-5px)}}
+@media (prefers-reduced-motion:reduce){#coach *{animation:none!important}}
+/* มือถือ */
+body.mob #coach .cz-card{width:min(340px,calc(100vw - 32px));top:47%}
+body.mob #coach .cz-hd{padding:14px 16px}
+body.mob #coach .cz-hd b{font-size:17px}
+body.mob #coach .cz-g{grid-template-columns:repeat(2,1fr);gap:10px;padding:16px}
+body.mob #coach .cz-gl{margin:0 16px}
+body.mob #coach .cz-ft{padding:14px 16px 16px}
+body.mob #coach .cz-go{width:100%;justify-content:space-between}
+body.mob #coach .cz-tip{font-size:13px}
+#coach .cz-start:focus:not(:focus-visible){outline:none}
+/* หน้าวิธีใช้: ปุ่มเลือกเรื่องย่อยในแต่ละขั้น */
+.tut-chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px}
+.tut-chips button{border:1.5px solid #e6dccb;background:#fff;color:#5d5548;font:inherit;font-size:13px;font-weight:600;padding:5px 13px;border-radius:99px;cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.tut-chips button:hover{border-color:#ef7d00;color:#e8740f}
+.tut-chips button.on{background:#2b2927;border-color:#2b2927;color:#fff}
+#tut.m .tut-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -2px 8px;padding:0 2px}
+#tut.m .tut-chips::-webkit-scrollbar{display:none}
+#tut.m .tut-chips button{flex:none;font-size:12px;padding:4px 11px}
+/* หน้าวิธีใช้: แถบเลื่อนเริ่มใต้ปุ่มปิด (×) ไม่ทับกัน */
+#tut .tut-body::-webkit-scrollbar{width:8px}
+#tut .tut-body::-webkit-scrollbar-track{background:transparent;margin-top:44px;margin-bottom:8px}
+#tut .tut-body::-webkit-scrollbar-thumb{background:#d8cfc0;border-radius:99px}
+#tut .tut-body::-webkit-scrollbar-thumb:hover{background:#b9ad99}
+
+/* ปุ่ม ? หลังหัวข้อกราฟ */
+.qh{display:inline-grid;place-items:center;width:18px;height:18px;margin-left:6px;padding:0;border-radius:50%;border:1.5px solid #cfc5b4;background:#fff;color:#7d766b;font:700 11px/1 inherit;font-family:inherit;vertical-align:2px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.qh:hover,.qh:focus-visible{background:#ef7d00;border-color:#ef7d00;color:#fff;outline:none}
+body.mob .qh{width:20px;height:20px;font-size:12px}
+
+/* กล่องหน้าแนะนำ: แถบหัวสีเข้มเกยขอบกล่อง ไม่เห็นเส้นขาวบาง ๆ ที่ขอบบน */
+#coach .cz-card{border-top:1px solid #2b2927;background-clip:padding-box}
+#coach .cz-hd{margin-top:-1px}
+/* หน้าวิธีใช้: ปุ่มเรื่องย่อยที่ยังไม่ได้เลือก ใช้สีส้มอ่อน ให้เห็นว่ากดได้ */
+.tut-chips button{background:#fdebd3;border-color:#f6c993;color:#b85d00}
+.tut-chips button:hover{background:#fbdcb4;border-color:#ef7d00;color:#a14f00}
+.tut-chips button.on{background:#2b2927;border-color:#2b2927;color:#fff}
+/* ปุ่ม ? หลังหัวข้อกราฟ: พื้นส้ม ตัวขาว ชี้หรือกดแล้วสลับเป็นพื้นขาว ตัวส้ม และวางกึ่งกลางบรรทัด */
+.qh{display:inline-flex!important;align-items:center;justify-content:center;width:18px;height:18px;margin:0 0 0 6px;border:1.5px solid #ef7d00!important;background:#ef7d00!important;color:#fff!important;font-size:11.5px!important;line-height:1!important;vertical-align:middle!important;position:relative;top:-2px}
+.qh:hover,.qh:focus-visible,.qh:active{background:#fff!important;color:#ef7d00!important}
+body.mob .qh{width:20px;height:20px;font-size:12px!important}
+#coach .qh-demo{margin:0 2px;pointer-events:none;top:-1px}
