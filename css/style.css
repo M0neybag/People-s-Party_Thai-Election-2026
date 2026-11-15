@@ -2155,3 +2155,49 @@ body.mob #rk .hd:has(.y66n) .y66n{border-radius:14px;padding:5px 5px 5px 11px}
 .dtip .dt2{margin-top:3px;font-size:12px;color:#6b6358;white-space:nowrap;display:flex;gap:10px}
 .dtip .dt2 b{color:#2b2927;font-weight:700}
 #ftip,.ftip{z-index:1200!important}   /* กล่องตอนชี้อยู่เหนือหน้าขยายกราฟด้วย */
+
+/* ===== บอกผู้ใช้ว่ากราฟใช้งานได้ ===== */
+/* แถบคำแนะนำ (ปิดได้) */
+.hbar{display:flex;align-items:center;gap:8px;background:#fff4e2;border:1px solid #f8d39a;border-radius:10px;padding:6px 6px 6px 10px;margin:6px 0 8px;font-size:12.5px;line-height:1.45;color:#7a4a00}
+.hbar>svg{flex:none}
+.hbar>span{flex:1;min-width:0}
+.hbar>button{flex:none;width:26px;height:26px;border-radius:8px;color:#b06a00;font-size:13px;display:grid;place-items:center}
+.hbar>button:hover{background:#ffe6bf}
+.rk3.tier .hd>.hbar{order:4;flex-basis:100%;width:100%;margin:6px 0 2px}
+body.mob .hbar{font-size:12px;padding:5px 4px 5px 10px}
+body.mob .hbar>button{width:36px;height:36px;font-size:15px}   /* นิ้วกดง่าย */
+/* เคอร์เซอร์บอกว่าลากหรือคลิกได้ */
+.ov .brush .selection{cursor:grab}
+.ov .brush .selection:active{cursor:grabbing}
+.ov .brush .handle{cursor:ew-resize}
+.ov .brush .overlay{cursor:pointer}
+#rk circle.dot{cursor:pointer}
+.rk2:has(>.hbar){grid-template-rows:auto auto 1fr 1fr}.rk2>.hbar{margin:0}
+body.mob .rk3.tier .hd>.hbar{flex-basis:auto;width:100%;max-width:100%}
+/* บ้านใหญ่: ชี้แท่งที่คลิกได้ → พื้นหลังเทาอ่อน */
+@media (hover:hover){
+  #rk g[data-hr]>rect:first-child,#rk g[data-hp]>rect:first-child{rx:6px;transition:fill .12s}
+  #rk g[data-hr]:hover>rect:first-child,#rk g[data-hp]:hover>rect:first-child{fill:rgba(43,41,39,.07)}
+}
+/* ปิดแถบคำแนะนำ: เลื่อนขึ้น จางหาย และหดความสูง ให้กราฟด้านล่างเลื่อนขึ้นตามอย่างนุ่มนวล */
+.hbar{transition:height .34s cubic-bezier(.4,0,.2,1),margin .34s cubic-bezier(.4,0,.2,1),padding .34s cubic-bezier(.4,0,.2,1),border-width .34s,opacity .22s ease-out,transform .34s cubic-bezier(.4,0,.2,1)}
+.hbar.hbgo{height:0!important;margin-top:0!important;margin-bottom:0!important;padding-top:0!important;padding-bottom:0!important;border-width:0;opacity:0;transform:translateY(-14px);overflow:hidden;pointer-events:none}
+.rk2>.hbar.hbgo{margin-top:-8px!important}   /* หักช่องว่างของ grid ด้วย กราฟจะเลื่อนขึ้นสุดพอดี */
+
+/* มือถือ (โดยเฉพาะแอนดรอยด์ที่ตัวอักษรกว้างกว่า): ชื่อจังหวัดยาวให้ย่อด้วย … ส่วน "เขต N" แสดงครบเสมอ ไม่ล้นไปทับแท่ง */
+body.mob .list .r[data-k]>span:first-child{display:flex!important;align-items:baseline;min-width:0;overflow:hidden!important;white-space:nowrap!important}
+body.mob .list .r[data-k] .pvn{min-width:0;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+body.mob .list .r[data-k]>span:first-child>.muted{display:inline!important;flex:none;margin-left:4px}
+/* มือถือ: คำว่า แพ้ / ชนะ ติดกับชื่อพรรคเหมือนหน้าคอมพิวเตอร์ */
+body.mob .list .r[data-k] .op b{margin-left:0!important}
+/* มือถือ: แบ่งความกว้างรายชื่อเขตใหม่ ให้ชื่อจังหวัดได้ที่มากขึ้น (แท่ง 40 ตัวเลข 46 พรรค 88) */
+@media (max-width:640px){
+  body.mob .list .r[data-k]{grid-template-columns:minmax(0,1fr) 40px 46px 88px!important;column-gap:6px!important;padding:0 8px!important}
+  body.mob .lhd{grid-template-columns:minmax(0,1fr) 40px 46px 88px!important;column-gap:6px!important;padding:5px 8px 4px!important}
+}
+/* จอแคบ (ต่ำกว่า 380px): ชื่อเขต 2 บรรทัด จังหวัดบน "เขต N" ล่าง */
+@media (max-width:379px){
+  body.mob .list .r[data-k]>span:first-child{flex-direction:column!important;align-items:flex-start!important;justify-content:center;line-height:1.2}
+  body.mob .list .r[data-k] .pvn{max-width:100%}
+  body.mob .list .r[data-k]>span:first-child>.muted{margin-left:0!important;font-size:11px}
+}

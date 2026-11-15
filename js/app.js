@@ -379,6 +379,20 @@ function renderKPI() {
 
 /* ---------- right column ---------- */
 const sortBtns = () => `<div class="sub">${[['gap','ตามระยะห่าง'],['reg','แยกภาค']].map(([k, t]) => `<button data-s="${k}" class="${ST.sort === k ? 'on' : ''}">${t}</button>`).join('')}</div>`;
+/* แถบคำแนะนำเหนือกราฟ: ขึ้นครั้งแรกของแต่ละกราฟ กด ✕ แล้วไม่ขึ้นอีก (จำในเครื่อง) */
+const HINT = {ov:['ลากกรอบส้มเพื่อเลื่อนดูเขต ลากขอบกรอบเพื่อยืดหรือหด', 'แตะค้างแล้วลากกรอบส้มเพื่อเลื่อนดูเขต ลากขอบกรอบเพื่อยืดหรือหด'],
+  tier:['ลากกรอบเพื่อเลือกกลุ่มเขต คลิกนอกกรอบเพื่อล้าง', 'ลากกรอบเพื่อเลือกกลุ่มเขต แตะนอกกรอบเพื่อล้าง'],
+  house:['คลิกแท่งภาคหรือพรรคเพื่อกรอง คลิกซ้ำเพื่อยกเลิก', 'แตะแท่งภาคหรือพรรคเพื่อกรอง แตะซ้ำเพื่อยกเลิก']};
+/* แถบคำแนะนำ: กด ✕ แล้วซ่อนจนปิดแท็บนี้ (เข้าเว็บรอบหน้าขึ้นใหม่) ตอนปิด แถบเลื่อนขึ้นแล้วหดหาย กราฟด้านล่างเลื่อนขึ้นตาม แล้ววาดกราฟใหม่ให้พอดีพื้นที่ */
+const hintOff = k => { try { return sessionStorage.getItem('hint_' + k) === '1'; } catch (e) { return false; } };
+const hintBar = k => hintOff(k) ? '' : `<div class="hbar" data-hk="${k}"><svg viewBox="0 0 20 20" width="16" height="16"><circle cx="10" cy="10" r="8.5" fill="#f39200"/><path d="M10 9v5" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="6" r="1.2" fill="#fff"/></svg><span>${HINT[k][matchMedia('(hover:none)').matches ? 1 : 0]}</span><button data-hbx aria-label="ปิดคำแนะนำ">✕</button></div>`;
+document.addEventListener('click', e => { const b = e.target.closest('[data-hbx]'); if (!b) return; e.stopPropagation(); const bar = b.closest('.hbar'), k = bar.dataset.hk;
+  try { sessionStorage.setItem('hint_' + k, '1'); } catch (er) {}
+  if (bar.classList.contains('hbgo')) return;
+  window.__hbAnim = true; bar.style.height = bar.offsetHeight + 'px'; bar.offsetHeight; bar.classList.add('hbgo');   /* ล็อกความสูงก่อน แล้วค่อยหดเป็น 0 */
+  setTimeout(() => { window.__hbAnim = false; render(); }, 380);
+}, true);
+const MOBL = () => document.body.classList.contains('mob');   /* มือถือ: รายชื่อเขตย่อ กรุงเทพมหานคร เป็น กรุงเทพฯ */
 const chartShell = cap => `${cap ? '<div class="ovcap"></div>' : ''}<div class="desc info"><span class="cnt"></span></div><div class="ovw"></div><div class="lhd"><span>เขต</span><span>ห่าง</span><span class="lab"></span></div><div class="list"></div>`
   + `<div class="ovnav"><button data-pg="-1">‹ ช่วงก่อนหน้า</button><span class="ovhint"></span><button data-pg="1" class="pri">ช่วงถัดไป ›</button></div>`;   /* ปุ่มเปลี่ยนช่วง: ลูกกลิ้งเลื่อนเฉพาะรายการ กรอบส้มขยับเมื่อกดปุ่มหรือลากเท่านั้น */
 function renderRight() {
@@ -389,7 +403,7 @@ function renderRight() {
   if (ST.mode === 'both') {
     rk.className = 'card rk2';
     rk.innerHTML = `<div class="hd"><h3>พรรคประชาชน: สส.เขต เทียบ สส.⁠บัญชี⁠ราย⁠ชื่อ</h3>${sortBtns()}</div>
-      <div class="half" id="h1"><h4>สส.เขต: ห่างผู้ชนะ / อันดับ 2</h4>${chartShell()}</div>
+      ${hintBar('ov')}<div class="half" id="h1"><h4>สส.เขต: ห่างผู้ชนะ / อันดับ 2</h4>${chartShell()}</div>
       <div class="half" id="h2"><h4>สส.⁠บัญชี⁠ราย⁠ชื่อ: ห่างพรรคที่ชนะ / อันดับ 2</h4>${chartShell()}</div>`;
     if (document.body.classList.contains('dsk')) { renderBoth(rk); return; }
     const mOH = document.body.classList.contains('mob') ? 64 : 96;   /* มือถือ: กราฟภาพรวมเตี้ยลง ให้รายชื่อเขตเห็นได้มากขึ้น */
@@ -398,7 +412,7 @@ function renderRight() {
   if (ST.mode === 'house') { const keep = rk.classList.contains('hrk'), st = rk.scrollTop, wy = window.scrollY; rk.className = 'card hrk'; renderHouse(rk); if (keep) { rk.scrollTop = st; window.scrollTo(0, wy); } return; }  /* คลิกกรองแล้วไม่เด้งกลับขึ้นบน */
   const kind = ST.mode === 'list' ? 'list' : 'win';
   rk.className = 'card rk';
-  rk.innerHTML = `<div class="hd"><h3>${kind === 'list' ? 'พรรคประชาชนชนะห่างอันดับ 2 / แพ้ห่างอันดับ 1 เท่าไร' : 'พรรคประชาชนห่างผู้ชนะ / อันดับ 2 เท่าไร'}</h3>${sortBtns()}</div>${chartShell()}`;
+  rk.innerHTML = `<div class="hd"><h3>${kind === 'list' ? 'พรรคประชาชนชนะห่างอันดับ 2 / แพ้ห่างอันดับ 1 เท่าไร' : 'พรรคประชาชนห่างผู้ชนะ / อันดับ 2 เท่าไร'}</h3>${sortBtns()}</div>${hintBar('ov')}${chartShell()}`;
   chartBlock(rk, kind, document.body.classList.contains('mob') ? 78 : 112, kind);   /* มือถือ: กราฟภาพรวมเตี้ยลง */
 }
 
@@ -460,7 +474,7 @@ function chartBlock(host, kind, OH, wkey) {
     host.querySelector('.cnt').innerHTML = host.querySelector('.hrow .cnt') ? `เขตลำดับที่ <b>${i0 + 1} ถึง ${i1}</b> จาก ${N}` + (act ? ` ตรงตัวกรอง ${nh}` : '') : `กำลังดูเขตลำดับที่ <b>${i0 + 1} ถึง ${i1}</b> (${rows.length} เขต) จากทั้งหมด ${N} เขต` + (act ? ` ตรงตัวกรอง ${nh}` : '');
     lens();
     listEl.innerHTML = rows.map((d, j) => { const v = val(d), w = v == null ? 0 : Math.abs(v) / R * 50;
-      return `<div class="r ${ST.sel === key(d) ? 'sel' : ''} ${act && on(d) ? 'hit' : ''}" data-k="${key(d)}" style="opacity:${on(d) ? 1 : .45}"><span>${d.pv} <span class="muted">เขต ${d.d}</span></span><span class="tr"><span class="z" style="left:50%"></span><i style="left:${v < 0 ? 50 - w : 50}%;width:${Math.max(.8, w)}%;background:${gcolv(v)}"></i></span><span class="v">${v == null ? '–' : sgn(v)}</span><span class="op"><span class="sw" style="background:${col(opp(d))}"></span><span>${opp(d)}<b class="${v > 0 ? 'ol' : 'ow'}">${v == null ? '' : v > 0 ? 'แพ้' : 'ชนะ'}</b></span></span></div>`; }).join('')
+      return `<div class="r ${ST.sel === key(d) ? 'sel' : ''} ${act && on(d) ? 'hit' : ''}" data-k="${key(d)}" style="opacity:${on(d) ? 1 : .45}"><span><span class="pvn">${MOBL() ? d.pv.replace('กรุงเทพมหานคร', 'กรุงเทพฯ') : d.pv}</span> <span class="muted">เขต ${d.d}</span></span><span class="tr"><span class="z" style="left:50%"></span><i style="left:${v < 0 ? 50 - w : 50}%;width:${Math.max(.8, w)}%;background:${gcolv(v)}"></i></span><span class="v">${v == null ? '–' : sgn(v)}</span><span class="op"><span class="sw" style="background:${col(opp(d))}"></span><span>${opp(d)}<b class="${v > 0 ? 'ol' : 'ow'}">${v == null ? '' : v > 0 ? 'แพ้' : 'ชนะ'}</b></span></span></div>`; }).join('')
       + (i1 >= N ? '<div class="rend">สุดรายการแล้ว เขตสุดท้ายของกราฟ</div>' : '');   /* บอกว่าเลื่อนมาถึงท้ายแล้ว */
     if (act && !nh) listEl.insertAdjacentHTML('afterbegin', ORD.some(on) ? '<div class="rnone">ช่วงนี้ไม่มีเขตที่ตรงตัวกรอง<button data-jump>ไปเขตที่ตรงเงื่อนไข</button></div>' : '<div class="rnone">ไม่มีเขตที่ตรงตัวกรองในกราฟนี้</div>');
   }
@@ -539,11 +553,11 @@ function chartBlock(host, kind, OH, wkey) {
 /* ระดับโอกาส */
 function renderTier(rk) {
   const sub = D.filter(okR);
-  rk.innerHTML = `<div class="hd"><h3 style="margin:0">ระดับโอกาสของพรรคประชาชน<span class="ast" tabindex="0" data-tip="วิเคราะห์ผลการเลือกตั้งปี 2569 รายเขต เพื่อจัดกลุ่มพื้นที่และกำหนดแนวทางลงพื้นที่หาเสียงครั้งหน้า">*</span></h3><span class="desc">จุดละ 1 เขต ลากกรอบเพื่อเลือกกลุ่มเขต คลิกนอกกรอบเพื่อล้าง</span>${tierBtns()}</div><div class="scw"><svg class="sc"></svg></div><div class="tl"></div>`;
+  rk.innerHTML = `<div class="hd"><h3 style="margin:0">ระดับโอกาสของพรรคประชาชน<span class="ast" tabindex="0" data-tip="วิเคราะห์ผลการเลือกตั้งปี 2569 รายเขต เพื่อจัดกลุ่มพื้นที่และกำหนดแนวทางลงพื้นที่หาเสียงครั้งหน้า">*</span></h3>${tierBtns()}${hintBar('tier')}</div><div class="scw"><svg class="sc"></svg></div><div class="tl"></div>`;
   /* กราฟ:ตาราง = ครึ่ง:ครึ่ง (CSS grid) → วัดความสูงช่องกราฟจริงแล้ววาด */
   const scw = rk.querySelector('.scw'), W = rk.clientWidth - 24, SH = Math.max(200, Math.min(760, scw.clientHeight)), m = {l:46, r:10, t:14, b:30};   /* กราฟสูงได้ถึง 760px ใช้พื้นที่ว่างให้เต็ม (ขอบบนเหลือแค่พอใส่คำว่า พลิกได้) */
   /* ช่องกราฟเปลี่ยนขนาด (ฟอนต์โหลดเสร็จ / หมุนจอ / ย่อหน้าต่าง) → วาดใหม่ให้พอดีช่อง ไม่ให้แกนล่างโดนตัด */
-  const h0 = scw.clientHeight, ro = new ResizeObserver(() => { if (!scw.isConnected) { ro.disconnect(); return; } if (Math.abs(scw.clientHeight - h0) > 3) { ro.disconnect(); renderTier(rk); } }); ro.observe(scw);
+  const h0 = scw.clientHeight, ro = new ResizeObserver(() => { if (!scw.isConnected) { ro.disconnect(); return; } if (window.__hbAnim) return; if (Math.abs(scw.clientHeight - h0) > 3) { ro.disconnect(); renderTier(rk); } }); ro.observe(scw);
   const xs = d3.scaleLinear([-72, 46], [m.l, W - m.r]), ys = d3.scaleLinear([-60, 45], [SH - m.b, m.t]);
   const T = TIER_T, Z = [[-72,T.far,-60,45,'far'],[T.far,T.lo,T.ly,45,'cand'],[T.far,T.lo,-60,T.ly,'far'],[T.lo,0,-60,45,'flip'],[0,T.hi,-60,45,'hold'],[T.hi,46,-60,T.ly,'hold'],[T.hi,46,T.ly,45,'safe']];   /* โซนตามเกณฑ์ปัจจุบัน */
   let sv = Z.map(([a, b, c, e, t]) => `<rect x="${xs(a)}" y="${ys(e)}" width="${xs(b) - xs(a)}" height="${ys(c) - ys(e)}" fill="${TT[t][1]}" opacity=".13"/>`).join('');
@@ -590,7 +604,7 @@ function renderTier(rk) {
   };
   fill(); rk.__fill = fill;
 }
-function styleDots() { d3.selectAll('#rk circle.dot').attr('opacity', d => inB(d) && okL(d) && okF(d) && okBig(d) ? 1 : .15).attr('r', d => ST.sel === key(d) ? 5.5 : 3).attr('stroke', d => ST.sel === key(d) ? '#2b2927' : '#fff').attr('stroke-width', d => ST.sel === key(d) ? 2 : .6).filter(d => ST.sel === key(d)).raise(); }
+function styleDots() { d3.selectAll('#rk circle.dot').interrupt('opacity').attr('opacity', d => inB(d) && okL(d) && okF(d) && okBig(d) ? 1 : .15).attr('r', d => ST.sel === key(d) ? 5.5 : 3).attr('stroke', d => ST.sel === key(d) ? '#2b2927' : '#fff').attr('stroke-width', d => ST.sel === key(d) ? 2 : .6).filter(d => ST.sel === key(d)).raise(); }
 
 /* ปี 66 » 69 */
 function render66(rk) {
@@ -716,7 +730,7 @@ function renderHouse(rk) {
   const HC = ST.h.party ? col(ST.h.party) : HW, HT = ink(HC);   /* เลือกพรรค → แถบ/แท่งใช้สีพรรคนั้น */
   const B = D.filter(isB), SEL = B.filter(d => okR(d) && hP(d)), nW = SEL.filter(hWon).length, nA = SEL.length, pw = nA ? nW / nA * 100 : 0;
   const chips = [ST.reg ? `<button class="fc" data-hx="reg">ภาค: ${RS(ST.reg)} ✕</button>` : '', ST.h.party ? `<button class="fc" data-hx="party">พรรค: ${ST.h.party} ✕</button>` : ''].join('');
-  let h = `<div class="hhd"><h3>ข้อมูลบ้านใหญ่</h3><div class="fcs">${chips}</div></div>
+  let h = `<div class="hhd"><h3>ข้อมูลบ้านใหญ่</h3><div class="fcs">${chips}</div></div>${hintBar('house')}
   <div class="sum"><div class="st3">เขตที่มีตระกูลบ้านใหญ่${ST.h.party ? 'ของ' + ST.h.party : ''}ลงสมัคร สส.เขต${ST.reg ? '  ' + RS(ST.reg) : ''} รวม <b>${nA}</b> เขต</div>
   <div class="sbar">${nA ? `${nW ? `<div style="width:${pw}%;background:${HC}">${pw >= 8 ? `<b style="color:${HT}">${pw.toFixed(1)}%</b>` : ''}</div>` : ''}${nA - nW ? `<div style="width:${100 - pw}%;background:${HL}">${100 - pw >= 8 ? `<b style="color:#5d6370">${(100 - pw).toFixed(1)}%</b>` : ''}</div>` : ''}` : `<div style="width:100%;background:#f1f2f5;justify-content:center"><b style="color:#9aa0ab">ไม่มีบ้านใหญ่ของพรรคนี้ลงในภาคนี้</b></div>`}</div>
   <div class="slab"><span><i style="background:${HC}"></i>ชนะ <b>${nW}</b> เขต</span><span>แพ้ <b>${nA - nW}</b> เขต <i style="background:${HL}"></i></span></div></div>`;
@@ -2047,7 +2061,7 @@ function fitWin(host, wkey) {   /* ขนาดรายการเปลี่
 }
 function renderBoth(rk) {
   const lhd = '<div class="lhd"><span>เขต</span><span>ห่าง</span><span class="lab"></span></div>';
-  let h = `<div class="hd"><h3>พรรคประชาชน: สส.เขต เทียบ สส.⁠บัญชี⁠ราย⁠ชื่อ</h3>${sortBtns()}</div>`;
+  let h = `<div class="hd"><h3>พรรคประชาชน: สส.เขต เทียบ สส.⁠บัญชี⁠ราย⁠ชื่อ</h3>${sortBtns()}</div>${hintBar('ov')}`;
   ['w', 'l'].forEach((k, j) => h += `<div class="half" id="h${j + 1}"><div class="hrow"><h4>${BT[k][0]}</h4><div class="desc info"><span class="cnt"></span></div><div class="ovnav"><button data-pg="-1">‹ ก่อนหน้า</button><span class="ovhint"></span><button data-pg="1" class="pri">ถัดไป ›</button></div></div><div class="ovw"></div>${lhd}<div class="list"></div></div>`);
   rk.className = 'card rk2 bv-b'; rk.innerHTML = h;
   ['w', 'l'].forEach((k, j) => { const [, kind, wk] = BT[k], host = $('#h' + (j + 1)); fitWin(host, wk); chartBlock(host, kind, 86, wk); });
