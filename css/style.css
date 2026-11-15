@@ -2063,3 +2063,33 @@ body.ready>*{animation:bootfade .3s ease-out}
 body.dsk #dside #bigf{align-items:center}
 body.dsk #dside #bigf .house{vertical-align:0!important;align-self:center;margin-top:-3px}
 body.dsk #dside #bigf{font-weight:600}
+
+/* ===== มือถือ: กล่องหน้าแนะนำเตี้ยลง ไม่บังป้ายชี้ ===== */
+body.mob #coach:not(.in) .cz-card{transform:translate(-50%,12px)!important}
+body.mob #coach .cz-card{width:calc(100vw - 24px);max-width:380px}
+body.mob #coach .cz-hd{padding:10px 14px}
+body.mob #coach .cz-hd small{font-size:11px}
+body.mob #coach .cz-hd b{font-size:15px;margin-top:0}
+body.mob #coach .cz-g{grid-template-columns:repeat(4,1fr);gap:4px;padding:12px 8px 10px}
+body.mob #coach .cz-i i{height:44px}
+body.mob #coach .cz-i svg{width:42px;height:42px}
+body.mob #coach .cz-i em{font-size:11px;padding:1px 9px;margin:3px 0 4px}
+body.mob #coach .cz-i span{font-size:10.5px;line-height:1.35}
+body.mob #coach .cz-gl{margin:0 12px;padding:8px 10px;font-size:11.5px;line-height:1.55}
+body.mob #coach .cz-gl>span{display:block}
+body.mob #coach .cz-ft{padding:10px 12px 12px;gap:8px}
+body.mob #coach .cz-lk button{font-size:12px}
+body.mob #coach .cz-start{padding:8px 18px;font-size:13.5px}
+/* ไอคอนแตะ: วงคลื่นเล็กลง / ปัดขึ้น: จุดหยุดก่อนถึงหัวลูกศรแล้วจางหาย */
+body.mob #coach .cz-ring{animation-name:czringS}
+@keyframes czringS{0%{transform:scale(.6);opacity:.45}100%{transform:scale(1.35);opacity:0}}
+@keyframes czup{0%{transform:translateY(0);opacity:0}15%{opacity:1}70%{transform:translateY(-18px);opacity:1}100%{transform:translateY(-18px);opacity:0}}
+/* เส้นประใต้คำ: ใช้ขีดเส้นใต้แบบเส้นประจริง ให้ตรงกับตัวหนังสือ */
+#coach .cz-gl u{border-bottom:0!important;text-decoration:underline dashed #9b9488 1.5px;text-underline-offset:4px}
+/* หน้าวิธีใช้: ปุ่มเรื่องย่อยไม่ถูกบีบความสูง */
+.tut-chips{flex:none!important;min-height:min-content}
+.tut-chips button{flex:none;line-height:1.5;white-space:nowrap}
+/* ปุ่ม ? หลังหัวข้อกราฟ: ยกขึ้นอีกนิด */
+.qh{top:-1px!important}
+
+#coach:not(.in) .cz-card[style*="translateY"]{transform:translateY(-46%)!important}
