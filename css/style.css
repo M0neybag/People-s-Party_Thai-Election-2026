@@ -2290,8 +2290,6 @@ body.mob .rk3.tier .hd>.hmin{flex-basis:auto}
 .hd>.sub>.hico{margin-right:2px}
 .ovm-ctl>.hico{margin-right:-2px}
 .hhd>.hico{margin-left:6px}
-body.mob #rk>.hd>.sub:has(>.hico){align-self:stretch;width:100%}
-body.mob #rk>.hd>.sub>.hico{margin-left:auto}
 /* ปุ่ม i: ไม่รับหน้าตาปุ่มทั่วไปของแถวปุ่ม (กรอบ พื้น ขอบมน) → เป็นวงกลมส้มวงเดียวทุกที่ */
 .sub>.hico,.ovm-ctl>.hico,.hhd>.hico,.desc>.hico,.hico{border:0!important;background:none!important;padding:0!important;box-shadow:none!important;min-width:0!important;border-radius:50%!important}
 /* หน้าปรับเกณฑ์: ลบบรรทัดคำอธิบายใต้ชื่อ */
@@ -2304,3 +2302,39 @@ body:not(.mob) .slab em{display:none}
 /* โทรศัพท์: ชื่อกราฟบรรทัดเดียวไม่ล้นกล่อง */
 body.mob #rk>.hd>h3{overflow:hidden;max-width:100%}
 body.mob #rk>.hd>h3{align-self:stretch}
+
+/* ===== รอบแก้ iPad / โทรศัพท์ / บ้านใหญ่ ===== */
+/* โทรศัพท์และ iPad แนวตั้ง: ปุ่ม i ต่อท้ายปุ่มสุดท้าย (ไม่ดันชื่อกราฟให้แคบ) */
+body.mob .sub>.hico{margin-left:2px}
+/* บ้านใหญ่ (คอมพิวเตอร์): มีแถบคำแนะนำ = เพิ่ม 1 แถว กราฟแยกตามภาค/พรรคไม่ถูกบีบจนชื่อภาคตก */
+.hrk:has(>.hbar){grid-template-rows:auto auto auto auto minmax(0,1fr)}
+/* บ้านใหญ่: ป้ายตัวกรองชิดขวา ตามด้วยปุ่ม i (ไม่ลอยกลางแถว) */
+.hhd:has(>.hico){justify-content:flex-start}
+.hhd:has(>.hico)>.fcs{margin-left:auto}
+.hhd:has(>.hico)>.fcs:empty{display:none}
+.hhd:has(>.fcs:empty)>.hico{margin-left:auto}
+/* บ้านใหญ่ (โทรศัพท์): แถวแรก ชื่อ + ? + i / แถวสอง ป้ายตัวกรอง (แต่ละป้ายบรรทัดเดียว) */
+body.mob .hhd{display:flex!important;flex-wrap:wrap;align-items:center;row-gap:6px}
+body.mob .hhd>h3{order:1;flex:1 1 auto;white-space:nowrap;margin:0}
+body.mob .hhd>.hico{order:2;margin-left:auto}
+body.mob .hhd>.fcs{order:3;flex:1 1 100%;margin:0!important;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start}
+body.mob .hhd>.fcs:empty{display:none}
+body.mob .hhd .fc{white-space:nowrap}
+/* รวม 2 แบบ (คอมพิวเตอร์ / iPad แนวนอน): ชื่อกราฟบรรทัดเดียว ถ้าที่ไม่พอ ปุ่มขึ้นบรรทัดใหม่ชิดขวา */
+body:not(.mob) .rk2>.hd{flex-wrap:wrap!important;row-gap:6px}
+body:not(.mob) .rk2>.hd>h3{white-space:nowrap!important;flex:0 0 auto}
+body:not(.mob) .rk2>.hd>.sub{margin-left:auto}
+/* หัวกราฟย่อย: "เขตลำดับที่..." ขึ้นบรรทัดใหม่ได้ ไม่ถูกตัด */
+.bv-b .hrow .desc.info{white-space:normal!important;overflow:visible!important;line-height:1.3}
+/* การ์ดเขตบนโทรศัพท์: หัวการ์ดเว้นที่ให้ปุ่ม ✕ ไม่ทับตัวอักษร */
+#peek .tip .h{padding-right:54px!important}
+#peek .tip .h b{min-width:0}
+#peek .tip .h span{white-space:nowrap}
+/* หัวกราฟย่อยในรวม 2 แบบ: ถ้ากล่องแคบ "เขตลำดับที่..." ลงไปบรรทัดใต้ชื่อกราฟ (ชื่อกราฟกับปุ่มอยู่บรรทัดเดียวกัน) */
+.bv-b .half{container-type:inline-size}
+@container (max-width:700px){
+  .bv-b .hrow{flex-wrap:wrap;row-gap:0}
+  .bv-b .hrow h4{flex:1 1 auto}
+  .bv-b .hrow .desc.info{order:3;flex:1 1 100%;white-space:nowrap!important}
+}
+body.mob .hhd{height:auto!important}body.mob .hhd>.fcs{height:auto!important}
