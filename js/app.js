@@ -410,9 +410,9 @@ function hintPlace() {
 
     if (k === 'ov' && !rk.classList.contains('rk2') && !mob) { const d = rk.querySelector(':scope > .desc.info'); if (d) { d.classList.add('hasico'); d.insertAdjacentHTML('beforeend', b); return; } }
     const sub = rk.querySelector(':scope > .hd > .sub'); if (sub) { sub.insertAdjacentHTML(mob ? 'beforeend' : 'afterbegin', b);
-      if (!mob && rk.classList.contains('rk2')) requestAnimationFrame(() => {   /* รวม 2 แบบ: ปุ่มขึ้นบรรทัดใหม่ (จอแคบ เช่น iPad แนวนอน) → วงกลม i ต่อท้ายปุ่มขยาย */
-        const h3 = rk.querySelector(':scope > .hd > h3'), ic = sub.querySelector('.hico'); if (!h3 || !ic) return;
-        if (sub.getBoundingClientRect().top > h3.getBoundingClientRect().top + 6) sub.appendChild(ic); else sub.prepend(ic); });
+      if (!mob && rk.classList.contains('rk2')) {   /* รวม 2 แบบ: ปุ่มขึ้นบรรทัดใหม่ (จอแคบ เช่น iPad แนวนอน) → วงกลม i ต่อท้ายปุ่มขยาย (จัดทันที ภาพเคลื่อนไหวจะวิ่งไปที่ตำแหน่งสุดท้ายถูก) */
+        const h3 = rk.querySelector(':scope > .hd > h3'), ic = sub.querySelector('.hico');
+        if (h3 && ic && sub.getBoundingClientRect().top > h3.getBoundingClientRect().top + 6) sub.appendChild(ic); }
       return; }
     const hh = rk.querySelector(':scope > .hhd'); if (hh) hh.insertAdjacentHTML('beforeend', b);
   });
@@ -422,7 +422,11 @@ const nextEl = el => { let n = el; while (n && !n.nextElementSibling) n = n.pare
 const followers = el => { const out = []; let n = el; while (n) { out.push(n); n = n.nextElementSibling; } return out; };
 /* วาดส่วนที่มีแถบใหม่แบบไม่มี animation ของกราฟ (ขนาดสุดท้ายทันที) */
 function hintRedraw(k, slot) {
-  if (slot) { const bx = slot.closest('.ovm-box'); bx.querySelectorAll(`.hico[data-hk="${k}"]`).forEach(b => b.remove()); slot.innerHTML = hintBar(k); hintPlace(); const box = slot.closest('#ovm, #tvm'); if (box && box._redraw) box._redraw(); return; }
+  if (slot) { const bx = slot.closest('.ovm-box'); bx.querySelectorAll(`.hico[data-hk="${k}"]`).forEach(b => b.remove()); slot.innerHTML = hintBar(k); hintPlace(); const box = slot.closest('#ovm, #tvm');
+    /* หน้าขยาย / ปรับเกณฑ์: เลื่อนเนื้อหาก่อน แล้วค่อยวาดกราฟใหม่ให้พอดีพื้นที่ตอนจบ (ค่อยๆ จางเข้า) กราฟไม่กระโดดระหว่างเลื่อน */
+    if (box && box._redraw) { clearTimeout(hintRedraw.t); hintRedraw.t = setTimeout(() => { const ch = box.querySelector('#ovm-c, .tvm-body'); box._redraw();
+      if (ch && ch.animate && !matchMedia('(prefers-reduced-motion:reduce)').matches) ch.animate([{opacity:.55}, {opacity:1}], {duration:200, easing:'ease-out'}); }, HB_D + 30); }
+    return; }
   window.__LIVE = true; try { renderRight(); } finally { window.__LIVE = false; } hintPlace();
 }
 /* พับ/กาง แบบ FLIP: วาดเลย์เอาต์สุดท้ายก่อน แล้วเลื่อนเนื้อหาด้านล่างจากตำแหน่งเดิมมาที่ใหม่ (transform อย่างเดียว ลื่นทุกเครื่อง) */
@@ -2065,7 +2069,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function open(d, el) {
     cur = key(d); hideTip(); const r = el && el.getBoundingClientRect(); tY = r ? r.top + r.height / 2 : null;
     pk.innerHTML = `${tipHTML(d)}<div class="pk-ft"><button class="pk-x" aria-label="ปิด">✕</button><button class="pk-go">ดูรายละเอียด ›</button></div>`;
-    { const hh = pk.querySelector('.tip .h'); if (hh) pk.style.setProperty('--pkx', Math.max(2, (hh.offsetHeight - 30) / 2) + 'px'); }   /* ปุ่ม ✕ อยู่กลางแถบหัวการ์ดพอดี */
+    const pkx = () => { const hh = pk.querySelector('.tip .h'); if (hh) pk.style.setProperty('--pkx', Math.max(4, hh.getBoundingClientRect().top - pk.getBoundingClientRect().top + (hh.getBoundingClientRect().height - 30) / 2) + 'px'); };   /* ปุ่ม ✕ อยู่กึ่งกลางแถบหัวการ์ดพอดี (วัดหลังจัดหน้าเสร็จ) */
+    pkx(); requestAnimationFrame(pkx); if (document.fonts) document.fonts.ready.then(pkx);   /* ปุ่ม ✕ อยู่กลางแถบหัวการ์ดพอดี */
     pk.hidden = false; place(); requestAnimationFrame(() => pk.classList.add('in'));
     if (typeof setHover === 'function') setHover(d);
   }
@@ -2344,3 +2349,6 @@ function fitTitles() {
   const _r = render; render = function () { _r.apply(this, arguments); place(); };
   addEventListener('resize', () => setTimeout(place, 50));
 })();
+
+/* โทรศัพท์: สีแถบเบราว์เซอร์ (Safari / Chrome) ให้เข้มเท่าหัวเว็บ ไม่หยิบสีส้มจากเนื้อหามาแสดง */
+(function () { let m = document.querySelector('meta[name="theme-color"]'); if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); } m.content = '#363430'; })();
