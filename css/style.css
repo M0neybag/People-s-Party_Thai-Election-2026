@@ -2454,3 +2454,7 @@ body.mob .right.kc .kpi .ktag.k2{display:inline-block!important}
    แผ่นตัวกรองมีพื้นเข้มยาวถึงขอบล่างจอ */
 html:has(body.mob){background:#363430}
 body.mob .mfs-box{padding-bottom:calc(16px + env(safe-area-inset-bottom) + var(--vvb,0px))!important}
+/* iPhone (Safari รุ่นใหม่ แถบเครื่องมือลอย): Safari หยิบสีจากแถบกว้างเต็มจอที่อยู่ล่างสุดไปใช้กับแถบเครื่องมือ
+   แผ่นตัวกรองจึงมีแถบพื้นเข้มเต็มความกว้างอยู่ล่างสุดเสมอ (ไม่ให้ปุ่มส้ม "ดูผล" เป็นสิ่งล่างสุด) */
+body.mob #mfs .mfs-box{padding-bottom:calc(30px + env(safe-area-inset-bottom) + var(--vvb,0px))!important}
+body.mob #mfs.open::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(18px + env(safe-area-inset-bottom) + var(--vvb,0px));background:#363430;pointer-events:none;z-index:2}
