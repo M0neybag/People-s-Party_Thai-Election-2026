@@ -1545,7 +1545,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const kpiH = () => { const k = $('.kpis'); if (!k || !k.offsetHeight) return 90; const r = $('#right'), had = r.classList.contains('kc'); r.classList.add('kc'); const h = k.offsetHeight; if (!had) r.classList.remove('kc'); return h; };
   const H = () => ({peek:((ST.mode === 'win' || ST.mode === 'list') && !Y66() ? kpiH() + 26 : 44),   /* ล็อกที่การ์ดสรุปเฉพาะ สส.เขต และบัญชีรายชื่อ โหมดอื่นพับลงได้สุด */ half:Math.round(innerHeight * .52), full:innerHeight - 56 - (($('#mtabs') && $('#mtabs').offsetHeight) || 62) - (parseFloat(getComputedStyle(document.body).getPropertyValue('--vvb')) || 0) - 10});
   function setSheet(s, anim) {
-    st = s; const r = $('#right'); r.style.transition = anim === false ? 'none' : ''; r.style.height = H()[s] + 'px'; r.dataset.st = s; r.classList.toggle('kc', s === 'peek' || s === 'full');   /* เปิดสุด: การ์ดสรุปย่อเหลือตัวเลข ให้รายชื่อเขตได้พื้นที่มากขึ้น */
+    st = s; const r = $('#right'); r.style.transition = anim === false ? 'none' : ''; r.style.height = H()[s] + 'px'; r.dataset.st = s; r.classList.toggle('kc', s === 'peek');   /* เปิดสุด: การ์ดสรุปย่อเหลือตัวเลข ให้รายชื่อเขตได้พื้นที่มากขึ้น */
     document.body.style.setProperty('--peek', H().peek + 'px');
     clearTimeout(setSheet.t); setSheet.t = setTimeout(() => { renderRight(); if (s === 'peek' && !mapMoved) fitView(true); }, anim === false ? 0 : 320);   /* กราฟวาดใหม่ให้พอดีความสูงใหม่, พับลงสุดแล้วจัดแผนที่ให้เห็นครบทั้งประเทศ */
   }
