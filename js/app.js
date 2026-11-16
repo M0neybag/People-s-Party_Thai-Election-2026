@@ -398,9 +398,15 @@ const hintBar = k => hintC(k) ? `<i class="hmark" data-hm="${k}" hidden></i>`
    - โทรศัพท์: แถวเดียวกับปุ่มของหัวกราฟ ชิดขวา */
 function hintPlace() {
   document.querySelectorAll('.hmark[data-hm]').forEach(m => {
-    const k = m.dataset.hm, box = m.closest('.ovm-box'), rk = box ? null : m.closest('#rk'), scope = box || rk; if (!scope || scope.querySelector(`.hico[data-hk="${k}"]`)) return;
+    const k = m.dataset.hm, box = m.closest('.ovm-box'), rk = box ? null : m.closest('#rk'), scope = box || rk; if (!scope) return;
+    if (box) {   /* หน้าขยาย/ปรับเกณฑ์: แถวปุ่มด้านบน / โทรศัพท์ หน้าขยาย: ต่อท้ายปุ่มแยกภาค */
+      const s2 = MOBL() && box.querySelector('#ovm-s'), tg = s2 && s2.children.length ? s2 : box.querySelector('.ovm-ctl'), ex = box.querySelector(`.hico[data-hk="${k}"]`);
+      if (ex && ex.parentElement === tg) return; if (ex) ex.remove();
+      tg.insertAdjacentHTML(tg === s2 ? 'beforeend' : 'afterbegin', `<button class="hico" data-hbo data-hk="${k}" aria-expanded="false" aria-label="แสดงวิธีใช้กราฟนี้" title="แสดงวิธีใช้กราฟนี้">${HI_I}</button>`); return;
+    }
+    if (scope.querySelector(`.hico[data-hk="${k}"]`)) return;
     const b = `<button class="hico" data-hbo data-hk="${k}" aria-expanded="false" aria-label="แสดงวิธีใช้กราฟนี้" title="แสดงวิธีใช้กราฟนี้">${HI_I}</button>`, mob = MOBL();
-    if (box) { box.querySelector('.ovm-ctl').insertAdjacentHTML('afterbegin', b); return; }
+
     if (k === 'ov' && !rk.classList.contains('rk2') && !mob) { const d = rk.querySelector(':scope > .desc.info'); if (d) { d.classList.add('hasico'); d.insertAdjacentHTML('beforeend', b); return; } }
     const sub = rk.querySelector(':scope > .hd > .sub'); if (sub) { sub.insertAdjacentHTML(mob ? 'beforeend' : 'afterbegin', b); return; }
     const hh = rk.querySelector(':scope > .hhd'); if (hh) hh.insertAdjacentHTML('beforeend', b);
@@ -416,6 +422,8 @@ function hintRedraw(k, slot) {
 }
 /* พับ/กาง แบบ FLIP: วาดเลย์เอาต์สุดท้ายก่อน แล้วเลื่อนเนื้อหาด้านล่างจากตำแหน่งเดิมมาที่ใหม่ (transform อย่างเดียว ลื่นทุกเครื่อง) */
 const HB_E = 'cubic-bezier(.32,.72,0,1)', HB_D = 340;
+/* เส้นประโยงกรอบส้ม: วัดตำแหน่งสุดท้ายทันที แล้วงดวัดใหม่ระหว่างเลื่อน (เส้นเลื่อนไปพร้อมกราฟ ไม่วิ่งผิดที่) */
+function hbGeo() { window.__hbFlip = true; document.querySelectorAll('#rk, #rk .half').forEach(h => { if (h._geoNow) h._geoNow(); }); clearTimeout(hbGeo.t); hbGeo.t = setTimeout(() => { window.__hbFlip = false; }, HB_D + 120); }
 document.addEventListener('click', e => {
   const x = e.target.closest('[data-hbx]'), o = e.target.closest('[data-hbo]'); if (!x && !o) return; e.stopPropagation();
   const k = (x ? x.closest('.hbar') : o).dataset.hk, slot = (x || o).closest('.ovm-box') ? document.querySelector((x || o).closest('#ovm') ? '#ovm [data-hslot]' : '#tvm [data-hslot]') : null;
@@ -426,7 +434,7 @@ document.addEventListener('click', e => {
     const bar = x.closest('.hbar'), r = bar.getBoundingClientRect(), ref0 = nextEl(bar), y0 = ref0 ? ref0.getBoundingClientRect().top : 0;
     const ghost = bar.cloneNode(true); Object.assign(ghost.style, {position:'fixed', left:r.left + 'px', top:r.top + 'px', width:r.width + 'px', height:r.height + 'px', margin:0, zIndex:1250, pointerEvents:'none', boxSizing:'border-box'}); ghost.classList.add('hghost'); document.body.appendChild(ghost);
     try { localStorage.setItem('hintc_' + k, '1'); } catch (er) {}
-    hintRedraw(k, slot);
+    hintRedraw(k, slot); hbGeo();
     const m = document.querySelector(`.hmark[data-hm="${k}"]`), ic = document.querySelector(`.hico[data-hk="${k}"]`), ref1 = m && nextEl(m), dy = ref1 ? y0 - ref1.getBoundingClientRect().top : 0;
     if (RMm || !ghost.animate || !ic) { ghost.remove(); return; }
     const q = ic.querySelector('svg').getBoundingClientRect(), c0 = circ(r, q);
@@ -437,7 +445,7 @@ document.addEventListener('click', e => {
   } else {   /* กาง: วงกลม i ขยายออกไปทางซ้ายกลายเป็นแถบเต็ม */
     const m = document.querySelector(`.hmark[data-hm="${k}"]`), q = o.querySelector('svg').getBoundingClientRect(), ref0 = m && nextEl(m), y0 = ref0 ? ref0.getBoundingClientRect().top : 0;
     try { localStorage.removeItem('hintc_' + k); } catch (er) {}
-    hintRedraw(k, slot);
+    hintRedraw(k, slot); hbGeo();
     const bar = document.querySelector(`.hbar[data-hk="${k}"]`), ref1 = bar && nextEl(bar), dy = ref1 ? y0 - ref1.getBoundingClientRect().top : 0;
     if (RMm || !bar || !bar.animate) return;
     const r = bar.getBoundingClientRect(), c0 = circ(r, q);
@@ -587,9 +595,9 @@ function chartBlock(host, kind, OH, wkey) {
     tag.raise(); navSync();
     cancelAnimationFrame(lens.f); lens.f = requestAnimationFrame(geo); clearTimeout(lens.t); lens.t = setTimeout(geo, 700);   /* วัดตำแหน่งหลังหน้าจัดเสร็จ (และหลังอนิเมชั่นเปลี่ยนโหมด) */
   }
-  host._geo = () => requestAnimationFrame(geo);   /* ให้ส่วนอื่นสั่งวาดเส้นประใหม่ได้ เมื่อความสูงด้านบนกราฟเปลี่ยน */
-  function geo() {
-    if (!lz.isConnected) return;
+  host._geo = () => requestAnimationFrame(geo); host._geoNow = () => geo(true);   /* ให้ส่วนอื่นสั่งวาดเส้นประใหม่ได้ เมื่อความสูงด้านบนกราฟเปลี่ยน */
+  function geo(force) {
+    if (!lz.isConnected || (window.__hbFlip && force !== true)) return;   /* ระหว่างพับ/กางคำแนะนำ: ใช้ตำแหน่งสุดท้ายที่วัดไว้ แล้วเลื่อนไปพร้อมกราฟ */
     const H0 = host.getBoundingClientRect(), O = ov.node().getBoundingClientRect(), L = (host.querySelector('.lhd') || listEl).getBoundingClientRect();
     if (!L.height || !O.width) { lz.innerHTML = ''; return; }
     const a = O.left - H0.left + X(i0), b = O.left - H0.left + X(i1), y0 = O.top - H0.top + OH - 12, y1 = L.top - H0.top + .75, l = L.left - H0.left + .75, r = L.right - H0.left - .75;   /* ปลายเส้นประอยู่กลางเส้นขอบกรอบรายชื่อพอดี */
@@ -671,6 +679,7 @@ function renderTier(rk) {
       : '<div class="muted" style="padding:10px 12px">ไม่มีเขตที่ตรงเงื่อนไข</div>');
   };
   fill(); rk.__fill = fill;
+  hintPlace();   /* กราฟนี้วาดใหม่เองได้ (เช่น ความสูงกรอบเปลี่ยน) → ใส่ปุ่ม i ทุกครั้ง */
 }
 function styleDots() { d3.selectAll('#rk circle.dot').interrupt('opacity').attr('opacity', d => inB(d) && okL(d) && okF(d) && okBig(d) ? 1 : .15).attr('r', d => ST.sel === key(d) ? 5.5 : 3).attr('stroke', d => ST.sel === key(d) ? '#2b2927' : '#fff').attr('stroke-width', d => ST.sel === key(d) ? 2 : .6).filter(d => ST.sel === key(d)).raise(); }
 
@@ -1184,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Q('#ovm-t').insertAdjacentHTML('beforeend', window.QH ? QH(1) : '');   /* ปุ่ม ? เปิดวิธีใช้เรื่องขยายกราฟและปักหมุด */
     Q('#ovm-f').innerHTML = filtNote();
     Q('#ovm-k').innerHTML = [['win', 'สส.เขต'], ['list', 'บัญชี⁠ราย⁠ชื่อ']].map(([k, t]) => `<button data-pk="${k}" class="${K === k ? 'on' : ''}">${t}</button>`).join('');
-    Q('#ovm-s').innerHTML = [['gap', 'ตามระยะห่าง'], ['reg', 'แยกภาค']].map(([k, t]) => `<button data-ps2="${k}" class="${PM.sort === k ? 'on' : ''}">${t}</button>`).join('');
+    Q('#ovm-s').innerHTML = [['gap', 'ตามระยะห่าง'], ['reg', 'แยกภาค']].map(([k, t]) => `<button data-ps2="${k}" class="${PM.sort === k ? 'on' : ''}">${t}</button>`).join('');  if (MOBL()) hintPlace();   /* ปุ่มแยกภาคถูกวาดใหม่ → ใส่ปุ่ม i ต่อท้ายอีกครั้ง */
     const S = snap && !chartAnim.off() ? (snap === 'empty' ? {ob:{}, rows:{}, dots:{}} : chartAnim.snap('#ovm-c')) : null;
     c.innerHTML = chartShell(); c.querySelector('.ovw').insertAdjacentHTML('beforebegin', '<div class="ovm-lane" id="ovm-l"></div>');   /* ป้ายหมุดอยู่ระหว่างบรรทัดจำนวนเขตกับกราฟ */
     const last = PM.pins[PM.pins.length - 1], wk = 'm' + K;
