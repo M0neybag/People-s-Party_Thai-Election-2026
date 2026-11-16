@@ -2436,3 +2436,21 @@ body.mob header.bar .top-row{gap:6px!important}
 body.mob #mflt{padding-left:10px!important;padding-right:10px!important}
 body.mob header.bar .brand b{letter-spacing:0!important;font-size:clamp(13.4px,4.1vw,16px)!important}
 @media (max-width:380px){body.mob header.bar .brand b{font-size:13.4px!important}}
+/* ===== รอบแก้ 8 ข้อ (17:49) ===== */
+/* 8. หน้าปรับเกณฑ์ (iPad แนวนอน / Safari): คอลัมน์ซ้ายห้ามกว้างเกินช่องของตัวเอง ตารางไม่ล้นไปทับกล่องสรุปด้านขวา */
+.tvm-body{grid-template-columns:minmax(0,1fr) 290px!important}
+.tvm-body>*,.tvm-l,.tvm-l>*,.tvm-sc,.tvm-tl{min-width:0!important;max-width:100%}
+.tvm-tl{overflow-x:hidden}
+.tvm-tl .th,.tvm-tl .trr{grid-template-columns:minmax(0,1.4fr) 96px minmax(0,1fr) minmax(0,1fr)!important;column-gap:10px!important}
+.tvm-tl .trr .tv{min-width:0;justify-content:flex-end}
+.tvm-st{min-width:0;overflow:hidden}
+/* 2. การ์ดสรุป: ป้าย (เขตสูสี / ไม่ขึ้นกับตัวกรอง) ไม่ทับชื่อการ์ด */
+.kpi:has(.ktag) .l{margin-top:10px}
+/* 7. โทรศัพท์ แผ่นพับลง: แสดงป้ายของการ์ดขวาด้วย (เดิมซ่อน) */
+body.mob .right.kc .kpi .ktag.k2{display:inline-block!important}
+/* 3. iPad แนวตั้ง: หน้าขยาย / ปรับเกณฑ์ ปุ่มด้านบนอยู่แถวเดียวกับ ✕ → เว้นที่ไม่ให้ ✕ บังปุ่ม i */
+@media (min-width:641px){body.mob .ovm-hd{padding-right:58px!important}body.mob .ovm-hd>div:first-child{padding-right:0!important}}
+/* 6. โทรศัพท์: สีพื้นหลังเว็บเข้ม (เท่าหัวเว็บและแถบเมนู) แถบเครื่องมือของ Safari จะไม่หยิบสีส้มมาแสดง
+   แผ่นตัวกรองมีพื้นเข้มยาวถึงขอบล่างจอ */
+html:has(body.mob){background:#363430}
+body.mob .mfs-box{padding-bottom:calc(16px + env(safe-area-inset-bottom) + var(--vvb,0px))!important}
