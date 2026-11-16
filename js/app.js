@@ -402,13 +402,18 @@ function hintPlace() {
     if (box) {   /* หน้าขยาย/ปรับเกณฑ์: แถวปุ่มด้านบน / โทรศัพท์ หน้าขยาย: ต่อท้ายปุ่มแยกภาค */
       const s2 = MOBL() && box.querySelector('#ovm-s'), tg = s2 && s2.children.length ? s2 : box.querySelector('.ovm-ctl'), ex = box.querySelector(`.hico[data-hk="${k}"]`);
       if (ex && ex.parentElement === tg) return; if (ex) ex.remove();
-      tg.insertAdjacentHTML(tg === s2 ? 'beforeend' : 'afterbegin', `<button class="hico" data-hbo data-hk="${k}" aria-expanded="false" aria-label="แสดงวิธีใช้กราฟนี้" title="แสดงวิธีใช้กราฟนี้">${HI_I}</button>`); return;
+      const after = tg === s2 || (MOBL() && box.closest('#tvm'));   /* โทรศัพท์: ต่อท้ายปุ่มสุดท้าย (หน้าขยาย: หลังแยกภาค / หน้าปรับเกณฑ์: หลังใช้เกณฑ์นี้) */
+      tg.insertAdjacentHTML(after ? 'beforeend' : 'afterbegin', `<button class="hico" data-hbo data-hk="${k}" aria-expanded="false" aria-label="แสดงวิธีใช้กราฟนี้" title="แสดงวิธีใช้กราฟนี้">${HI_I}</button>`); return;
     }
     if (scope.querySelector(`.hico[data-hk="${k}"]`)) return;
     const b = `<button class="hico" data-hbo data-hk="${k}" aria-expanded="false" aria-label="แสดงวิธีใช้กราฟนี้" title="แสดงวิธีใช้กราฟนี้">${HI_I}</button>`, mob = MOBL();
 
     if (k === 'ov' && !rk.classList.contains('rk2') && !mob) { const d = rk.querySelector(':scope > .desc.info'); if (d) { d.classList.add('hasico'); d.insertAdjacentHTML('beforeend', b); return; } }
-    const sub = rk.querySelector(':scope > .hd > .sub'); if (sub) { sub.insertAdjacentHTML(mob ? 'beforeend' : 'afterbegin', b); return; }
+    const sub = rk.querySelector(':scope > .hd > .sub'); if (sub) { sub.insertAdjacentHTML(mob ? 'beforeend' : 'afterbegin', b);
+      if (!mob && rk.classList.contains('rk2')) requestAnimationFrame(() => {   /* รวม 2 แบบ: ปุ่มขึ้นบรรทัดใหม่ (จอแคบ เช่น iPad แนวนอน) → วงกลม i ต่อท้ายปุ่มขยาย */
+        const h3 = rk.querySelector(':scope > .hd > h3'), ic = sub.querySelector('.hico'); if (!h3 || !ic) return;
+        if (sub.getBoundingClientRect().top > h3.getBoundingClientRect().top + 6) sub.appendChild(ic); else sub.prepend(ic); });
+      return; }
     const hh = rk.querySelector(':scope > .hhd'); if (hh) hh.insertAdjacentHTML('beforeend', b);
   });
 }
@@ -716,10 +721,13 @@ function closePanel() { if (!ST.sel) return; ST.sel = null; const p = $('#panel'
 function refreshSel() { drawHi(); document.querySelectorAll('#rk [data-k]').forEach(e => { if (!e.classList.contains('dot')) e.classList.toggle('sel', e.dataset.k === ST.sel); }); styleDots(); }
 const ballotRows = d => ({c:{lab:'บัตร สส.เขต', to:d.to, g:d.good, b:d.bad, n:d.nv}, l:{lab:'บัตร บัญชี⁠ราย⁠ชื่อ', to:d.lto, g:d.lgood, b:d.lbad, n:d.lnv}});
 function ballots(d, rows) {
-  const R = ballotRows(d); let h = '<div style="display:grid;gap:7px">';
-  rows.forEach(k => { const r = R[k], p = v => v / r.to * 100, seg = (kk, v, c, t) => `<div data-bk="${k}-${kk}" style="flex:${Math.max(p(v), 6)};background:${c}">${t}</div>`;
-    h += `<div style="display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;font-size:11.5px"><span>${r.lab}</span><div class="ballot">${seg('g', r.g, '#4b8f6a', 'บัตรดี ' + p(r.g).toFixed(1) + '%')}${seg('b', r.b, '#c0504d', p(r.b).toFixed(1) + '%')}${seg('n', r.n, '#8a8f99', p(r.n).toFixed(1) + '%')}</div></div>`; });
-  return h + `</div><div class="bleg"><span><span class="sw" style="background:#4b8f6a"></span> บัตรดี</span><span><span class="sw" style="background:#c0504d"></span> บัตรเสีย</span><span><span class="sw" style="background:#8a8f99"></span> ไม่เลือกผู้ใด</span></div>`;
+  /* % ของบัตรเสีย / ไม่เลือกผู้ใด มักแคบเกินใส่ตัวเลขในแถบ → แสดงตัวเลขทุกตัวในบรรทัดใต้แถบแทน (อ่านครบทุกขนาดจอ) */
+  const R = ballotRows(d); let h = '<div style="display:grid;gap:9px">';
+  const C = {g:'#4b8f6a', b:'#c0504d', n:'#8a8f99'}, T = {g:'บัตรดี', b:'บัตรเสีย', n:'ไม่เลือกผู้ใด'};
+  rows.forEach(k => { const r = R[k], p = v => v / r.to * 100, seg = (kk, v, t) => `<div data-bk="${k}-${kk}" style="flex:${Math.max(p(v), 6)};background:${C[kk]}">${t}</div>`;
+    h += `<div style="display:grid;grid-template-columns:96px 1fr;gap:4px 8px;align-items:center;font-size:11.5px"><span>${r.lab}</span><div class="ballot">${seg('g', r.g, 'บัตรดี ' + p(r.g).toFixed(1) + '%')}${seg('b', r.b, '')}${seg('n', r.n, '')}</div>`
+      + `<span></span><div class="bleg bleg2">${['g', 'b', 'n'].map(kk => `<span><span class="sw" style="background:${C[kk]}"></span> ${T[kk]} <b>${p(r[kk]).toFixed(1)}%</b></span>`).join('')}</div></div>`; });
+  return h + '</div>';
 }
 function ballotTip(d, k, kk) {
   const R = ballotRows(d), r = R[k], o = R[k === 'c' ? 'l' : 'c'], name = {g:'บัตรดี', b:'บัตรเสีย', n:'ไม่เลือกผู้ใด'}[kk], v = r[kk], ov = o[kk];
@@ -742,7 +750,7 @@ function table(d, t, compact) {
   const ar = k => s.k === k || (k !== 'no' && s.k !== 'no') ? `<span class="ar on">${s.dir > 0 ? '▲' : '▼'}</span>` : '<span class="ar">⇅</span>';
   const head = `<tr><th class="s" data-ps="${t}:no" style="width:${compact ? 44 : 56}px">เบอร์${ar('no')}</th><th>${t === 'c' ? 'ชื่อผู้สมัคร' : 'พรรค'}</th><th class="nr s" data-ps="${t}:v">${compact ? 'คะแนน' : 'คะแนนเสียง'}${ar('v')}</th><th class="nr s" data-ps="${t}:p" style="width:${compact ? 58 : 68}px">%${ar('p')}</th></tr>`;
   const body = show.map(r => { const pp = r.party === PPN, gap = top - r.v;
-    return `<tr class="${pp ? 'pp' : ''}"><td class="no">${r.no}</td><td class="nm"><b>${r.name}</b>${r.h ? HOUSE : ''}${t === 'c' && !compact ? ` <span>(${r.party})</span>` : ''}</td><td class="nr">${fmt(r.v)}</td><td class="nr">${(r.v / tot * 100).toFixed(1)}%</td></tr>`
+    return `<tr class="${pp ? 'pp' : ''}"><td class="no">${r.no}</td><td class="nm"><b>${t === 'c' ? String(r.name).split(' ').map(w => `<i class="nw">${w}</i>`).join(' ') : r.name}</b>${r.h ? HOUSE : ''}${t === 'c' && !compact ? ` <span>(${r.party})</span>` : ''}</td><td class="nr">${fmt(r.v)}</td><td class="nr">${(r.v / tot * 100).toFixed(1)}%</td></tr>`
       + `<tr class="brow ${pp ? 'pp' : ''}"><td></td><td colspan="3"><i style="width:${Math.max(.6, r.v / mx * 100)}%;background:${col(r.party)}"></i>${pp && gap > 0 ? `<div class="note">แพ้จาก${t === 'c' ? 'ผู้ชนะ' : 'พรรคที่ชนะ'} ${fmt(gap)} คะแนน (${(gap / tot * 100).toFixed(1)}%)</div>` : ''}</td></tr>`; }).join('');
   const more = rows.length > 5 ? `<button class="more" data-more="${t}">${exp ? 'ย่อรายชื่อ ▴' : `ดูเพิ่มเติมอีก ${rows.length - 5} ${t === 'c' ? 'คน' : 'พรรค'} ▾`}</button>` : '';
   return `<table class="ptab ${compact ? 'cp' : ''}">${head}${body}</table>${more}`;
@@ -1500,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
    แผนที่เต็มจอ, แถบโหมดด้านล่าง, แผ่นผลลัพธ์ปัดขึ้นลงได้, ปุ่มตัวกรองรวมทุกตัวกรองไว้ในแผ่นเดียว
    ใช้ปุ่มและตัวกรองชุดเดิม (ย้ายตำแหน่งเฉยๆ) จึงทำงานเหมือนหน้าคอมทุกอย่าง */
 (function () {
-  const MQ = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)');   /* ไอแพดแนวตั้ง (กว้างไม่ถึง 1100px) ใช้หน้าตาแบบมือถือ */
+  const MQ = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait), (max-height:540px) and (hover:none)');   /* ไอแพดแนวตั้ง (กว้างไม่ถึง 1100px) ใช้หน้าตาแบบมือถือ */
   const ICON = {win:'<path d="M3 4h7v7H3zM12 4h7v7h-7zM3 13h7v7H3z"/>', list:'<path d="M4 6h16M4 12h16M4 18h10"/>', both:'<path d="M4 4h16v16H4zM4 20 20 4"/>', tier:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>', house:'<path d="M3 11 12 4l9 7v9h-6v-6H9v6H3z"/>'};
   const SHORT = {win:'สส.เขต', list:'บัญชีรายชื่อ', both:'รวม 2 แบบ', tier:'วางแผน', house:'บ้านใหญ่'};
   let on = false, st = 'peek', home = [];
@@ -1600,7 +1608,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ===== หน้าตาใหม่ (จอคอม กว้าง 1100px ขึ้นไป): เมนูซ้ายสีเข้ม แผนที่เด่น ช่องค้นหาเขต =====
    ใช้ปุ่ม ตัวกรอง กราฟ และข้อมูลชุดเดิมทั้งหมด แค่ย้ายตำแหน่งและเปลี่ยนสี */
 (function () {
-  const MQ = matchMedia('(min-width:1100px), (min-width:641px) and (orientation:landscape) and (hover:hover)');   /* จอคอมทุกขนาด รวมตอนซูมเบราว์เซอร์ 150% ขึ้นไป (มือถือแนวนอนไม่นับ เพราะไม่มีเมาส์) */
+  const MQ = matchMedia('(min-width:1100px), (min-width:641px) and (orientation:landscape) and (hover:hover), (min-width:641px) and (orientation:landscape) and (min-height:541px)');   /* จอคอมทุกขนาด รวมตอนซูมเบราว์เซอร์ 150% ขึ้นไป (มือถือแนวนอนไม่นับ เพราะไม่มีเมาส์) */
   const TITLE = {win:'ภาพรวม สส.เขต', list:'ภาพรวมบัญชี⁠ราย⁠ชื่อ', both:'สส.เขต + บัญชี⁠ราย⁠ชื่อ', tier:'วางแผนพรรค', house:'ข้อมูลบ้านใหญ่'};
   let on = false, home = [];
   const side = document.createElement('aside'); side.id = 'dside';
@@ -1656,6 +1664,11 @@ document.addEventListener('DOMContentLoaded', () => {
     res.innerHTML = hits.length ? `<div class="dcnt">พบ ${hits.length} เขต</div>` + hits.map((d, i) => `<button data-sk="${key(d)}" class="${i ? '' : 'on'}"><span class="sw" style="background:${col(d.w[1])}"></span>${d.pv} <b>เขต ${d.d}</b><small>${short(d.reg)}</small></button>`).join('') : '<div class="dnone">ไม่พบเขตนี้</div>';
     res.hidden = false; res.scrollTop = 0;
   }
+  /* ซูมแผนที่ไปที่เขต (ใช้ร่วมกับช่องค้นหาบนมือถือ) */
+  window.__zoomTo = d => { const t = tiles.find(q => q.dd === d); if (!t) return; mapMoved = true; const n = svg.node(), k = K0 * 2.6, c = geo(t);
+    svg.transition().duration(650).call(zoom.transform, d3.zoomIdentity.translate(n.clientWidth / 2 - k * c.cx, n.clientHeight / 2 - k * c.cy).scale(k)); };
+  window.__srchHits = q => { q = q.trim(); if (!q) return []; const m = q.match(/^(.*?)\s*(?:เขต)?\s*(\d+)$/), pv = norm(m ? m[1] : q), n = m ? +m[2] : null;
+    return D.filter(d => norm(d.pv).includes(pv) && (n == null || d.d === n)).sort((a, b) => a.pv.localeCompare(b.pv, 'th') || a.d - b.d); };
   function go(d) {
     inp.value = ''; res.hidden = true; inp.blur(); select(d); mapMoved = true;
     const t = tiles.find(q => q.dd === d); if (!t) return; const n = svg.node(), k = K0 * 2.6, c = geo(t);   /* ซูมแผนที่ไปที่เขตนั้น */
@@ -1951,7 +1964,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---------- เด้งขึ้นเมื่อเข้าเว็บ (รอข้อมูลและหน้าตาจอคอมหรือมือถือจัดเสร็จก่อน) ---------- */
   const first = () => { if (!gTiles) return setTimeout(first, 120); setTimeout(() => { if (!isOff() && box.hidden) { if (window.coachOpen) window.coachOpen(); else open('how', 0); } }, 350); };   /* เปิดเว็บครั้งแรก: แสดงหน้าแนะนำซ้อนบนเว็บ (หน้าวิธีใช้เปิดจากปุ่ม วิธีใช้) */
   first();
-  matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)').addEventListener && matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)').addEventListener('change', () => { if (!box.hidden) setTimeout(draw, 50); });   /* หมุนจอ: เปลี่ยนคลิปและคำอธิบายให้ตรงกับจอ */
+  matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait), (max-height:540px) and (hover:none)').addEventListener && matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait), (max-height:540px) and (hover:none)').addEventListener('change', () => { if (!box.hidden) setTimeout(draw, 50); });   /* หมุนจอ: เปลี่ยนคลิปและคำอธิบายให้ตรงกับจอ */
 })();
 
 /* ===== คำอธิบายสีบนแผนที่ พับเก็บได้ (จอคอมและแท็บเล็ต) =====
@@ -2052,9 +2065,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function open(d, el) {
     cur = key(d); hideTip(); const r = el && el.getBoundingClientRect(); tY = r ? r.top + r.height / 2 : null;
     pk.innerHTML = `${tipHTML(d)}<div class="pk-ft"><button class="pk-x" aria-label="ปิด">✕</button><button class="pk-go">ดูรายละเอียด ›</button></div>`;
+    { const hh = pk.querySelector('.tip .h'); if (hh) pk.style.setProperty('--pkx', Math.max(2, (hh.offsetHeight - 30) / 2) + 'px'); }   /* ปุ่ม ✕ อยู่กลางแถบหัวการ์ดพอดี */
     pk.hidden = false; place(); requestAnimationFrame(() => pk.classList.add('in'));
     if (typeof setHover === 'function') setHover(d);
   }
+  window.__peekOpen = (d, el) => open(d, el);   /* ช่องค้นหาบนมือถือ: เลือกเขตแล้วเปิดการ์ดสรุป */
   const tileD = g => { const L = [...gTiles.node().children].filter(x => x.classList && x.classList.contains('tile')); const t = tiles[L.indexOf(g)]; return t && t.dd; };
   document.addEventListener('click', e => {
     if (pk.contains(e.target)) {
@@ -2261,7 +2276,7 @@ window.QH = part => `<button type="button" class="qh" data-qh="${part}" aria-lab
 
 /* ===== ตอนโหลดหน้า: ซ่อนหน้าไว้จนกว่าจะจัดหน้าตาแบบจอคอมหรือมือถือเสร็จ ไม่ให้เห็นดีไซน์เดิมแวบขึ้นมา ===== */
 ;(function () {
-  const D1 = matchMedia('(min-width:1100px), (min-width:641px) and (orientation:landscape) and (hover:hover)'), M1 = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait)'), b = document.body;
+  const D1 = matchMedia('(min-width:1100px), (min-width:641px) and (orientation:landscape) and (hover:hover), (min-width:641px) and (orientation:landscape) and (min-height:541px)'), M1 = matchMedia('(max-width:640px), (max-width:1099px) and (orientation:portrait), (max-height:540px) and (hover:none)'), b = document.body;
   const done = () => (D1.matches ? b.classList.contains('dsk') : M1.matches ? b.classList.contains('mob') : true);
   const t0 = performance.now();
   (function wait() { if ((gTiles && done()) || performance.now() - t0 > 6000) requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add('ready'))); else setTimeout(wait, 40); })();
@@ -2295,3 +2310,37 @@ function fitTitles() {
   });
 }
 { const _rrT = renderRight; renderRight = function () { _rrT.apply(this, arguments); fitTitles(); }; }
+
+/* ===== มือถือ: ปุ่มแว่นขยายในหัวเว็บ → หัวเว็บกลายเป็นช่องค้นหา เลือกเขตแล้วซูมแผนที่ไปที่เขตนั้นและเปิดการ์ดสรุป ===== */
+(function () {
+  const SV = '<svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="8.6" cy="8.6" r="5.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12.8 12.8 17 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  const btn = document.createElement('button'); btn.className = 'msrch-b'; btn.setAttribute('aria-label', 'ค้นหาเขต'); btn.innerHTML = SV;
+  const bar = document.createElement('div'); bar.className = 'msrch'; bar.hidden = true;
+  bar.innerHTML = `<div class="msrch-row"><span class="msrch-i">${SV}</span><input type="search" enterkeyhint="search" placeholder="ค้นหาจังหวัด หรือเขต เช่น ชลบุรี 1" aria-label="ค้นหาเขต"><button class="msrch-x" aria-label="ปิดการค้นหา">ยกเลิก</button></div><div class="msrch-res" hidden></div>`;
+  const inp = bar.querySelector('input'), res = bar.querySelector('.msrch-res');
+  let hits = [];
+  const place = () => { const row = document.querySelector('header.bar .top-row'); if (!row) return; const hb = row.querySelector('.hhelp');
+    if (document.body.classList.contains('mob')) { if (btn.parentNode !== row) row.insertBefore(btn, hb || row.firstChild.nextSibling); if (bar.parentNode !== document.body) document.body.appendChild(bar); }
+    else { btn.remove(); close(); } };
+  function openS() { place(); bar.hidden = false; document.body.classList.add('msrch-on'); inp.value = ''; res.hidden = true; requestAnimationFrame(() => { bar.classList.add('in'); inp.focus(); }); }
+  function close() { if (bar.hidden) return; bar.classList.remove('in'); document.body.classList.remove('msrch-on'); inp.blur(); setTimeout(() => { if (!bar.classList.contains('in')) bar.hidden = true; }, 180); }
+  function search() {
+    hits = window.__srchHits ? window.__srchHits(inp.value) : [];
+    if (!inp.value.trim()) { res.hidden = true; return; }
+    res.innerHTML = hits.length ? `<div class="msrch-cnt">พบ ${hits.length} เขต</div>` + hits.map(d => `<button data-sk="${key(d)}"><span class="sw" style="background:${col(d.w[1])}"></span><span class="nm">${d.pv} <b>เขต ${d.d}</b></span><small>${short(d.reg)}</small></button>`).join('') : '<div class="msrch-none">ไม่พบเขตนี้</div>';
+    res.hidden = false; res.scrollTop = 0;
+  }
+  function pick(d) {
+    close();
+    if (window.__zoomTo) window.__zoomTo(d);
+    setTimeout(() => { const L = [...document.querySelectorAll('#map g.tile')], i = tiles.findIndex(t => t.dd === d); if (window.__peekOpen) window.__peekOpen(d, i >= 0 ? L[i] : null); }, 700);   /* ซูมเสร็จแล้วค่อยเปิดการ์ด จะได้วางการ์ดไม่บังเขต */
+  }
+  btn.addEventListener('click', openS);
+  bar.querySelector('.msrch-x').addEventListener('click', close);
+  inp.addEventListener('input', search);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && hits.length) pick(hits[0]); else if (e.key === 'Escape') close(); });
+  res.addEventListener('click', e => { const b = e.target.closest('[data-sk]'); if (b) pick(byK[b.dataset.sk]); });
+  bar.addEventListener('click', e => { if (e.target === bar) close(); });   /* แตะพื้นที่มืดด้านล่าง = ปิด */
+  const _r = render; render = function () { _r.apply(this, arguments); place(); };
+  addEventListener('resize', () => setTimeout(place, 50));
+})();
